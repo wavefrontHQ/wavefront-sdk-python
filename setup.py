@@ -16,7 +16,7 @@ VERSION = "0.1.0"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-REQUIRES = ['requests >= 2.18.4']
+REQUIRES = ['requests >= 2.18.4', 'enum34']
 
 setup(
     name=NAME,

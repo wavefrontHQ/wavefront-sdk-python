@@ -49,8 +49,10 @@ class WavefrontDirectIngestionClient(IConnectionHandler):
 
     def _internal_flush(self, data_buffer, data_format):
         data = []
-        while not data_buffer.empty():
+        size = data_buffer.qsize()
+        while size > 0 and not data_buffer.empty():
             data.append(data_buffer.get())
+            size -= 1
         self._batch_report(data, data_format)
 
     def _flush(self):
