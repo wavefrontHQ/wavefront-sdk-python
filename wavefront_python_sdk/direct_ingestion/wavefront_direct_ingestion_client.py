@@ -15,44 +15,24 @@ class WavefrontDirectIngestionClient(IConnectionHandler):
     WAVEFRONT_HISTOGRAM_FORMAT = 'histogram'
     WAVEFRONT_TRACING_SPAN_FORMAT = 'trace'
 
-    def __init__(self, builder):
+    def __init__(self, server, token, max_queue_size=50000, batch_size=10000, flush_interval_seconds=1):
         IConnectionHandler.__init__(self)
+        self.server = server
+        self._token = token
+        self._max_queue_size = max_queue_size
+        self._batch_size = batch_size
+        self._flush_interval_seconds = flush_interval_seconds
         self._default_source = "wavefrontDirectSender"
-        self._builder = builder
-        self._metrics_buffer = Queue(builder.max_queue_size)
-        self._histograms_buffer = Queue(builder.max_queue_size)
-        self._tracing_spans_buffer = Queue(builder.max_queue_size)
-        self._headers = {'Content-Type': 'text/plain', 'Authorization': 'Bearer ' + builder.token}
+        self._metrics_buffer = Queue(max_queue_size)
+        self._histograms_buffer = Queue(max_queue_size)
+        self._tracing_spans_buffer = Queue(max_queue_size)
+        self._headers = {'Content-Type': 'text/plain', 'Authorization': 'Bearer ' + token}
         self._flush()
-
-    class Builder:
-
-        def __init__(self, server, token):
-            self.server = server
-            self.token = token
-            self.max_queue_size = 50000
-            self.batch_size = 10000
-            self.flush_interval_seconds = 1
-
-        def max_queue_size(self, max_queue_size):
-            self.max_queue_size = max_queue_size
-            return self
-
-        def batch_size(self, batch_size):
-            self.batch_size = batch_size
-            return self
-
-        def flush_interval_seconds(self, flush_interval_seconds):
-            self.flush_interval_seconds = flush_interval_seconds
-            return self
-
-        def build(self):
-            return WavefrontDirectIngestionClient(self)
 
     def _report(self, points, data_format):
         try:
             params = {'f': data_format}
-            r = requests.post(self._builder.server + '/report', params=params, headers=self._headers, data=points)
+            r = requests.post(self.server + '/report', params=params, headers=self._headers, data=points)
             r.raise_for_status()
         except Exception as e:
             self.increment_failure_count()

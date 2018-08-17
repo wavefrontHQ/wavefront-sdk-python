@@ -9,26 +9,18 @@ import sys
 
 class WavefrontProxyClient:
 
-    def __init__(self, builder):
-        self._metrics_proxy_connection_handler = None if builder.metrics_port is None \
-            else ProxyConnectionHandler(builder.proxy_host, builder.metrics_port)
-        self._histogram_proxy_connection_handler = None if builder.distribution_port is None \
-            else ProxyConnectionHandler(builder.proxy_host, builder.distribution_port)
-        self._tracing_proxy_connection_handler = None if builder.tracing_port is None \
-            else ProxyConnectionHandler(builder.proxy_host, builder.tracing_port)
+    def __init__(self, proxy_host, metrics_port, distribution_port, tracing_port):
+        self.proxy_host = proxy_host
+        self.metrics_port = metrics_port
+        self.distribution_port = distribution_port
+        self.tracing_port = tracing_port
+        self._metrics_proxy_connection_handler = None if metrics_port is None \
+            else ProxyConnectionHandler(proxy_host, metrics_port)
+        self._histogram_proxy_connection_handler = None if distribution_port is None \
+            else ProxyConnectionHandler(proxy_host, distribution_port)
+        self._tracing_proxy_connection_handler = None if tracing_port is None \
+            else ProxyConnectionHandler(proxy_host, tracing_port)
         self._default_source = gethostname()
-
-    class Builder:
-
-        def __init__(self, proxy_host, metrics_port, distribution_port, tracing_port):
-            self.proxy_host = proxy_host
-            self.metrics_port = metrics_port
-            self.distribution_port = distribution_port
-            self.tracing_port = tracing_port
-            # self._socket_factory = SocketFactory.getDefault()
-
-        def build(self):
-            return WavefrontProxyClient(self)
 
     def send_metric(self, name, value, timestamp, source, tags):
         try:

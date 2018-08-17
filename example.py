@@ -56,11 +56,8 @@ if __name__ == "__main__":
     tracing_port = None if len(sys.argv) <= 6 else sys.argv[6]
     print(wavefront_server, token, proxy_host, metrics_port, distribution_port, tracing_port)
 
-    proxy_client_builder = WavefrontProxyClient.Builder(proxy_host, metrics_port, distribution_port, tracing_port)
-    wavefront_proxy_client = proxy_client_builder.build()
-
-    direct_ingestion_client_builder = WavefrontDirectIngestionClient.Builder(wavefront_server, token)
-    wavefront_direct_ingestion_client = direct_ingestion_client_builder.build()
+    wavefront_proxy_client = WavefrontProxyClient(proxy_host, metrics_port, distribution_port, tracing_port)
+    wavefront_direct_ingestion_client = WavefrontDirectIngestionClient(wavefront_server, token)
 
     while True:
         send_metrics_via_proxy(wavefront_proxy_client)
