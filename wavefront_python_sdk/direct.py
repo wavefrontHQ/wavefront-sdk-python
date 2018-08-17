@@ -1,3 +1,8 @@
+"""
+Wavefront Direct Ingestion Client
+@author Hao Song (songhao@vmware.com)
+"""
+
 from __future__ import absolute_import, division, print_function
 
 from threading import Timer
@@ -17,8 +22,6 @@ class WavefrontDirectClient(ConnectionHandler):
     """
     Wavefront direct ingestion client
     that sends data directly to Wavefront cluster via the direct ingestion API.
-
-    @author Hao Song (songhao@vmware.com)
     """
     WAVEFRONT_METRIC_FORMAT = 'wavefront'
     WAVEFRONT_HISTOGRAM_FORMAT = 'histogram'

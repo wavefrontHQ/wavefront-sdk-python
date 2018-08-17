@@ -1,3 +1,8 @@
+"""
+Wavefront Proxy Client
+@author Hao Song (songhao@vmware.com).
+"""
+
 from __future__ import absolute_import, division, print_function
 
 from socket import gethostname
@@ -14,8 +19,6 @@ class WavefrontProxyClient(object):
 
     User should probably attempt to reconnect
     when exceptions are thrown from any methods.
-
-    @author Hao Song (songhao@vmware.com).
     """
 
     def __init__(self, host, metrics_port, distribution_port, tracing_port):

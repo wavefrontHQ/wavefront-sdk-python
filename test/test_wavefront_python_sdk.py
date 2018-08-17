@@ -23,14 +23,14 @@ class TestUtils(unittest.TestCase):
         Test wavefront_python_sdk.common.utils.metric_to_line_data()
         """
         self.assertEqual(
-            "\"new-york.power.usage\" 42422.0 1493773500 source=\"localhost\"" +
+            "\"new-york.power.usage\" 42422.0 1493773500 source=\"localhost\""
             " \"datacenter\"=\"dc1\"\n",
             metric_to_line_data("new-york.power.usage", 42422, 1493773500,
                                 "localhost",
                                 {"datacenter": "dc1"}, "defaultSource"))
         # null timestamp
         self.assertEqual(
-            "\"new-york.power.usage\" 42422.0 source=\"localhost\" " +
+            "\"new-york.power.usage\" 42422.0 source=\"localhost\" "
             "\"datacenter\"=\"dc1\"\n",
             metric_to_line_data("new-york.power.usage", 42422, None,
                                 "localhost", {"datacenter": "dc1"},
@@ -51,7 +51,7 @@ class TestUtils(unittest.TestCase):
         """
         Test wavefront_python_sdk.common.utils.histogram_to_line_data()
         """
-        self.assertEqual("!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" " +
+        self.assertEqual("!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
                          "source=\"appServer1\" \"region\"=\"us-west\"\n",
                          histogram_to_line_data("request.latency",
                                                 [(30.0, 20), (5.1, 10)],
@@ -62,7 +62,7 @@ class TestUtils(unittest.TestCase):
 
         # null timestamp
         self.assertEqual(
-            "!M #20 30.0 #10 5.1 \"request.latency\" source=\"appServer1\" " +
+            "!M #20 30.0 #10 5.1 \"request.latency\" source=\"appServer1\" "
             "\"region\"=\"us-west\"\n",
             histogram_to_line_data("request.latency", [(30.0, 20), (5.1, 10)],
                                    {HistogramGranularity.MINUTE},
@@ -71,7 +71,7 @@ class TestUtils(unittest.TestCase):
 
         # null tags
         self.assertEqual(
-            "!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" " +
+            "!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
             "source=\"appServer1\"\n",
             histogram_to_line_data("request.latency", [(30.0, 20), (5.1, 10)],
                                    {HistogramGranularity.MINUTE},
@@ -93,11 +93,11 @@ class TestUtils(unittest.TestCase):
         # multiple granularities
         self.assertEqual(
             sorted([
-                "!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" " +
+                "!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
                 "source=\"appServer1\" \"region\"=\"us-west\"",
-                "!H 1493773500 #20 30.0 #10 5.1 \"request.latency\" " +
+                "!H 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
                 "source=\"appServer1\" \"region\"=\"us-west\"",
-                "!D 1493773500 #20 30.0 #10 5.1 \"request.latency\" " +
+                "!D 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
                 "source=\"appServer1\" \"region\"=\"us-west\""]),
             sorted(histogram_to_line_data("request.latency",
                                           [(30.0, 20), (5.1, 10)],
@@ -112,23 +112,23 @@ class TestUtils(unittest.TestCase):
         """
         Test wavefront_python_sdk.common.utils.tracing_span_to_line_data()
         """
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" " +
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
-                         "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
-                         "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
-                         "\"application\"=\"Wavefront\" " +
+        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
+                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
+                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
+                         "parent=2f64e538-9457-11e8-9eb6-529269fb1459 "
+                         "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 "
+                         "\"application\"=\"Wavefront\" "
                          "\"http.method\"=\"GET\" 1493773500 343500\n",
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(
-                                                       "7b3bf470-9456-11e8-" +
+                                                       "7b3bf470-9456-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    UUID(
-                                                       "0313bafe-9457-11e8-" +
+                                                       "0313bafe-9457-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    [UUID(
-                                                       "2f64e538-9457-11e8-" +
+                                                       "2f64e538-9457-11e8-"
                                                        "9eb6-529269fb1459")],
                                                    [UUID(
                                                        "5f64e538-9457-11e8-"
@@ -141,22 +141,22 @@ class TestUtils(unittest.TestCase):
                                                    "defaultSource"))
 
         # null followsFrom
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" " +
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
-                         "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
-                         "\"application\"=\"Wavefront\" " +
+        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
+                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
+                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
+                         "parent=2f64e538-9457-11e8-9eb6-529269fb1459 "
+                         "\"application\"=\"Wavefront\" "
                          "\"http.method\"=\"GET\" 1493773500 343500\n",
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(
-                                                       "7b3bf470-9456-11e8-" +
+                                                       "7b3bf470-9456-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    UUID(
-                                                       "0313bafe-9457-11e8-" +
+                                                       "0313bafe-9457-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    [UUID(
-                                                       "2f64e538-9457-11e8-" +
+                                                       "2f64e538-9457-11e8-"
                                                        "9eb6-529269fb1459")],
                                                    None,
                                                    [(
@@ -167,18 +167,18 @@ class TestUtils(unittest.TestCase):
                                                    "defaultSource"))
 
         # root span
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" " +
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
-                         "\"application\"=\"Wavefront\" " +
+        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
+                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
+                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
+                         "\"application\"=\"Wavefront\" "
                          "\"http.method\"=\"GET\" 1493773500 343500\n",
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(
-                                                       "7b3bf470-9456-11e8-" +
+                                                       "7b3bf470-9456-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    UUID(
-                                                       "0313bafe-9457-11e8-" +
+                                                       "0313bafe-9457-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    None, None,
                                                    [(
@@ -189,17 +189,17 @@ class TestUtils(unittest.TestCase):
                                                    "defaultSource"))
 
         # null tags
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" " +
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
+                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
+                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
                          "1493773500 343500\n",
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(
-                                                       "7b3bf470-9456-11e8-" +
+                                                       "7b3bf470-9456-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    UUID(
-                                                       "0313bafe-9457-11e8-" +
+                                                       "0313bafe-9457-11e8-"
                                                        "9eb6-529269fb1459"),
                                                    None, None, None, None,
                                                    "defaultSource"))

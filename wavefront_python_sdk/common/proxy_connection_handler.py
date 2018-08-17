@@ -8,8 +8,6 @@ class ProxyConnectionHandler(ConnectionHandler):
     """
     Connection Handler class for sending data to a Wavefront proxy
     listening on a given port.
-
-    @author Hao Song (songhao@vmware.com).
     """
 
     def __init__(self, address, port):

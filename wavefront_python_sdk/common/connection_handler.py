@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-from wavefront_python_sdk.common.utils import AtomicCounter
+from wavefront_python_sdk.common import utils
 
 
 class ConnectionHandler(object):
@@ -8,11 +6,10 @@ class ConnectionHandler(object):
     A connection handler for both proxy and direct client.
     Handle the failure atomic counter.
     And provide connect function to be override by clients.
-
-    @author Hao Song (songhao@vmware.com).
     """
+
     def __init__(self):
-        self._failure = AtomicCounter()
+        self._failure = utils.AtomicCounter()
 
     def connect(self):
         pass
