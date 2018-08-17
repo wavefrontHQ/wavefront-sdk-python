@@ -1,12 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-from enum import Enum
 
-
-class HistogramGranularity(Enum):
+class HistogramGranularity(object):
+    """
+    Granularity (minute /hour / day)
+    by which histograms distributions are aggregated.
+    """
     MINUTE = "!M"
     HOUR = "!H"
     DAY = "!D"
-
-    def __init__(self, identifier):
-        self.identifier = identifier

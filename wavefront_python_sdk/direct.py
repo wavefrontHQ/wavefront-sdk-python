@@ -1,24 +1,47 @@
 from __future__ import absolute_import, division, print_function
 
-from wavefront_python_sdk.common.connection_handler import ConnectionHandler
-from wavefront_python_sdk.common.utils import metric_to_line_data, \
-    histogram_to_line_data, tracing_span_to_line_data, gzip_compress, chunks
-
-import requests
 from threading import Timer
+import requests
 
 try:
     import Queue as queue
 except ImportError:
     import queue
 
+from wavefront_python_sdk.common.connection_handler import ConnectionHandler
+from wavefront_python_sdk.common.utils import metric_to_line_data, \
+    histogram_to_line_data, tracing_span_to_line_data, gzip_compress, chunks
+
 
 class WavefrontDirectClient(ConnectionHandler):
+    """
+    Wavefront direct ingestion client
+    that sends data directly to Wavefront cluster via the direct ingestion API.
+
+    @author Hao Song (songhao@vmware.com)
+    """
     WAVEFRONT_METRIC_FORMAT = 'wavefront'
     WAVEFRONT_HISTOGRAM_FORMAT = 'histogram'
     WAVEFRONT_TRACING_SPAN_FORMAT = 'trace'
 
-    def __init__(self, server, token, max_queue_size=50000, batch_size=10000, flush_interval_seconds=1):
+    def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
+                 flush_interval_seconds=5):
+        """
+        Constructor of Direct Client
+        @param server: Server address, Example: https://INSTANCE.wavefront.com
+        @type server: str
+        @param token: Token with Direct Data Ingestion permission granted
+        @type token: str
+        @param max_queue_size:
+        @type max_queue_size: int
+        Max Queue Size, size of internal data buffer for each data type.
+        50000 by default
+        @param batch_size:
+        @type batch_size: int
+        Batch Size, amount of data sent by one api call, 10000 by default
+        @param flush_interval_seconds: Interval flush time, 5 seconds by default
+        @type flush_interval_seconds: int
+        """
         ConnectionHandler.__init__(self)
         self.server = server
         self._token = token
@@ -35,21 +58,46 @@ class WavefrontDirectClient(ConnectionHandler):
         self._flush()
 
     def _report(self, points, data_format):
+        """
+        One api call sending one given string data
+        @param points: List of data in string format, concat by "\n"
+        @type points: str
+        @param data_format: Type of data to be sent
+        @type data_format: str
+        """
         try:
             params = {'f': data_format}
             compressed_data = gzip_compress(points.encode())
-            r = requests.post(self.server + '/report', params=params, headers=self._headers, data=compressed_data)
+            r = requests.post(self.server + '/report', params=params,
+                              headers=self._headers, data=compressed_data)
             r.raise_for_status()
         except Exception as e:
             self.increment_failure_count()
             raise e
 
     def _batch_report(self, batch_line_data, data_format):
+        """
+        One api call sending one given list of data
+        @param batch_line_data: List of data to be sent
+        @type batch_line_data: list
+        @param data_format: Type of data to be sent
+        @type data_format: str
+        """
+        # Split data into chunks, each with the size of given batch_size
         chunk_data = list(chunks(batch_line_data, self._batch_size))
         for batch in chunk_data:
-            self._report('\n'.join('{0}'.format(line) for line in batch) + "\n", data_format)
+            # report once per batch
+            self._report('\n'.join('{0}'.format(line) for line in batch) + "\n",
+                         data_format)
 
     def _internal_flush(self, data_buffer, data_format):
+        """
+        Get all data from one data buffer to a list, and report that list
+        @param data_buffer: Data buffer to be flush and sent
+        @type: Queue
+        @param data_format: Type of data to be sent
+        @type: str
+        """
         data = []
         size = data_buffer.qsize()
         while size > 0 and not data_buffer.empty():
@@ -58,35 +106,136 @@ class WavefrontDirectClient(ConnectionHandler):
         self._batch_report(data, data_format)
 
     def _flush(self):
+        """
+        Using Timer to keep flushing each <flush_interval_seconds> secs
+        """
         self.flush_now()
-        # Flush every 5 secs
-        Timer(5, self._flush).start()
+        # Flush every 5 secs by default
+        Timer(self._flush_interval_seconds, self._flush).start()
 
     def flush_now(self):
+        """
+        Flush all the data buffer immediately
+        """
         self._internal_flush(self._metrics_buffer, self.WAVEFRONT_METRIC_FORMAT)
-        self._internal_flush(self._histograms_buffer, self.WAVEFRONT_HISTOGRAM_FORMAT)
-        self._internal_flush(self._tracing_spans_buffer, self.WAVEFRONT_TRACING_SPAN_FORMAT)
+        self._internal_flush(self._histograms_buffer,
+                             self.WAVEFRONT_HISTOGRAM_FORMAT)
+        self._internal_flush(self._tracing_spans_buffer,
+                             self.WAVEFRONT_TRACING_SPAN_FORMAT)
 
     def send_metric(self, name, value, timestamp, source, tags):
-        line_data = metric_to_line_data(name, value, timestamp, source, tags, self._default_source)
+        """
+        Send Metric Data via proxy
+        Wavefront Metrics Data format
+        <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
+        Example: "new-york.power.usage 42422 1533531013 source=localhost
+                  datacenter=dc1"
+        @param name: Metric Name
+        @type name: str
+        @param value: Metric Value
+        @type value: str
+        @param timestamp: Timestamp
+        @type timestamp: long
+        @param source: Source
+        @type source: str
+        @param tags: Tags
+        @type tags: dict
+        """
+        line_data = metric_to_line_data(name, value, timestamp, source, tags,
+                                        self._default_source)
         self._metrics_buffer.put(line_data)
 
-    def send_metric_now(self, lines):
-        self._batch_report(lines, self.WAVEFRONT_METRIC_FORMAT)
+    def send_metric_now(self, metrics):
+        """
+        Send a list of spans immediately. Have to constructor the data manually
+        by calling common.utils.metric_to_line_data()
+        @param metrics: List of string spans data
+        @type metrics: list[str]
+        """
+        self._batch_report(metrics, self.WAVEFRONT_METRIC_FORMAT)
 
-    def send_distribution(self, name, centroids, histogram_granularities, timestamp, source, tags):
-        line_data = histogram_to_line_data(name, centroids, histogram_granularities, timestamp, source, tags,
+    def send_distribution(self, name, centroids, histogram_granularities,
+                          timestamp, source, tags):
+        """
+        Send Distribution Data via proxy
+        Wavefront Histogram Data format
+        {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids] <histogramName>
+        source=<source> [pointTags]
+        Example: "!M 1533531013 #20 30.0 #10 5.1 request.latency source=appServer1
+                  region=us-west"
+        @param name: Histogram Name
+        @type name: str
+        @param centroids: List of centroids(pairs)
+        @type centroids: list
+        @param histogram_granularities: Histogram Granularities
+        @type histogram_granularities: str
+        @param timestamp: Timestamp
+        @type timestamp: long
+        @param source: Source
+        @type source: str
+        @param tags: Tags
+        @type tags: dict
+        """
+        line_data = histogram_to_line_data(name, centroids,
+                                           histogram_granularities, timestamp,
+                                           source, tags,
                                            self._default_source)
         self._histograms_buffer.put(line_data)
 
-    def send_distribution_now(self, lines):
-        self._batch_report(lines, self.WAVEFRONT_HISTOGRAM_FORMAT)
+    def send_distribution_now(self, distributions):
+        """
+        Send a list of spans immediately. Have to constructor the data manually
+        by calling common.utils.metric_to_line_data()
+        @param distributions: List of string spans data
+        @type distributions: list[str]
+        """
+        self._batch_report(distributions, self.WAVEFRONT_HISTOGRAM_FORMAT)
 
-    def send_span(self, name, start_millis, duration_millis, source, trace_id, span_id,
-                  parents, follows_from, tags, span_logs):
-        line_data = tracing_span_to_line_data(name, start_millis, duration_millis, source, trace_id, span_id,
-                                              parents, follows_from, tags, span_logs, self._default_source)
+    def send_span(self, name, start_millis, duration_millis, source, trace_id,
+                  span_id, parents, follows_from, tags, span_logs):
+        """
+        Send span data via proxy
+        Wavefront Tracing Span Data format
+        <tracingSpanName> source=<source> [pointTags] <start_millis>
+        <duration_milli_seconds>
+        Example: "getAllUsers source=localhost
+                  traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
+                  spanId=0313bafe-9457-11e8-9eb6-529269fb1459
+                  parent=2f64e538-9457-11e8-9eb6-529269fb1459
+                  application=Wavefront http.method=GET
+                  1533531013 343500"
+        @param name: Span Name
+        @type name: str
+        @param start_millis: Start time
+        @type start_millis: long
+        @param duration_millis: Duration time
+        @type duration_millis: long
+        @param source: Source
+        @type source: str
+        @param trace_id: Trace ID
+        @type trace_id: UUID
+        @param span_id: Span ID
+        @type span_id: UUID
+        @param parents: Parents Span ID
+        @type parents: List of UUID
+        @param follows_from: Follows Span ID
+        @type follows_from: List of UUID
+        @param tags: Tags
+        @type tags: dict
+        @param span_logs: Span Log
+        """
+        line_data = tracing_span_to_line_data(name, start_millis,
+                                              duration_millis, source, trace_id,
+                                              span_id, parents, follows_from,
+                                              tags, span_logs,
+                                              self._default_source)
         self._tracing_spans_buffer.put(line_data)
 
-    def send_span_now(self, lines):
-        self._batch_report(lines, self.WAVEFRONT_TRACING_SPAN_FORMAT)
+    def send_span_now(self, spans):
+        """
+        Send a list of spans immediately. Have to constructor the data manually
+        by calling common.utils.metric_to_line_data()
+        @param spans: List of string spans data
+        @type spans: list[str]
+        """
+        self._batch_report(spans, self.WAVEFRONT_TRACING_SPAN_FORMAT)
