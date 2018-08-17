@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from wavefront_python_sdk.common.connection_handler import IConnectionHandler
+from wavefront_python_sdk.common.connection_handler import ConnectionHandler
 import socket
 
 
-class ProxyConnectionHandler(IConnectionHandler):
+class ProxyConnectionHandler(ConnectionHandler):
     def __init__(self, address, port):
-        IConnectionHandler.__init__(self)
+        ConnectionHandler.__init__(self)
         self._address = address
         self._port = int(port)
         self._reconnecting_socket = None

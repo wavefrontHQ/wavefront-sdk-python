@@ -1,5 +1,5 @@
-from wavefront_python_sdk.proxy.wavefront_proxy_client import WavefrontProxyClient
-from wavefront_python_sdk.direct_ingestion.wavefront_direct_ingestion_client import WavefrontDirectIngestionClient
+from wavefront_python_sdk.proxy import WavefrontProxyClient
+from wavefront_python_sdk.direct import WavefrontDirectClient
 from wavefront_python_sdk.entities.histogram import HistogramGranularity
 
 import sys
@@ -8,7 +8,8 @@ from uuid import UUID
 
 
 def send_metrics_via_proxy(proxy_client):
-    proxy_client.send_metric("python.proxy.new york.power.usage", 42422.0, None, "localhost", None)
+    proxy_client.send_metric("python" + repr(sys.version_info[0]) + ".proxy.new york.power.usage", 42422.0, None,
+                             "localhost", None)
 
 
 def send_histogram_via_proxy(proxy_client):
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     print(wavefront_server, token, proxy_host, metrics_port, distribution_port, tracing_port)
 
     wavefront_proxy_client = WavefrontProxyClient(proxy_host, metrics_port, distribution_port, tracing_port)
-    wavefront_direct_ingestion_client = WavefrontDirectIngestionClient(wavefront_server, token)
+    wavefront_direct_ingestion_client = WavefrontDirectClient(wavefront_server, token)
 
     while True:
         send_metrics_via_proxy(wavefront_proxy_client)

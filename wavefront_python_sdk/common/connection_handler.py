@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from wavefront_python_sdk.common.utils import AtomicCounter
 
 
-class IConnectionHandler:
+class ConnectionHandler:
     def __init__(self):
         self._failure = AtomicCounter()
 

@@ -1,20 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 import re
+import io
+from gzip import GzipFile
 import threading
 
 
 class AtomicCounter:
-    """An atomic, thread-safe incrementing counter.
-    # >>> counter = AtomicCounter()
-    # >>> counter.increment()
-    # 1
-    # >>> counter.increment(4)
-    # 5
-    # >>> counter = AtomicCounter(42.5)
-    # >>> counter.value
-    # 42.5
-    """
+    """An atomic, thread-safe incrementing counter."""
 
     def __init__(self, initial=0):
         self.value = initial
@@ -26,10 +19,17 @@ class AtomicCounter:
             return self.value
 
 
-def chunks(list, batch_size):
+def chunks(data_list, batch_size):
     """Yield successive batch_size chunks from l."""
-    for i in range(0, len(list), batch_size):
-        yield list[i:i + batch_size]
+    for i in range(0, len(data_list), batch_size):
+        yield data_list[i:i + batch_size]
+
+
+def gzip_compress(data, compresslevel=9):
+    buf = io.BytesIO()
+    with GzipFile(fileobj=buf, mode='wb', compresslevel=compresslevel) as f:
+        f.write(data)
+    return buf.getvalue()
 
 
 def sanitize(s):
@@ -46,11 +46,9 @@ def is_blank(s):
 
 
 def metric_to_line_data(name, value, timestamp, source, tags, default_source):
-    # /*
-    #  * Wavefront Metrics Data format
-    #  * <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
-    #  * Example: "new-york.power.usage 42422 1533531013 source=localhost datacenter=dc1"
-    #  */
+    # Wavefront Metrics Data format
+    # <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
+    # Example: "new-york.power.usage 42422 1533531013 source=localhost datacenter=dc1"
     if is_blank(name):
         raise ValueError("Metrics name cannot be blank")
 
