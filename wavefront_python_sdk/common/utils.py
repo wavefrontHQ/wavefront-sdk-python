@@ -26,6 +26,12 @@ class AtomicCounter:
             return self.value
 
 
+def chunks(list, batch_size):
+    """Yield successive batch_size chunks from l."""
+    for i in range(0, len(list), batch_size):
+        yield list[i:i + batch_size]
+
+
 def sanitize(s):
     whitespace_sanitized = re.sub(r"[\s]+", "-", s)
     if "\"" in whitespace_sanitized:
