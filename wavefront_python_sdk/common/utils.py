@@ -31,9 +31,8 @@ def chunks(data_list, batch_size):
     Split list of data into chunks with fixed batch size
     @param data_list: List of data
     @param batch_size: Batch size of each chunk
-    @return: List of lists, [ [list of data, batch size length], [...] ... ]
+    @return: Return a lazy generator object for iteration
     """
-    """Yield successive batch_size chunks from l."""
     for i in range(0, len(data_list), batch_size):
         yield data_list[i:i + batch_size]
 

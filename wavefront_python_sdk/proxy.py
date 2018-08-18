@@ -72,7 +72,7 @@ class WavefrontProxyClient(object):
 
     def send_metric_now(self, spans):
         """
-        Send a list of spans immediately. Have to constructor the data manually
+        Send a list of metrics immediately. Have to constructor the data manually
         by calling common.utils.metric_to_line_data()
         @param spans: List of string spans data
         @type spans: list[str]

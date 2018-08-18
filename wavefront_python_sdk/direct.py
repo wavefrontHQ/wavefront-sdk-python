@@ -87,8 +87,7 @@ class WavefrontDirectClient(ConnectionHandler):
         @type data_format: str
         """
         # Split data into chunks, each with the size of given batch_size
-        chunk_data = list(chunks(batch_line_data, self._batch_size))
-        for batch in chunk_data:
+        for batch in chunks(batch_line_data, self._batch_size):
             # report once per batch
             self._report('\n'.join('{0}'.format(line) for line in batch) + "\n",
                          data_format)
@@ -150,7 +149,7 @@ class WavefrontDirectClient(ConnectionHandler):
 
     def send_metric_now(self, metrics):
         """
-        Send a list of spans immediately. Have to constructor the data manually
+        Send a list of metrics immediately. Have to constructor the data manually
         by calling common.utils.metric_to_line_data()
         @param metrics: List of string spans data
         @type metrics: list[str]
@@ -187,7 +186,7 @@ class WavefrontDirectClient(ConnectionHandler):
 
     def send_distribution_now(self, distributions):
         """
-        Send a list of spans immediately. Have to constructor the data manually
+        Send a list of distribution immediately. Have to constructor the data manually
         by calling common.utils.metric_to_line_data()
         @param distributions: List of string spans data
         @type distributions: list[str]
