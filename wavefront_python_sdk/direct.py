@@ -71,9 +71,10 @@ class WavefrontDirectClient(ConnectionHandler):
         try:
             params = {'f': data_format}
             compressed_data = gzip_compress(points.encode())
-            r = requests.post(self.server + '/report', params=params,
-                              headers=self._headers, data=compressed_data)
-            r.raise_for_status()
+            response = requests.post(self.server + '/report', params=params,
+                                     headers=self._headers,
+                                     data=compressed_data)
+            response.raise_for_status()
         except Exception as e:
             self.increment_failure_count()
             raise e
@@ -125,6 +126,9 @@ class WavefrontDirectClient(ConnectionHandler):
         self._internal_flush(self._tracing_spans_buffer,
                              self.WAVEFRONT_TRACING_SPAN_FORMAT)
 
+    def close(self):
+        self.flush_now()
+
     def send_metric(self, name, value, timestamp, source, tags):
         """
         Send Metric Data via proxy
@@ -135,7 +139,7 @@ class WavefrontDirectClient(ConnectionHandler):
         @param name: Metric Name
         @type name: str
         @param value: Metric Value
-        @type value: str
+        @type value: float
         @param timestamp: Timestamp
         @type timestamp: long
         @param source: Source
@@ -170,7 +174,7 @@ class WavefrontDirectClient(ConnectionHandler):
         @param centroids: List of centroids(pairs)
         @type centroids: list
         @param histogram_granularities: Histogram Granularities
-        @type histogram_granularities: str
+        @type histogram_granularities: set
         @param timestamp: Timestamp
         @type timestamp: long
         @param source: Source
@@ -223,7 +227,7 @@ class WavefrontDirectClient(ConnectionHandler):
         @param follows_from: Follows Span ID
         @type follows_from: List of UUID
         @param tags: Tags
-        @type tags: dict
+        @type tags: list
         @param span_logs: Span Log
         """
         line_data = tracing_span_to_line_data(name, start_millis,

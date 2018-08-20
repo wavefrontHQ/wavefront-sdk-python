@@ -23,7 +23,7 @@ class WavefrontProxyClient(object):
 
     def __init__(self, host, metrics_port, distribution_port, tracing_port):
         """
-        Constructor of Direct Ingestion Client
+        Constructor of Proxy Client
         @param host: Hostname of the Wavefront proxy, 2878 by default
         @param metrics_port:
         Metrics Port on which the Wavefront proxy is listening on
@@ -44,6 +44,27 @@ class WavefrontProxyClient(object):
             else ProxyConnectionHandler(host, tracing_port)
         self._default_source = gethostname()
 
+    def close(self):
+        if self._metrics_proxy_connection_handler:
+            self._metrics_proxy_connection_handler.close()
+        if self._histogram_proxy_connection_handler:
+            self._histogram_proxy_connection_handler.close()
+        if self._tracing_proxy_connection_handler:
+            self._tracing_proxy_connection_handler.close()
+
+    def get_failure_count(self):
+        failure_count = 0
+        if self._metrics_proxy_connection_handler:
+            failure_count += \
+                self._metrics_proxy_connection_handler.get_failure_count()
+        if self._histogram_proxy_connection_handler:
+            failure_count += \
+                self._histogram_proxy_connection_handler.get_failure_count()
+        if self._tracing_proxy_connection_handler:
+            failure_count += \
+                self._tracing_proxy_connection_handler.get_failure_count()
+        return failure_count
+
     def send_metric(self, name, value, timestamp, source, tags):
         """
         Send Metric Data via proxy
@@ -54,7 +75,7 @@ class WavefrontProxyClient(object):
         @param name: Metric Name
         @type name: str
         @param value: Metric Value
-        @type value: str
+        @type value: float
         @param timestamp: Timestamp
         @type timestamp: long
         @param source: Source
@@ -70,16 +91,16 @@ class WavefrontProxyClient(object):
             self._metrics_proxy_connection_handler.increment_failure_count()
             raise e
 
-    def send_metric_now(self, spans):
+    def send_metric_now(self, metrics):
         """
         Send a list of metrics immediately. Have to constructor the data manually
         by calling common.utils.metric_to_line_data()
-        @param spans: List of string spans data
-        @type spans: list[str]
+        @param metrics: List of string spans data
+        @type metrics: list[str]
         """
-        for span in spans:
+        for metric in metrics:
             try:
-                self._metrics_proxy_connection_handler.send_data(span)
+                self._metrics_proxy_connection_handler.send_data(metric)
             except Exception as e:
                 self._metrics_proxy_connection_handler.increment_failure_count()
                 raise e
@@ -98,7 +119,7 @@ class WavefrontProxyClient(object):
         @param centroids: List of centroids(pairs)
         @type centroids: list
         @param histogram_granularities: Histogram Granularities
-        @type histogram_granularities: str
+        @type histogram_granularities: set
         @param timestamp: Timestamp
         @type timestamp: long
         @param source: Source
@@ -161,7 +182,7 @@ class WavefrontProxyClient(object):
         @param follows_from: Follows Span ID
         @type follows_from: List of UUID
         @param tags: Tags
-        @type tags: dict
+        @type tags: list
         @param span_logs: Span Log
         """
         try:

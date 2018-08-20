@@ -1,3 +1,8 @@
+"""
+Connection Handler class for sending data to a Wavefront proxy.
+@author: Hao Song (songhao@vmware.com)
+"""
+
 from __future__ import absolute_import, division, print_function
 
 import socket

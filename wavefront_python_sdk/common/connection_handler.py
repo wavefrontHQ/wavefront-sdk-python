@@ -1,3 +1,8 @@
+"""
+A connection handler for both proxy and direct client.
+@author: Hao Song (songhao@vmware.com)
+"""
+
 from wavefront_python_sdk.common import utils
 
 
@@ -5,14 +10,10 @@ class ConnectionHandler(object):
     """
     A connection handler for both proxy and direct client.
     Handle the failure atomic counter.
-    And provide connect function to be override by clients.
     """
 
     def __init__(self):
         self._failure = utils.AtomicCounter()
-
-    def connect(self):
-        pass
 
     def get_failure_count(self):
         """

@@ -1,10 +1,11 @@
-from __future__ import absolute_import
-
-from wavefront_python_sdk.common.utils import metric_to_line_data
-from wavefront_python_sdk.common.utils import histogram_to_line_data
-from wavefront_python_sdk.common.utils import tracing_span_to_line_data
-
-from wavefront_python_sdk.entities.histogram import HistogramGranularity
+"""
+@author Hao Song (songhao@vmware.com)
+This library provides support for sending metrics, histograms and opentracing
+spans to Wavefront via proxy or direct ingestion.
+"""
+__version__ = '0.1.0'
 
 from wavefront_python_sdk.direct import WavefrontDirectClient
 from wavefront_python_sdk.proxy import WavefrontProxyClient
+
+__all__ = ['WavefrontDirectClient', 'WavefrontProxyClient', 'common']

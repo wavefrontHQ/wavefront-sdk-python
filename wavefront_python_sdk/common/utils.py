@@ -1,3 +1,8 @@
+"""
+Utils module contains useful function for preparing and processing data.
+@author: Hao Song (songhao@vmware.com)
+"""
+
 from __future__ import absolute_import, division, print_function
 
 import re
@@ -45,31 +50,32 @@ def gzip_compress(data, compresslevel=9):
     @return: Compressed data
     """
     buf = io.BytesIO()
-    with GzipFile(fileobj=buf, mode='wb', compresslevel=compresslevel) as f:
-        f.write(data)
+    with GzipFile(fileobj=buf, mode='wb', compresslevel=compresslevel) \
+            as gzip_file:
+        gzip_file.write(data)
     return buf.getvalue()
 
 
-def sanitize(s):
+def sanitize(string):
     """
     Sanitize a string, replace whitespace with "-"
-    @param s: Input string
+    @param string: Input string
     @return: Sanitized string
     """
-    whitespace_sanitized = re.sub(r"[\s]+", "-", s)
+    whitespace_sanitized = re.sub(r"[\s]+", "-", string)
     if "\"" in whitespace_sanitized:
         return "\"" + re.sub(r"[\"]+", '\\\\\"', whitespace_sanitized) + "\""
     else:
         return "\"" + whitespace_sanitized + "\""
 
 
-def is_blank(s):
+def is_blank(string):
     """
     Check is a string is black or not, either none or only contains whitespace
-    @param s: String to be checked
+    @param string: String to be checked
     @return: Is blank or not
     """
-    return s is None or len(s) == 0 or s.isspace()
+    return string is None or len(string) == 0 or string.isspace()
     # return len(re.sub(r"[\s]+", "", s)) == 0
 
 
