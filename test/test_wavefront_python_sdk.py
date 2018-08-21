@@ -3,7 +3,7 @@ from uuid import UUID
 
 from wavefront_python_sdk.common.utils import sanitize, \
     metric_to_line_data, histogram_to_line_data, tracing_span_to_line_data
-from wavefront_python_sdk.entities.histogram import HistogramGranularity
+from wavefront_python_sdk.entities.histogram import histogram_granularity
 
 
 class TestUtils(unittest.TestCase):
@@ -55,7 +55,7 @@ class TestUtils(unittest.TestCase):
                          "source=\"appServer1\" \"region\"=\"us-west\"\n",
                          histogram_to_line_data("request.latency",
                                                 [(30.0, 20), (5.1, 10)],
-                                                {HistogramGranularity.MINUTE},
+                                                {histogram_granularity.MINUTE},
                                                 1493773500, "appServer1",
                                                 {"region": "us-west"},
                                                 "defaultSource"))
@@ -65,7 +65,7 @@ class TestUtils(unittest.TestCase):
             "!M #20 30.0 #10 5.1 \"request.latency\" source=\"appServer1\" "
             "\"region\"=\"us-west\"\n",
             histogram_to_line_data("request.latency", [(30.0, 20), (5.1, 10)],
-                                   {HistogramGranularity.MINUTE},
+                                   {histogram_granularity.MINUTE},
                                    None, "appServer1", {"region": "us-west"},
                                    "defaultSource"))
 
@@ -74,14 +74,14 @@ class TestUtils(unittest.TestCase):
             "!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
             "source=\"appServer1\"\n",
             histogram_to_line_data("request.latency", [(30.0, 20), (5.1, 10)],
-                                   {HistogramGranularity.MINUTE},
+                                   {histogram_granularity.MINUTE},
                                    1493773500, "appServer1", None,
                                    "defaultSource"))
 
         # empty centroids
         with self.assertRaises(ValueError):
             histogram_to_line_data("request.latency", [],
-                                   {HistogramGranularity.MINUTE}, 1493773500,
+                                   {histogram_granularity.MINUTE}, 1493773500,
                                    "appServer1", None, "defaultSource")
 
         # no histogram granularity specified
@@ -101,9 +101,9 @@ class TestUtils(unittest.TestCase):
                 "source=\"appServer1\" \"region\"=\"us-west\""]),
             sorted(histogram_to_line_data("request.latency",
                                           [(30.0, 20), (5.1, 10)],
-                                          {HistogramGranularity.MINUTE,
-                                           HistogramGranularity.HOUR,
-                                           HistogramGranularity.DAY},
+                                          {histogram_granularity.MINUTE,
+                                           histogram_granularity.HOUR,
+                                           histogram_granularity.DAY},
                                           1493773500, "appServer1",
                                           {"region": "us-west"},
                                           "defaultSource").splitlines()))

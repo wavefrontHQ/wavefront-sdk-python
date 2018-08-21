@@ -2,5 +2,4 @@ from __future__ import absolute_import
 
 # flake8: noqa
 
-from wavefront_python_sdk.entities.histogram.histogram_granularity \
-    import HistogramGranularity
+import wavefront_python_sdk.entities.histogram.histogram_granularity

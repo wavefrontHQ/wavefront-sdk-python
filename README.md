@@ -37,7 +37,7 @@ Using following functions to send one data point to Wavefront via Proxy
 
 ```python
 from uuid import UUID
-from wavefront_python_sdk.entities.histogram import HistogramGranularity
+from wavefront_python_sdk.entities.histogram import histogram_granularity
 
 # 1) Send Metric to Wavefront
 # Wavefront Metrics Data format:
@@ -61,9 +61,9 @@ proxy_client.send_metric(name="new york.power.usage",
 proxy_client.send_distribution(name="request.latency", 
                                centroids=[(30, 20), (5.1, 10)],
                                histogram_granularities=
-                               {HistogramGranularity.DAY,
-                                HistogramGranularity.HOUR,
-                                HistogramGranularity.MINUTE},
+                               {histogram_granularity.DAY,
+                                histogram_granularity.HOUR,
+                                histogram_granularity.MINUTE},
                                timestamp=1533529977,
                                source="appServer1", 
                                tags={"region": "us-west"})
@@ -96,7 +96,7 @@ Using following functions to generate data points manally and send them in batch
 
 ```python
 from uuid import UUID
-from wavefront_python_sdk.entities.histogram import HistogramGranularity
+from wavefront_python_sdk.entities.histogram import histogram_granularity
 from wavefront_python_sdk.common import metric_to_line_data
 from wavefront_python_sdk.common import histogram_to_line_data
 from wavefront_python_sdk.common import tracing_span_to_line_data
@@ -117,9 +117,9 @@ proxy_client.send_metric_now(batch_metric_data)
 one_histogram_data = histogram_to_line_data(name="request.latency",
                                             centroids=[(30.0, 20), (5.1, 10)],
                                             histogram_granularities=
-                                            {HistogramGranularity.MINUTE,
-                                             HistogramGranularity.HOUR,
-                                             HistogramGranularity.DAY},
+                                            {histogram_granularity.MINUTE,
+                                             histogram_granularity.HOUR,
+                                             histogram_granularity.DAY},
                                             timestamp=1493773500, 
                                             source="appServer1",
                                             tags={"region": "us-west"}, 
@@ -218,9 +218,9 @@ direct_client.send_metric(name="new york.power.usage",
 direct_client.send_distribution(name="request.latency", 
                                centroids=[(30, 20), (5.1, 10)],
                                histogram_granularities=
-                               {HistogramGranularity.DAY,
-                                HistogramGranularity.HOUR,
-                                HistogramGranularity.MINUTE},
+                               {histogram_granularity.DAY,
+                                histogram_granularity.HOUR,
+                                histogram_granularity.MINUTE},
                                timestamp=1533529977,
                                source="appServer1", 
                                tags={"region": "us-west"})
@@ -253,7 +253,7 @@ Using following functions to generate data points manally and send them in batch
 
 ```python
 from uuid import UUID
-from wavefront_python_sdk.entities.histogram import HistogramGranularity
+from wavefront_python_sdk.entities.histogram import histogram_granularity
 from wavefront_python_sdk.common import metric_to_line_data
 from wavefront_python_sdk.common import histogram_to_line_data
 from wavefront_python_sdk.common import tracing_span_to_line_data
@@ -274,9 +274,9 @@ direct_client.send_metric_now(batch_metric_data)
 one_histogram_data = histogram_to_line_data(name="request.latency",
                                             centroids=[(30.0, 20), (5.1, 10)],
                                             histogram_granularities=
-                                            {HistogramGranularity.MINUTE,
-                                             HistogramGranularity.HOUR,
-                                             HistogramGranularity.DAY},
+                                            {histogram_granularity.MINUTE,
+                                             histogram_granularity.HOUR,
+                                             histogram_granularity.DAY},
                                             timestamp=1493773500, 
                                             source="appServer1",
                                             tags={"region": "us-west"}, 

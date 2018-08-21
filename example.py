@@ -4,7 +4,7 @@ from uuid import UUID
 
 from wavefront_python_sdk.proxy import WavefrontProxyClient
 from wavefront_python_sdk.direct import WavefrontDirectClient
-from wavefront_python_sdk.entities.histogram import HistogramGranularity
+from wavefront_python_sdk.entities.histogram import histogram_granularity
 
 
 def send_metrics_via_proxy(proxy_client):
@@ -18,9 +18,9 @@ def send_histogram_via_proxy(proxy_client):
     proxy_client.send_distribution("python" + repr(sys.version_info[0]) +
                                    ".proxy.request.latency",
                                    [(30, 20), (5.1, 10)],
-                                   {HistogramGranularity.DAY,
-                                    HistogramGranularity.HOUR,
-                                    HistogramGranularity.MINUTE},
+                                   {histogram_granularity.DAY,
+                                    histogram_granularity.HOUR,
+                                    histogram_granularity.MINUTE},
                                    None, "appServer1", {"region": "us-west"})
 
 
@@ -45,9 +45,9 @@ def send_histogram_via_direct_ingestion(direct_ingestion_client):
                                               repr(sys.version_info[0]) +
                                               ".direct.request.latency",
                                               [(30, 20), (5.1, 10)],
-                                              {HistogramGranularity.DAY,
-                                               HistogramGranularity.HOUR,
-                                               HistogramGranularity.MINUTE},
+                                              {histogram_granularity.DAY,
+                                               histogram_granularity.HOUR,
+                                               histogram_granularity.MINUTE},
                                               None, "appServer1",
                                               {"region": "us-west"})
 
