@@ -3,7 +3,7 @@ Wavefront Direct Ingestion Client
 @author Hao Song (songhao@vmware.com)
 """
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
 
 from threading import Timer
 import requests

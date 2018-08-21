@@ -3,7 +3,7 @@ Wavefront Proxy Client
 @author Hao Song (songhao@vmware.com).
 """
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
 
 from socket import gethostname
 from wavefront_python_sdk.common.proxy_connection_handler import \

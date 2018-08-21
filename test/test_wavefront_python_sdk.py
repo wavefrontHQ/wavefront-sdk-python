@@ -3,7 +3,7 @@ from uuid import UUID
 
 from wavefront_python_sdk.common.utils import sanitize, \
     metric_to_line_data, histogram_to_line_data, tracing_span_to_line_data
-from wavefront_python_sdk.entities.histogram import histogram_granularity
+from wavefront_python_sdk.entities import histogram_granularity
 
 
 class TestUtils(unittest.TestCase):
@@ -12,38 +12,38 @@ class TestUtils(unittest.TestCase):
         """
         Test wavefront_python_sdk.common.utils.sanitize()
         """
-        self.assertEqual("\"hello\"", sanitize("hello"))
-        self.assertEqual("\"hello-world\"", sanitize("hello world"))
-        self.assertEqual("\"hello.world\"", sanitize("hello.world"))
-        self.assertEqual("\"hello\\\"world\\\"\"", sanitize("hello\"world\""))
-        self.assertEqual("\"hello'world\"", sanitize("hello'world"))
+        self.assertEqual('"hello"', sanitize("hello"))
+        self.assertEqual('"hello-world"', sanitize("hello world"))
+        self.assertEqual('"hello.world"', sanitize("hello.world"))
+        self.assertEqual('"hello\\"world\\""', sanitize('hello"world"'))
+        self.assertEqual('"hello\'world"', sanitize("hello'world"))
 
     def test_metric_to_line_data(self):
         """
         Test wavefront_python_sdk.common.utils.metric_to_line_data()
         """
         self.assertEqual(
-            "\"new-york.power.usage\" 42422.0 1493773500 source=\"localhost\""
-            " \"datacenter\"=\"dc1\"\n",
+            '"new-york.power.usage" 42422.0 1493773500 source="localhost"'
+            ' "datacenter"="dc1"\n',
             metric_to_line_data("new-york.power.usage", 42422, 1493773500,
                                 "localhost",
                                 {"datacenter": "dc1"}, "defaultSource"))
         # null timestamp
         self.assertEqual(
-            "\"new-york.power.usage\" 42422.0 source=\"localhost\" "
-            "\"datacenter\"=\"dc1\"\n",
+            '"new-york.power.usage" 42422.0 source="localhost" '
+            '"datacenter"="dc1"\n',
             metric_to_line_data("new-york.power.usage", 42422, None,
                                 "localhost", {"datacenter": "dc1"},
                                 "defaultSource"))
         # null tags
         self.assertEqual(
-            "\"new-york.power.usage\" 42422.0 1493773500 source=\"localhost\"\n",
+            '"new-york.power.usage" 42422.0 1493773500 source="localhost"\n',
             metric_to_line_data("new-york.power.usage", 42422, 1493773500,
                                 "localhost", None,
                                 "defaultSource"))
         # null tags and null timestamp
         self.assertEqual(
-            "\"new-york.power.usage\" 42422.0 source=\"localhost\"\n",
+            '"new-york.power.usage" 42422.0 source="localhost"\n',
             metric_to_line_data("new-york.power.usage", 42422, None,
                                 "localhost", None, "defaultSource"))
 
@@ -51,8 +51,8 @@ class TestUtils(unittest.TestCase):
         """
         Test wavefront_python_sdk.common.utils.histogram_to_line_data()
         """
-        self.assertEqual("!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
-                         "source=\"appServer1\" \"region\"=\"us-west\"\n",
+        self.assertEqual('!M 1493773500 #20 30.0 #10 5.1 "request.latency" '
+                         'source="appServer1" "region"="us-west"\n',
                          histogram_to_line_data("request.latency",
                                                 [(30.0, 20), (5.1, 10)],
                                                 {histogram_granularity.MINUTE},
@@ -62,8 +62,8 @@ class TestUtils(unittest.TestCase):
 
         # null timestamp
         self.assertEqual(
-            "!M #20 30.0 #10 5.1 \"request.latency\" source=\"appServer1\" "
-            "\"region\"=\"us-west\"\n",
+            '!M #20 30.0 #10 5.1 "request.latency" source="appServer1" '
+            '"region"="us-west"\n',
             histogram_to_line_data("request.latency", [(30.0, 20), (5.1, 10)],
                                    {histogram_granularity.MINUTE},
                                    None, "appServer1", {"region": "us-west"},
@@ -71,8 +71,8 @@ class TestUtils(unittest.TestCase):
 
         # null tags
         self.assertEqual(
-            "!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
-            "source=\"appServer1\"\n",
+            '!M 1493773500 #20 30.0 #10 5.1 "request.latency" '
+            'source="appServer1"\n',
             histogram_to_line_data("request.latency", [(30.0, 20), (5.1, 10)],
                                    {histogram_granularity.MINUTE},
                                    1493773500, "appServer1", None,
@@ -93,12 +93,12 @@ class TestUtils(unittest.TestCase):
         # multiple granularities
         self.assertEqual(
             sorted([
-                "!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
-                "source=\"appServer1\" \"region\"=\"us-west\"",
-                "!H 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
-                "source=\"appServer1\" \"region\"=\"us-west\"",
-                "!D 1493773500 #20 30.0 #10 5.1 \"request.latency\" "
-                "source=\"appServer1\" \"region\"=\"us-west\""]),
+                '!M 1493773500 #20 30.0 #10 5.1 "request.latency" '
+                'source="appServer1" "region"="us-west"',
+                '!H 1493773500 #20 30.0 #10 5.1 "request.latency" '
+                'source="appServer1" "region"="us-west"',
+                '!D 1493773500 #20 30.0 #10 5.1 "request.latency" '
+                'source="appServer1" "region"="us-west"']),
             sorted(histogram_to_line_data("request.latency",
                                           [(30.0, 20), (5.1, 10)],
                                           {histogram_granularity.MINUTE,
@@ -112,13 +112,13 @@ class TestUtils(unittest.TestCase):
         """
         Test wavefront_python_sdk.common.utils.tracing_span_to_line_data()
         """
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
-                         "parent=2f64e538-9457-11e8-9eb6-529269fb1459 "
-                         "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 "
-                         "\"application\"=\"Wavefront\" "
-                         "\"http.method\"=\"GET\" 1493773500 343500\n",
+        self.assertEqual('"getAllUsers" source="localhost" '
+                         'traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 '
+                         'spanId=0313bafe-9457-11e8-9eb6-529269fb1459 '
+                         'parent=2f64e538-9457-11e8-9eb6-529269fb1459 '
+                         'followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 '
+                         '"application"="Wavefront" '
+                         '"http.method"="GET" 1493773500 343500\n',
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(
@@ -141,12 +141,12 @@ class TestUtils(unittest.TestCase):
                                                    "defaultSource"))
 
         # null followsFrom
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
-                         "parent=2f64e538-9457-11e8-9eb6-529269fb1459 "
-                         "\"application\"=\"Wavefront\" "
-                         "\"http.method\"=\"GET\" 1493773500 343500\n",
+        self.assertEqual('"getAllUsers" source="localhost" '
+                         'traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 '
+                         'spanId=0313bafe-9457-11e8-9eb6-529269fb1459 '
+                         'parent=2f64e538-9457-11e8-9eb6-529269fb1459 '
+                         '"application"="Wavefront" '
+                         '"http.method"="GET" 1493773500 343500\n',
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(
@@ -167,11 +167,11 @@ class TestUtils(unittest.TestCase):
                                                    "defaultSource"))
 
         # root span
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
-                         "\"application\"=\"Wavefront\" "
-                         "\"http.method\"=\"GET\" 1493773500 343500\n",
+        self.assertEqual('"getAllUsers" source="localhost" '
+                         'traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 '
+                         'spanId=0313bafe-9457-11e8-9eb6-529269fb1459 '
+                         '"application"="Wavefront" '
+                         '"http.method"="GET" 1493773500 343500\n',
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(
@@ -189,10 +189,10 @@ class TestUtils(unittest.TestCase):
                                                    "defaultSource"))
 
         # null tags
-        self.assertEqual("\"getAllUsers\" source=\"localhost\" "
-                         "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 "
-                         "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 "
-                         "1493773500 343500\n",
+        self.assertEqual('"getAllUsers" source="localhost" '
+                         'traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 '
+                         'spanId=0313bafe-9457-11e8-9eb6-529269fb1459 '
+                         '1493773500 343500\n',
                          tracing_span_to_line_data("getAllUsers", 1493773500,
                                                    343500, "localhost",
                                                    UUID(

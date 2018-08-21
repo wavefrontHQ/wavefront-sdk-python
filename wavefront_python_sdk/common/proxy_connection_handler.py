@@ -3,7 +3,7 @@ Connection Handler class for sending data to a Wavefront proxy.
 @author: Hao Song (songhao@vmware.com)
 """
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
 
 import socket
 from wavefront_python_sdk.common.connection_handler import ConnectionHandler
@@ -54,5 +54,3 @@ class ProxyConnectionHandler(ConnectionHandler):
             else:
                 # Second time trying failed
                 raise e
-        except Exception as e:
-            raise e

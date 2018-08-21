@@ -3,8 +3,6 @@ Utils module contains useful function for preparing and processing data.
 @author: Hao Song (songhao@vmware.com)
 """
 
-from __future__ import absolute_import, division, print_function
-
 import re
 import io
 from gzip import GzipFile
@@ -63,10 +61,10 @@ def sanitize(string):
     @return: Sanitized string
     """
     whitespace_sanitized = re.sub(r"[\s]+", "-", string)
-    if "\"" in whitespace_sanitized:
-        return "\"" + re.sub(r"[\"]+", '\\\\\"', whitespace_sanitized) + "\""
+    if '"' in whitespace_sanitized:
+        return '"' + re.sub(r"[\"]+", '\\\\\"', whitespace_sanitized) + '"'
     else:
-        return "\"" + whitespace_sanitized + "\""
+        return '"' + whitespace_sanitized + '"'
 
 
 def is_blank(string):
@@ -106,18 +104,18 @@ def metric_to_line_data(name, value, timestamp, source, tags, default_source):
     if is_blank(source):
         source = default_source
 
-    str_builder = [sanitize(name), float(value)]
+    str_builder = [sanitize(name), str(float(value))]
     if timestamp is not None:
-        str_builder.append(int(timestamp))
+        str_builder.append(str(int(timestamp)))
     str_builder.append("source=" + sanitize(source))
     if tags is not None:
-        for key in tags:
+        for key, value in tags.items():
             if is_blank(key):
                 raise ValueError("Metric point tag key cannot be blank")
             if is_blank(tags[key]):
                 raise ValueError("Metric point tag value cannot be blank")
             str_builder.append(sanitize(key) + '=' + sanitize(tags[key]))
-    return ' '.join('{0}'.format(s) for s in str_builder) + "\n"
+    return ' '.join(str_builder) + '\n'
 
 
 def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
@@ -160,10 +158,10 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
     for histogram_granularity in histogram_granularities:
         str_builder = [histogram_granularity]
         if timestamp is not None:
-            str_builder.append(int(timestamp))
+            str_builder.append(str(int(timestamp)))
         for centroid_1, centroid_2 in centroids:
-            str_builder.append("#" + repr(centroid_2))
-            str_builder.append(centroid_1)
+            str_builder.append("#" + str(centroid_2))
+            str_builder.append(str(centroid_1))
         str_builder.append(sanitize(name))
         str_builder.append("source=" + sanitize(source))
         if tags is not None:
@@ -173,8 +171,8 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
                 if is_blank(tags[key]):
                     raise ValueError("Histogram tag value cannot be blank")
                 str_builder.append(sanitize(key) + '=' + sanitize(tags[key]))
-        line_builder.append(' '.join('{0}'.format(s) for s in str_builder))
-    return '\n'.join('{0}'.format(line) for line in line_builder) + "\n"
+        line_builder.append(' '.join(str_builder))
+    return '\n'.join(line_builder) + '\n'
 
 
 def tracing_span_to_line_data(name, start_millis, duration_millis, source,
@@ -236,6 +234,6 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
             if is_blank(val):
                 raise ValueError("Span tag val cannot be blank")
             str_builder.append(sanitize(key) + "=" + sanitize(val))
-    str_builder.append(start_millis)
-    str_builder.append(duration_millis)
-    return ' '.join('{0}'.format(s) for s in str_builder) + "\n"
+    str_builder.append(str(start_millis))
+    str_builder.append(str(duration_millis))
+    return ' '.join(str_builder) + '\n'
