@@ -1,7 +1,10 @@
 """
-@author Hao Song (songhao@vmware.com)
+Wavefront Python SDK.
+
 This library provides support for sending metrics, histograms and opentracing
 spans to Wavefront via proxy or direct ingestion.
+
+@author Hao Song (songhao@vmware.com)
 """
 __version__ = '0.1.0'
 
