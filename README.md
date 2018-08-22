@@ -63,7 +63,7 @@ proxy_client.send_distribution(
                              histogram_granularity.MINUTE},
     timestamp=1533529977, source="appServer1", tags={"region": "us-west"})
 
-# 3) Send OpenTracing Span to Wavefront
+# 3) Send Tracing Span Data to Wavefront
 # Wavefront Tracing Span Data format:
 # <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
 # Example: "getAllUsers source=localhost
@@ -80,6 +80,13 @@ proxy_client.send_span(
     follows_from=None, tags=[("application", "Wavefront"), 
                              ("http.method", "GET")],
     span_logs=None)
+
+# 4) Send Delta Counter Data to Wavefront
+# Wavefront Delta Counter Data format:
+# <metricName> <metricValue> source=<source> [pointTags]
+proxy_client.send_delta_counter(
+    name="delta.counter", value=1.0, 
+    source="localhost", tags={"datacenter": "dc1"})
 ```
 
 #### Send Batch Data
@@ -203,7 +210,7 @@ direct_client.send_distribution(
                              histogram_granularity.MINUTE},
     timestamp=1533529977, source="appServer1", tags={"region": "us-west"})
 
-# 3) Send OpenTracing Span to Wavefront
+# 3) Send Tracing Span Data to Wavefront
 # Wavefront Tracing Span Data format:
 # <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
 # Example: "getAllUsers source=localhost
@@ -220,6 +227,13 @@ direct_client.send_span(
     follows_from=None, tags=[("application", "Wavefront"), 
                              ("http.method", "GET")],
     span_logs=None)
+
+# 4) Send Delta Counter Data to Wavefront
+# Wavefront Delta Counter Data format:
+# <metricName> <metricValue> source=<source> [pointTags]
+direct_client.send_delta_counter(
+    name="delta.counter", value=1.0, 
+    source="localhost", tags={"datacenter": "dc1"})
 ```
 
 #### Send Batch Data

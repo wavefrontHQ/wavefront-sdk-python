@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import time
 from uuid import UUID
@@ -11,6 +13,12 @@ def send_metrics_via_proxy(proxy_client):
     proxy_client.send_metric(
         "python" + repr(sys.version_info[0]) + ".proxy.new york.power.usage",
         42422.0, None, "localhost", None)
+
+
+def send_delta_counter_via_proxy(proxy_client):
+    proxy_client.send_delta_counter(
+        "python" + repr(sys.version_info[0]) + ".delta.proxy.counter",
+        1.0, "localhost", None)
 
 
 def send_histogram_via_proxy(proxy_client):
@@ -36,6 +44,12 @@ def send_metrics_via_direct_ingestion(direct_ingestion_client):
     direct_ingestion_client.send_metric(
         "python" + repr(sys.version_info[0]) + ".direct.new york.power.usage",
         42422.0, None, "localhost", None)
+
+
+def send_delta_counter_via_direct_ingestion(direct_ingestion_client):
+    direct_ingestion_client.send_delta_counter(
+        "python" + repr(sys.version_info[0]) + ".delta.direct.counter",
+        1.0, "localhost", None)
 
 
 def send_histogram_via_direct_ingestion(direct_ingestion_client):
@@ -69,6 +83,10 @@ if __name__ == "__main__":
         proxy_host, metrics_port, distribution_port, tracing_port)
 
     wavefront_direct_client = WavefrontDirectClient(wavefront_server, token)
+
+    for i in range(50):
+        send_delta_counter_via_proxy(wavefront_proxy_client)
+        send_delta_counter_via_direct_ingestion(wavefront_direct_client)
 
     while True:
         send_metrics_via_proxy(wavefront_proxy_client)
