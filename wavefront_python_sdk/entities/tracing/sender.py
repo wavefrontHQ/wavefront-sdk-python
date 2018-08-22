@@ -46,7 +46,7 @@ class WavefrontTracingSpanSender(object):
         @type tags: list
         @param span_logs: Span Log
         """
-        pass
+        raise NotImplementedError
 
     def send_span_now(self, spans):
         """
@@ -58,4 +58,4 @@ class WavefrontTracingSpanSender(object):
         @param spans: List of string spans data
         @type spans: list[str]
         """
-        pass
+        raise NotImplementedError

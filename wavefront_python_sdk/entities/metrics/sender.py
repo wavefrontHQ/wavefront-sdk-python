@@ -40,7 +40,7 @@ class WavefrontMetricSender(object):
         @param tags: Tags
         @type tags: dict
         """
-        pass
+        raise NotImplementedError
 
     def send_delta_counter(self, name, value, source, tags):
         """

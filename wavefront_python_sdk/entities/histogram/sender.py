@@ -37,7 +37,7 @@ class WavefrontHistogramSender(object):
         @param tags: Tags
         @type tags: dict
         """
-        pass
+        raise NotImplementedError
 
     def send_distribution_now(self, distributions):
         """
@@ -49,4 +49,4 @@ class WavefrontHistogramSender(object):
         @param distributions: List of string distribution data
         @type distributions: list[str]
         """
-        pass
+        raise NotImplementedError
