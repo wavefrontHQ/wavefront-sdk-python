@@ -21,11 +21,11 @@ Assume you have a running Wavefront proxy listening on at least one of metrics /
 from wavefront_python_sdk import WavefrontProxyClient
 
 # Create Proxy Client
-# proxy_host: Hostname of the Wavefront proxy
+# host: Hostname of the Wavefront proxy
 # metrics_port: Metrics Port on which the Wavefront proxy is listening on
 # distribution_port: Distribution Port on which the Wavefront proxy is listening on
 # tracing_port: Tracing Port on which the Wavefront proxy is listening on
-proxy_client = WavefrontProxyClient(proxy_host=host,
+proxy_client = WavefrontProxyClient(host="<HOST_ADDR>",
                                     metrics_port=2878,
                                     distribution_port=40000,
                                     tracing_port=30000)
@@ -63,7 +63,7 @@ proxy_client.send_distribution(
                              histogram_granularity.MINUTE},
     timestamp=1533529977, source="appServer1", tags={"region": "us-west"})
 
-# 3) Send OpenTracing Span to Wavefront
+# 3) Send Tracing Span Data to Wavefront
 # Wavefront Tracing Span Data format:
 # <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
 # Example: "getAllUsers source=localhost
@@ -80,6 +80,13 @@ proxy_client.send_span(
     follows_from=None, tags=[("application", "Wavefront"), 
                              ("http.method", "GET")],
     span_logs=None)
+
+# 4) Send Delta Counter Data to Wavefront
+# Wavefront Delta Counter Data format:
+# <metricName> <metricValue> source=<source> [pointTags]
+proxy_client.send_delta_counter(
+    name="delta.counter", value=1.0, 
+    source="localhost", tags={"datacenter": "dc1"})
 ```
 
 #### Send Batch Data
@@ -203,7 +210,7 @@ direct_client.send_distribution(
                              histogram_granularity.MINUTE},
     timestamp=1533529977, source="appServer1", tags={"region": "us-west"})
 
-# 3) Send OpenTracing Span to Wavefront
+# 3) Send Tracing Span Data to Wavefront
 # Wavefront Tracing Span Data format:
 # <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
 # Example: "getAllUsers source=localhost
@@ -220,6 +227,13 @@ direct_client.send_span(
     follows_from=None, tags=[("application", "Wavefront"), 
                              ("http.method", "GET")],
     span_logs=None)
+
+# 4) Send Delta Counter Data to Wavefront
+# Wavefront Delta Counter Data format:
+# <metricName> <metricValue> source=<source> [pointTags]
+direct_client.send_delta_counter(
+    name="delta.counter", value=1.0, 
+    source="localhost", tags={"datacenter": "dc1"})
 ```
 
 #### Send Batch Data

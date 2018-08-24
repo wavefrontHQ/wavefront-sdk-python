@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Entities for SDK.
 
@@ -9,3 +11,10 @@ from __future__ import absolute_import
 # flake8: noqa
 
 from wavefront_python_sdk.entities.histogram import histogram_granularity
+
+from wavefront_python_sdk.entities.tracing.sender import \
+    WavefrontTracingSpanSender
+from wavefront_python_sdk.entities.metrics.sender import \
+    WavefrontMetricSender
+from wavefront_python_sdk.entities.histogram.sender import \
+    WavefrontHistogramSender

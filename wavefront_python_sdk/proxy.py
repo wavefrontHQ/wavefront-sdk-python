@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Wavefront Proxy Client.
 
@@ -11,11 +13,15 @@ from wavefront_python_sdk.common.proxy_connection_handler import \
     ProxyConnectionHandler
 from wavefront_python_sdk.common.utils import metric_to_line_data, \
     histogram_to_line_data, tracing_span_to_line_data
+from wavefront_python_sdk.entities import WavefrontTracingSpanSender, \
+    WavefrontMetricSender, WavefrontHistogramSender
 
 
 # pylint: disable=too-many-instance-attributes
 
-class WavefrontProxyClient(object):
+class WavefrontProxyClient(WavefrontMetricSender,
+                           WavefrontHistogramSender,
+                           WavefrontTracingSpanSender):
     """
     WavefrontProxyClient that sends data directly via TCP.
 

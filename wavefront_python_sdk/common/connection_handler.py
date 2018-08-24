@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 A connection handler for both proxy and direct client.
 

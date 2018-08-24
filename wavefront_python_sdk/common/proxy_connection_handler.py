@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Connection Handler class for sending data to a Wavefront proxy.
 
@@ -50,7 +52,7 @@ class ProxyConnectionHandler(ConnectionHandler):
         try:
             if not self._reconnecting_socket:
                 self.connect()
-            self._reconnecting_socket.sendall(line_data.encode())
+            self._reconnecting_socket.sendall(line_data.encode('utf-8'))
         except socket.error as error:
             if reconnect:
                 self._reconnecting_socket = None

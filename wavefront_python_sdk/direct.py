@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Wavefront Direct Ingestion Client.
 
@@ -17,11 +19,16 @@ except ImportError:
 from wavefront_python_sdk.common.connection_handler import ConnectionHandler
 from wavefront_python_sdk.common.utils import metric_to_line_data, \
     histogram_to_line_data, tracing_span_to_line_data, gzip_compress, chunks
+from wavefront_python_sdk.entities import WavefrontTracingSpanSender, \
+    WavefrontMetricSender, WavefrontHistogramSender
 
 
 # pylint: disable=too-many-instance-attributes
 
-class WavefrontDirectClient(ConnectionHandler):
+class WavefrontDirectClient(ConnectionHandler,
+                            WavefrontMetricSender,
+                            WavefrontHistogramSender,
+                            WavefrontTracingSpanSender):
     """
     Wavefront direct ingestion client.
 
@@ -78,7 +85,7 @@ class WavefrontDirectClient(ConnectionHandler):
         """
         try:
             params = {'f': data_format}
-            compressed_data = gzip_compress(points.encode())
+            compressed_data = gzip_compress(points.encode('utf-8'))
             response = requests.post(self.server + '/report', params=params,
                                      headers=self._headers,
                                      data=compressed_data)
