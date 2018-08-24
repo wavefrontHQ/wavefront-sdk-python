@@ -11,19 +11,19 @@ from wavefront_python_sdk.entities.histogram import histogram_granularity
 
 def send_metrics_via_proxy(proxy_client):
     proxy_client.send_metric(
-        "python" + repr(sys.version_info[0]) + ".proxy.new york.power.usage",
+        "python" + str(sys.version_info[0]) + ".proxy.new york.power.usage",
         42422.0, None, "localhost", None)
 
 
 def send_delta_counter_via_proxy(proxy_client):
     proxy_client.send_delta_counter(
-        "python" + repr(sys.version_info[0]) + ".delta.proxy.counter",
+        "python" + str(sys.version_info[0]) + ".delta.proxy.counter",
         1.0, "localhost", None)
 
 
 def send_histogram_via_proxy(proxy_client):
     proxy_client.send_distribution(
-        "python" + repr(sys.version_info[0]) + ".proxy.request.latency",
+        "python" + str(sys.version_info[0]) + ".proxy.request.latency",
         [(30, 20), (5.1, 10)], {histogram_granularity.DAY,
                                 histogram_granularity.HOUR,
                                 histogram_granularity.MINUTE},
@@ -42,19 +42,19 @@ def send_tracing_span_via_proxy(proxy_client):
 
 def send_metrics_via_direct_ingestion(direct_ingestion_client):
     direct_ingestion_client.send_metric(
-        "python" + repr(sys.version_info[0]) + ".direct.new york.power.usage",
+        "python" + str(sys.version_info[0]) + ".direct.new york.power.usage",
         42422.0, None, "localhost", None)
 
 
 def send_delta_counter_via_direct_ingestion(direct_ingestion_client):
     direct_ingestion_client.send_delta_counter(
-        "python" + repr(sys.version_info[0]) + ".delta.direct.counter",
+        "python" + str(sys.version_info[0]) + ".delta.direct.counter",
         1.0, "localhost", None)
 
 
 def send_histogram_via_direct_ingestion(direct_ingestion_client):
     direct_ingestion_client.send_distribution(
-        "python" + repr(sys.version_info[0]) + ".direct.request.latency",
+        "python" + str(sys.version_info[0]) + ".direct.request.latency",
         [(30, 20), (5.1, 10)], {histogram_granularity.DAY,
                                 histogram_granularity.HOUR,
                                 histogram_granularity.MINUTE},

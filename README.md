@@ -21,11 +21,11 @@ Assume you have a running Wavefront proxy listening on at least one of metrics /
 from wavefront_python_sdk import WavefrontProxyClient
 
 # Create Proxy Client
-# proxy_host: Hostname of the Wavefront proxy
+# host: Hostname of the Wavefront proxy
 # metrics_port: Metrics Port on which the Wavefront proxy is listening on
 # distribution_port: Distribution Port on which the Wavefront proxy is listening on
 # tracing_port: Tracing Port on which the Wavefront proxy is listening on
-proxy_client = WavefrontProxyClient(proxy_host=host,
+proxy_client = WavefrontProxyClient(host="<HOST_ADDR>",
                                     metrics_port=2878,
                                     distribution_port=40000,
                                     tracing_port=30000)
