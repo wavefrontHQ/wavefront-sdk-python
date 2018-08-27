@@ -251,12 +251,16 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
         for uuid in follows_from:
             str_builder.append("followsFrom=" + str(uuid))
     if tags is not None:
+        tag_set = set()
         for key, val in tags:
             if is_blank(key):
                 raise ValueError("Span tag key cannot be blank")
             if is_blank(val):
                 raise ValueError("Span tag val cannot be blank")
-            str_builder.append(sanitize(key) + "=" + sanitize(val))
+            cur_tag = sanitize(key) + "=" + sanitize(val)
+            if cur_tag not in tag_set:
+                str_builder.append(cur_tag)
+                tag_set.add(cur_tag)
     str_builder.append(str(start_millis))
     str_builder.append(str(duration_millis))
     return ' '.join(str_builder) + '\n'
