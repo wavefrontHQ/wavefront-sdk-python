@@ -88,13 +88,17 @@ if __name__ == "__main__":
         send_delta_counter_via_proxy(wavefront_proxy_client)
         send_delta_counter_via_direct_ingestion(wavefront_direct_client)
 
-    while True:
-        send_metrics_via_proxy(wavefront_proxy_client)
-        send_histogram_via_proxy(wavefront_proxy_client)
-        send_tracing_span_via_proxy(wavefront_proxy_client)
+    try:
+        while True:
+            send_metrics_via_proxy(wavefront_proxy_client)
+            send_histogram_via_proxy(wavefront_proxy_client)
+            send_tracing_span_via_proxy(wavefront_proxy_client)
 
-        send_metrics_via_direct_ingestion(wavefront_direct_client)
-        send_histogram_via_direct_ingestion(wavefront_direct_client)
-        send_tracing_span_via_direct_ingestion(wavefront_direct_client)
+            send_metrics_via_direct_ingestion(wavefront_direct_client)
+            send_histogram_via_direct_ingestion(wavefront_direct_client)
+            send_tracing_span_via_direct_ingestion(wavefront_direct_client)
 
-        time.sleep(1)
+            time.sleep(1)
+    finally:
+        wavefront_proxy_client.close()
+        wavefront_direct_client.close()
