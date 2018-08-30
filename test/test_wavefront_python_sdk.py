@@ -169,6 +169,21 @@ class TestUtils(unittest.TestCase):
                 [("application", "Wavefront"), ("http.method", "GET")],
                 None, "defaultSource"))
 
+        # duplicate tags
+        self.assertEqual(
+            '"getAllUsers" source="localhost" '
+            'traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 '
+            'spanId=0313bafe-9457-11e8-9eb6-529269fb1459 '
+            '"application"="Wavefront" '
+            '"http.method"="GET" 1493773500 343500\n',
+            tracing_span_to_line_data(
+                "getAllUsers", 1493773500, 343500, "localhost",
+                UUID("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+                UUID("0313bafe-9457-11e8-9eb6-529269fb1459"), None, None,
+                [("application", "Wavefront"), ("http.method", "GET"),
+                 ("application", "Wavefront")],
+                None, "defaultSource"))
+
         # null tags
         self.assertEqual(
             '"getAllUsers" source="localhost" '

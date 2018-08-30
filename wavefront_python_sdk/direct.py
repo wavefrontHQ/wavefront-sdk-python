@@ -8,7 +8,7 @@ Wavefront Direct Ingestion Client.
 
 from __future__ import absolute_import
 
-from threading import Timer
+from threading import Timer, Lock
 import requests
 
 try:
@@ -72,7 +72,10 @@ class WavefrontDirectClient(ConnectionHandler,
         self._headers = {'Content-Type': 'application/octet-stream',
                          'Content-Encoding': 'gzip',
                          'Authorization': 'Bearer ' + token}
-        self._flush()
+        self._closed = False
+        self._schedule_lock = Lock()
+        self._timer = None
+        self._schedule_timer()
 
     def _report(self, points, data_format):
         r"""
@@ -124,11 +127,20 @@ class WavefrontDirectClient(ConnectionHandler,
             size -= 1
         self._batch_report(data, data_format)
 
+    def _schedule_timer(self):
+        # Flush every 5 secs by default
+        if not self._closed:
+            self._timer = Timer(self._flush_interval_seconds, self._flush)
+            self._timer.start()
+
     def _flush(self):
         """Use Timer to keep flushing each <flush_interval_seconds> secs."""
-        self.flush_now()
-        # Flush every 5 secs by default
-        Timer(self._flush_interval_seconds, self._flush).start()
+        try:
+            self.flush_now()
+        finally:
+            with self._schedule_lock:
+                if not self._closed:
+                    self._schedule_timer()
 
     def flush_now(self):
         """Flush all the data buffer immediately."""
@@ -142,6 +154,10 @@ class WavefrontDirectClient(ConnectionHandler,
     def close(self):
         """Flush all buffer before close the client."""
         self.flush_now()
+        with self._schedule_lock:
+            self._closed = True
+            if self._timer is not None:
+                self._timer.cancel()
 
     # pylint: disable=too-many-arguments
 
