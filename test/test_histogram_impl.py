@@ -11,49 +11,71 @@ from wavefront_python_sdk.entities import WavefrontHistogramImpl
 
 
 class TestHistogramImpl(unittest.TestCase):
+    """Unit Tests of WavefrontHistogramImpl."""
 
     @classmethod
     def setUpClass(cls):
+        """Initialize for tests."""
+
+        # Delta for error
         cls._DELTA = 1e-1
+
+        # Atomic clock
         cls._clock = AtomicCounter(time.time() * 1000)
+
+        # WavefrontHistogramImpl with values that are powers of 10
         cls._pow_10 = cls.create_pow_10_histogram(cls._clock.get)
+
+        # WavefrontHistogramImpl with a value for each integer from 1 to 100
         cls._inc_100 = WavefrontHistogramImpl(cls._clock.get)
         for i in range(1, 101):
             cls._inc_100.update(i)
+
+        # WavefrontHistogramImpl with a value for each integer from 1 to 1000
         cls._inc_1000 = WavefrontHistogramImpl(cls._clock.get)
         for i in range(1, 1001):
             cls._inc_1000.update(i)
+
+        # Simulate that 1 min has passed so that values prior to the
+        # current min are ready to be read
         cls._clock.increment(60000 + 1)
 
     @staticmethod
     def create_pow_10_histogram(clock_millis):
-        wh = WavefrontHistogramImpl(clock_millis)
-        wh.update(0.1)
-        wh.update(1.0)
-        wh.update(1e1)
-        wh.update(1e1)
-        wh.update(1e2)
-        wh.update(1e3)
-        wh.update(1e4)
-        wh.update(1e4)
-        wh.update(1e5)
-        return wh
+        """Create WavefrontHistogramImpl with values that are powers of 10."""
+        w_h = WavefrontHistogramImpl(clock_millis)
+        w_h.update(0.1)
+        w_h.update(1.0)
+        w_h.update(1e1)
+        w_h.update(1e1)
+        w_h.update(1e2)
+        w_h.update(1e3)
+        w_h.update(1e4)
+        w_h.update(1e4)
+        w_h.update(1e5)
+        return w_h
 
     @staticmethod
     def distribution_to_map(distributions):
+        """
+        Return Distributions in map format.
+
+        @return: Distributions in map format.
+        @rtype: dict
+        """
         dist_map = {}
         for distribution in distributions:
             for centroid in distribution.centroids:
-                dist_map.update({centroid[0]:
-                                     dist_map.get(centroid[0], 0) + centroid[
-                                         1]})
+                dist_map.update(
+                    {centroid[0]: dist_map.get(centroid[0], 0) + centroid[1]})
         return dist_map
 
     def test_distribution(self):
-        wh = self.create_pow_10_histogram(self._clock.get)
+        """Test distribution."""
+        w_h = self.create_pow_10_histogram(self._clock.get)
         self._clock.increment(60000 + 1)
 
-        distributions = wh.flush_distributions()
+        distributions = w_h.flush_distributions()
         dist_map = self.distribution_to_map(distributions)
         self.assertEqual(7, len(dist_map))
         self.assertTrue(dist_map.get(0.1) == 1)
@@ -64,13 +86,13 @@ class TestHistogramImpl(unittest.TestCase):
         self.assertTrue(dist_map.get(1e4) == 2)
         self.assertTrue(dist_map.get(1e5) == 1)
 
-        self.assertEqual(0, wh.get_count())
-        self.assertAlmostEqual(None, wh.get_max(), delta=self._DELTA)
-        self.assertAlmostEqual(None, wh.get_min(), delta=self._DELTA)
-        self.assertAlmostEqual(None, wh.get_mean(), delta=self._DELTA)
-        self.assertAlmostEqual(0, wh.get_sum(), delta=self._DELTA)
+        self.assertEqual(0, w_h.get_count())
+        self.assertAlmostEqual(None, w_h.get_max(), delta=self._DELTA)
+        self.assertAlmostEqual(None, w_h.get_min(), delta=self._DELTA)
+        self.assertAlmostEqual(None, w_h.get_mean(), delta=self._DELTA)
+        self.assertAlmostEqual(0, w_h.get_sum(), delta=self._DELTA)
 
-        snapshot = wh.get_snapshot()
+        snapshot = w_h.get_snapshot()
         self.assertEqual(0, snapshot.get_count())
         self.assertAlmostEqual(None, snapshot.get_max(), delta=self._DELTA)
         self.assertAlmostEqual(None, snapshot.get_min(), delta=self._DELTA)
@@ -80,10 +102,11 @@ class TestHistogramImpl(unittest.TestCase):
                                delta=self._DELTA)
 
     def test_bulk_update(self):
-        wh = WavefrontHistogramImpl(self._clock.get)
-        wh.bulk_update([24.2, 84.35, 1002.0], [80, 1, 9])
+        """Test bulk update."""
+        w_h = WavefrontHistogramImpl(self._clock.get)
+        w_h.bulk_update([24.2, 84.35, 1002.0], [80, 1, 9])
         self._clock.increment(60000 + 1)
-        distributions = wh.flush_distributions()
+        distributions = w_h.flush_distributions()
         dist_map = self.distribution_to_map(distributions)
 
         self.assertEqual(3, len(dist_map))
@@ -92,32 +115,38 @@ class TestHistogramImpl(unittest.TestCase):
         self.assertTrue(dist_map.get(1002.0) == 9)
 
     def test_count(self):
+        """Test get count of distribution."""
         self.assertEqual(9, self._pow_10.get_count())
         self.assertEqual(9, self._pow_10.get_snapshot().get_count())
 
     def test_max(self):
+        """Test get max of distribution."""
         self.assertAlmostEqual(1e5, self._pow_10.get_max(), delta=self._DELTA)
         self.assertAlmostEqual(1e5, self._pow_10.get_snapshot().get_max(),
                                delta=self._DELTA)
 
     def test_min(self):
+        """Test get min of distribution."""
         self.assertAlmostEqual(1.0, self._inc_100.get_min(), delta=self._DELTA)
         self.assertAlmostEqual(1.0, self._inc_100.get_snapshot().get_min(),
                                delta=self._DELTA)
 
     def test_mean(self):
+        """Test get mean of distribution."""
         self.assertAlmostEqual(13457.9, self._pow_10.get_mean(),
                                delta=self._DELTA)
         self.assertAlmostEqual(13457.9, self._pow_10.get_snapshot().get_mean(),
                                delta=self._DELTA)
 
     def test_sum(self):
+        """Test get sum of distribution."""
         self.assertAlmostEqual(121121.1, self._pow_10.get_sum(),
                                delta=self._DELTA)
         self.assertAlmostEqual(121121.1, self._pow_10.get_snapshot().get_sum(),
                                delta=self._DELTA)
 
     def test_size(self):
+        """Test get size of distribution."""
         self.assertEqual(9, self._pow_10.get_snapshot().get_size())
         self.assertEqual(100, self._inc_100.get_snapshot().get_size())
         self.assertEqual(1000, self._inc_1000.get_snapshot().get_size())

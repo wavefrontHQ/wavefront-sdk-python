@@ -203,7 +203,7 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
     return '\n'.join(line_builder) + '\n'
 
 
-# pylint: disable=too-many-arguments,unused-argument
+# pylint: disable=too-many-arguments,unused-argument,too-many-locals
 def tracing_span_to_line_data(name, start_millis, duration_millis, source,
                               trace_id, span_id, parents, follows_from, tags,
                               span_logs, default_source):
