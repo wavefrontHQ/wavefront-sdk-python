@@ -84,19 +84,21 @@ if __name__ == "__main__":
 
     wavefront_direct_client = WavefrontDirectClient(wavefront_server, token)
 
-    for i in range(50):
-        send_delta_counter_via_proxy(wavefront_proxy_client)
-        send_delta_counter_via_direct_ingestion(wavefront_direct_client)
+    # for i in range(50):
+    #     send_delta_counter_via_proxy(wavefront_proxy_client)
+    #     send_delta_counter_via_direct_ingestion(wavefront_direct_client)
 
     try:
         while True:
             send_metrics_via_proxy(wavefront_proxy_client)
             send_histogram_via_proxy(wavefront_proxy_client)
             send_tracing_span_via_proxy(wavefront_proxy_client)
+            send_delta_counter_via_proxy(wavefront_proxy_client)
 
             send_metrics_via_direct_ingestion(wavefront_direct_client)
             send_histogram_via_direct_ingestion(wavefront_direct_client)
             send_tracing_span_via_direct_ingestion(wavefront_direct_client)
+            send_delta_counter_via_direct_ingestion(wavefront_direct_client)
 
             time.sleep(1)
     finally:

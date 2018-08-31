@@ -37,6 +37,14 @@ class AtomicCounter(object):
             self.value += num
             return self.value
 
+    def get(self):
+        """
+        Get current atomic counter value.
+        @return: Current atomic counter value.
+        @rtype: float or int
+        """
+        return self.value
+
 
 def chunks(data_list, batch_size):
     """
