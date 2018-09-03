@@ -172,17 +172,21 @@ class WavefrontHistogramImpl(object):
         self._global_histogram_bins_list = []
         self._lock = threading.Lock()
         self._thread_local = threading.local()
-        self._shared_bins_instance = List([])
+        self.init_thread()
+
+    def init_thread(self):
+        self._thread_local.shared_bins_instance = List([])
 
         # ThreadLocal histogramBinsList where the initial value set is also
         # added to a global list of thread local histogramBinsList wrapped
         # in WeakReference.
-        self._thread_local.histogram_bins_list = self._shared_bins_instance
+        self._thread_local.histogram_bins_list = self._thread_local.\
+            shared_bins_instance
 
         # Global list of thread local histogram_bins_list wrapped in
         # WeakReference.
         self._global_histogram_bins_list. \
-            append(weakref.ref(self._shared_bins_instance))
+            append(weakref.ref(self._thread_local.histogram_bins_list))
 
     @staticmethod
     def current_clock_millis():
@@ -200,6 +204,10 @@ class WavefrontHistogramImpl(object):
         @param value: value to add.
         @type value: float
         """
+        try:
+            self._thread_local.histogram_bins_list
+        except AttributeError:
+            self.init_thread()
         self.get_current_bin().distribution.update(value)
 
     def bulk_update(self, means, counts):
@@ -211,6 +219,10 @@ class WavefrontHistogramImpl(object):
         @param counts: the centroid weights/sample counts
         @type counts: list of int
         """
+        try:
+            self._thread_local.histogram_bins_list
+        except AttributeError:
+            self.init_thread()
         if means and counts:
             current_bin = self.get_current_bin()
             for i in range(min(len(means), len(counts))):
@@ -224,6 +236,10 @@ class WavefrontHistogramImpl(object):
         @return: Current minute bin
         @rtype: MinuteBin
         """
+        try:
+            self._thread_local.histogram_bins_list
+        except AttributeError:
+            self.init_thread()
         shared_bins_instance = self._thread_local.histogram_bins_list
         curr_minute_millis = self.current_minute_millis()
 

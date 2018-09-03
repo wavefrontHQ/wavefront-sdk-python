@@ -6,6 +6,7 @@ Unit Tests for Wavefront Python SDK - Histogram Impl.
 
 import unittest
 import time
+import threading
 from wavefront_python_sdk.common.utils import AtomicCounter
 from wavefront_python_sdk.entities import WavefrontHistogramImpl
 
@@ -69,6 +70,12 @@ class TestHistogramImpl(unittest.TestCase):
                 dist_map.update(
                     {centroid[0]: dist_map.get(centroid[0], 0) + centroid[1]})
         return dist_map
+
+    @staticmethod
+    def thread_bulk_update(wavefront_histogram, means, counts):
+        while True:
+            wavefront_histogram.bulk_update(means, counts)
+            time.sleep(60)
 
     def test_distribution(self):
         """Test distribution."""
@@ -150,6 +157,31 @@ class TestHistogramImpl(unittest.TestCase):
         self.assertEqual(9, self._pow_10.get_snapshot().get_size())
         self.assertEqual(100, self._inc_100.get_snapshot().get_size())
         self.assertEqual(1000, self._inc_1000.get_snapshot().get_size())
+
+    def test_multi_thread(self):
+        w_h = WavefrontHistogramImpl(self._clock.get)
+        w_h.bulk_update([21.2, 82.35, 1042.0], [70, 2, 6])
+        thread_1 = threading.Thread(
+            target=self.thread_bulk_update, daemon=True,
+            args=(w_h, [24.2, 84.35, 1002.0], [80, 1, 9]))
+        thread_2 = threading.Thread(
+            target=self.thread_bulk_update, daemon=True,
+            args=(w_h, [21.2, 84.35, 1052.0], [60, 12, 8]))
+        thread_1.start()
+        thread_2.start()
+        time.sleep(1)
+        self._clock.increment(60000 + 1)
+        distributions = w_h.flush_distributions()
+        dist_map = self.distribution_to_map(distributions)
+
+        self.assertEqual(7, len(dist_map))
+        self.assertTrue(dist_map.get(21.2) == 130)
+        self.assertTrue(dist_map.get(24.2) == 80)
+        self.assertTrue(dist_map.get(82.35) == 2)
+        self.assertTrue(dist_map.get(84.35) == 13)
+        self.assertTrue(dist_map.get(1002.0) == 9)
+        self.assertTrue(dist_map.get(1042.0) == 6)
+        self.assertTrue(dist_map.get(1052.0) == 8)
 
 
 if __name__ == '__main__':
