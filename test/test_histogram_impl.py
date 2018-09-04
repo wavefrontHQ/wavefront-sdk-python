@@ -162,17 +162,21 @@ class TestHistogramImpl(unittest.TestCase):
         w_h = WavefrontHistogramImpl(self._clock.get)
         w_h.bulk_update([21.2, 82.35, 1042.0], [70, 2, 6])
         thread_1 = threading.Thread(
-            target=self.thread_bulk_update, daemon=True,
+            target=self.thread_bulk_update,
             args=(w_h, [24.2, 84.35, 1002.0], [80, 1, 9]))
         thread_2 = threading.Thread(
-            target=self.thread_bulk_update, daemon=True,
+            target=self.thread_bulk_update,
             args=(w_h, [21.2, 84.35, 1052.0], [60, 12, 8]))
+        thread_1.setDaemon(True)
+        thread_2.setDaemon(True)
         thread_1.start()
         thread_2.start()
         time.sleep(1)
         self._clock.increment(60000 + 1)
         distributions = w_h.flush_distributions()
         dist_map = self.distribution_to_map(distributions)
+        thread_1.join(2)
+        thread_2.join(2)
 
         self.assertEqual(7, len(dist_map))
         self.assertTrue(dist_map.get(21.2) == 130)
