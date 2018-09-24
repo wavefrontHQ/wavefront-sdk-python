@@ -40,6 +40,7 @@ class AtomicCounter(object):
     def get(self):
         """
         Get current atomic counter value.
+
         @return: Current atomic counter value.
         @rtype: float or int
         """

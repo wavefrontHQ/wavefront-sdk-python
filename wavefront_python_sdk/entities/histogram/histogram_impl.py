@@ -5,7 +5,6 @@ Wavefront implementation of a histogram.
 """
 from __future__ import division
 import threading
-import weakref
 import time
 from tdigest import TDigest
 
@@ -126,8 +125,8 @@ class Distribution(object):
         self.centroids = centroids
 
 
-class MinuteBin(object):
-    """Representation of a bin that holds histogram for a certain minute."""
+class ThreadMinuteBin(object):
+    """Representation of a bin holds all threads histogram data in a min."""
 
     # pylint: disable=too-few-public-methods
     def __init__(self, accuracy=100, minute_millis=None):
@@ -139,14 +138,44 @@ class MinuteBin(object):
         @param minute_millis: The timestamp at the start of the minute.
         @type minute_millis: long
         """
-        self.distribution = TDigest(delta=1 / accuracy)
+        self.accuracy = accuracy
         self.minute_millis = minute_millis
+        self.per_thread_dist = {}
 
+    def get_dist_by_thread_id(self, thread_id):
+        """Retrieve the thread-local dist in one given minute."""
+        if thread_id not in self.per_thread_dist:
+            self.per_thread_dist[thread_id] = TDigest(delta=1 / self.accuracy)
+        return self.per_thread_dist[thread_id]
 
-class List(list):
-    """Wrapper of list for weakref."""
+    def update_dist_by_thread_id(self, thread_id, value):
+        """Update the value in the distribution of given thread id."""
+        self.get_dist_by_thread_id(thread_id).update(value)
 
-    pass
+    def bulk_update_dist_by_thread_id(self, thread_id, means, counts):
+        """Bulk update values in the distribution of given thread id."""
+        if means and counts:
+            current_bin = self.get_dist_by_thread_id(thread_id)
+            for i in range(min(len(means), len(counts))):
+                current_bin.update(means[i], counts[i])
+
+    def get_centroids(self):
+        """Get list of centroids for dists of all threads in this minute."""
+        centroids = []
+        for thread_id in self.per_thread_dist:
+            centroids.extend(
+                self.per_thread_dist[thread_id].centroids_to_list())
+        return centroids
+
+    def to_distribution(self):
+        """Convert to Distribution."""
+        distributions = []
+        for thread_id in self.per_thread_dist:
+            centroids = [(centroid['m'], centroid['c']) for centroid in
+                         self.per_thread_dist[thread_id].centroids_to_list()]
+            distributions.append(
+                Distribution(self.minute_millis, centroids))
+        return distributions
 
 
 class WavefrontHistogramImpl(object):
@@ -169,24 +198,10 @@ class WavefrontHistogramImpl(object):
         @type clock_millis: function
         """
         self._clock_millis = clock_millis or self.current_clock_millis
-        self._global_histogram_bins_list = []
+        self._prior_minute_bins_list = []
         self._lock = threading.Lock()
-        self._thread_local = threading.local()
-        self.init_thread()
-
-    def init_thread(self):
-        self._thread_local.shared_bins_instance = List([])
-
-        # ThreadLocal histogramBinsList where the initial value set is also
-        # added to a global list of thread local histogramBinsList wrapped
-        # in WeakReference.
-        self._thread_local.histogram_bins_list = self._thread_local.\
-            shared_bins_instance
-
-        # Global list of thread local histogram_bins_list wrapped in
-        # WeakReference.
-        self._global_histogram_bins_list. \
-            append(weakref.ref(self._thread_local.histogram_bins_list))
+        self._current_minute_bin = ThreadMinuteBin(
+            self._ACCURACY, self.current_minute_millis())
 
     @staticmethod
     def current_clock_millis():
@@ -204,11 +219,8 @@ class WavefrontHistogramImpl(object):
         @param value: value to add.
         @type value: float
         """
-        try:
-            self._thread_local.histogram_bins_list
-        except AttributeError:
-            self.init_thread()
-        self.get_current_bin().distribution.update(value)
+        self.get_current_bin().update_dist_by_thread_id(
+            threading.current_thread().ident, value)
 
     def bulk_update(self, means, counts):
         """
@@ -219,14 +231,8 @@ class WavefrontHistogramImpl(object):
         @param counts: the centroid weights/sample counts
         @type counts: list of int
         """
-        try:
-            self._thread_local.histogram_bins_list
-        except AttributeError:
-            self.init_thread()
-        if means and counts:
-            current_bin = self.get_current_bin()
-            for i in range(min(len(means), len(counts))):
-                current_bin.distribution.update(means[i], counts[i])
+        self.get_current_bin().bulk_update_dist_by_thread_id(
+            threading.current_thread().ident, means, counts)
 
     def get_current_bin(self):
         """
@@ -234,43 +240,43 @@ class WavefrontHistogramImpl(object):
 
         Will be invoked on the thread local histogram_bins_list.
         @return: Current minute bin
-        @rtype: MinuteBin
+        @rtype: ThreadMinuteBin
         """
-        try:
-            self._thread_local.histogram_bins_list
-        except AttributeError:
-            self.init_thread()
-        shared_bins_instance = self._thread_local.histogram_bins_list
-        curr_minute_millis = self.current_minute_millis()
+        return self.get_or_update_current_bin(self.current_minute_millis())
 
+    def get_or_update_current_bin(self, curr_minute_millis):
+        """
+        Get current minute bin.
+
+        Will update _prior_minute_bins_list if the minute has passed.
+        @param curr_minute_millis: Current minute in millis
+        @return: ThreadMinuteBin of current minute.
+        @rtype: ThreadMinuteBin
+        """
+        if self._current_minute_bin.minute_millis == curr_minute_millis:
+            return self._current_minute_bin
+        # only one update thread can flush the current bin to
+        # _prior_minute_bins_list and update the current bin.
         with self._lock:
-            if not shared_bins_instance or \
-                    shared_bins_instance[-1].minute_millis \
-                    != curr_minute_millis:
-                shared_bins_instance.append(MinuteBin(self._ACCURACY,
-                                                      curr_minute_millis))
-            if len(shared_bins_instance) > self._MAX_BINS:
-                del shared_bins_instance[0]
-            return shared_bins_instance[-1]
+            # Double check the minute millis of current bin to avoid if there
+            # are multiple threads entering this block and the first thread
+            # already did the flushing.
+            if self._current_minute_bin.minute_millis != curr_minute_millis:
+                if len(self._prior_minute_bins_list) > self._MAX_BINS:
+                    del self._prior_minute_bins_list[0]
+                self._prior_minute_bins_list.append(self._current_minute_bin)
+                self._current_minute_bin = ThreadMinuteBin(curr_minute_millis)
+            return self._current_minute_bin
+
+    def get_prior_minute_bins_list(self):
+        """Return newly-updated _prior_minute_bins_list."""
+        self.get_or_update_current_bin(self.current_minute_millis())
+        return self._prior_minute_bins_list
 
     @staticmethod
     def std_dev():
         """Not supported. Return None."""
         return None
-
-    def clear_prior_current_minute_bin(self, cutoff_millis):
-        """
-        Clear the minute bin of which timestamps if before cutoff millis.
-
-        @param cutoff_millis: Timestamp of cutoff millis.
-        @type cutoff_millis: long
-        """
-        for shared_bins_instance in self._global_histogram_bins_list:
-            with self._lock:
-                shared_bins_instance = shared_bins_instance()
-                shared_bins_instance[:] = [
-                    cur_bin for cur_bin in shared_bins_instance
-                    if cur_bin.minute_millis > cutoff_millis]
 
     def flush_distributions(self):
         """
@@ -288,40 +294,28 @@ class WavefrontHistogramImpl(object):
         @return: list of the distributions held within each bin
         @rtype: list of Distribution
         """
-        cutoff_millis = self.current_minute_millis()
-
-        self._global_histogram_bins_list[:] = \
-            [shared_bins_instance for shared_bins_instance
-             in self._global_histogram_bins_list if shared_bins_instance()]
-
-        minute_bins = []
-        for shared_bins_instance in self._global_histogram_bins_list:
-            minute_bins.extend([min_bin for min_bin in shared_bins_instance()
-                                if min_bin.minute_millis < cutoff_millis])
-
         distributions = []
-        for minute_bin in minute_bins:
-            centroids = [(centroid['m'], centroid['c']) for centroid
-                         in minute_bin.distribution.centroids_to_list()]
-            distributions.append(
-                Distribution(minute_bin.minute_millis, centroids))
-        self.clear_prior_current_minute_bin(cutoff_millis)
+        self.get_or_update_current_bin(self.current_minute_millis())
+        with self._lock:
+            for minute_bin in self._prior_minute_bins_list[:]:
+                distributions.extend(minute_bin.to_distribution())
+                self._prior_minute_bins_list.remove(minute_bin)
         return distributions
 
     def get_count(self):
         """Get the number of values in the distribution."""
         count = 0
-        for shared_bins_instance in self._global_histogram_bins_list:
-            count += sum(b.distribution.n for b in shared_bins_instance())
+        for minute_bin in self.get_prior_minute_bins_list():
+            if minute_bin.per_thread_dist:
+                count += sum(dist.n for dist
+                             in minute_bin.per_thread_dist.values())
         return count
 
     def get_sum(self):
         """Get the sum of the values in the distribution."""
         res = 0
-        for shared_bins_instance in self._global_histogram_bins_list:
-            for one_bin in shared_bins_instance():
-                res += sum(c['c'] * c['m'] for c
-                           in one_bin.distribution.centroids_to_list())
+        for minute_bin in self.get_prior_minute_bins_list():
+            res += sum(c['c'] * c['m'] for c in minute_bin.get_centroids())
         return res
 
     def get_snapshot(self):
@@ -332,9 +326,9 @@ class WavefrontHistogramImpl(object):
         @rtype: Snapshot
         """
         snapshot = TDigest(1 / self._ACCURACY)
-        for shared_bins_instance in self._global_histogram_bins_list:
-            for min_bin in shared_bins_instance():
-                snapshot = snapshot + min_bin.distribution
+        for minute_bin in self.get_prior_minute_bins_list():
+            for thread_id in minute_bin.per_thread_dist:
+                snapshot = snapshot + minute_bin.per_thread_dist[thread_id]
         return Snapshot(snapshot)
 
     def get_max(self):
@@ -344,10 +338,11 @@ class WavefrontHistogramImpl(object):
         Return None if the distribution is empty.
         """
         max_val = float('NaN')
-        for shared_bins_instance in self._global_histogram_bins_list:
-            if shared_bins_instance():
-                max_val = max(max(b.distribution.percentile(100)
-                                  for b in shared_bins_instance()), max_val)
+        for minute_bin in self.get_prior_minute_bins_list():
+            if minute_bin.per_thread_dist:
+                max_val = max(max(dist.percentile(100) for dist
+                                  in minute_bin.per_thread_dist.values()),
+                              max_val)
         return max_val if max_val == max_val else None
 
     def get_min(self):
@@ -357,10 +352,11 @@ class WavefrontHistogramImpl(object):
         Return None if the distribution is empty.
         """
         min_val = float('NaN')
-        for shared_bins_instance in self._global_histogram_bins_list:
-            if shared_bins_instance():
-                min_val = min(min(b.distribution.percentile(0)
-                                  for b in shared_bins_instance()), min_val)
+        for minute_bin in self.get_prior_minute_bins_list():
+            if minute_bin.per_thread_dist:
+                min_val = min(min(dist.percentile(0) for dist
+                                  in minute_bin.per_thread_dist.values()),
+                              min_val)
         return min_val if min_val == min_val else None
 
     def get_mean(self):
@@ -370,11 +366,10 @@ class WavefrontHistogramImpl(object):
         Return None if the distribution is empty.
         """
         count = total = 0
-        for shared_bins_instance in self._global_histogram_bins_list:
-            for one_bin in shared_bins_instance():
-                centroids = one_bin.distribution.centroids_to_list()
-                count += sum(c['c'] for c in centroids)
-                total += sum(c['c'] * c['m'] for c in centroids)
+        for minute_bin in self.get_prior_minute_bins_list():
+            centroids = minute_bin.get_centroids()
+            count += sum(c['c'] for c in centroids)
+            total += sum(c['c'] * c['m'] for c in centroids)
         if count == 0:
             return None
         return total / count
