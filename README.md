@@ -1,4 +1,4 @@
-# wavefront-python-sdk [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-python-sdk.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-python-sdk)
+# wavefront-sdk-python [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python)
 
 This library provides support for sending metrics, histograms and opentracing spans to Wavefront via proxy or direct ingestion.
 
