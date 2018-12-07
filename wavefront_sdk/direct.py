@@ -17,12 +17,12 @@ try:
 except ImportError:
     import queue
 
-from wavefront_sdk_python.common.connection_handler import ConnectionHandler
-from wavefront_sdk_python.common.utils import metric_to_line_data, \
+from wavefront_sdk.common.connection_handler import ConnectionHandler
+from wavefront_sdk.common.utils import metric_to_line_data, \
     histogram_to_line_data, tracing_span_to_line_data, gzip_compress, chunks
-from wavefront_sdk_python.entities import WavefrontTracingSpanSender, \
+from wavefront_sdk.entities import WavefrontTracingSpanSender, \
     WavefrontMetricSender, WavefrontHistogramSender
-LOGGER = logging.getLogger('wavefront_sdk_python.WavefrontDirectClient')
+LOGGER = logging.getLogger('wavefront_sdk.WavefrontDirectClient')
 
 
 # pylint: disable=too-many-instance-attributes

@@ -4,9 +4,9 @@ import sys
 import time
 from uuid import UUID
 
-from wavefront_sdk_python.proxy import WavefrontProxyClient
-from wavefront_sdk_python.direct import WavefrontDirectClient
-from wavefront_sdk_python.entities.histogram import histogram_granularity
+from wavefront_sdk.proxy import WavefrontProxyClient
+from wavefront_sdk.direct import WavefrontDirectClient
+from wavefront_sdk.entities.histogram import histogram_granularity
 
 
 def send_metrics_via_proxy(proxy_client):

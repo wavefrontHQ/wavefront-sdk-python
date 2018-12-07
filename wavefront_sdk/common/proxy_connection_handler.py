@@ -9,7 +9,7 @@ Connection Handler class for sending data to a Wavefront proxy.
 from __future__ import absolute_import
 
 import socket
-from wavefront_sdk_python.common.connection_handler import ConnectionHandler
+from wavefront_sdk.common.connection_handler import ConnectionHandler
 
 
 class ProxyConnectionHandler(ConnectionHandler):

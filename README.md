@@ -6,7 +6,7 @@ This library provides support for sending metrics, histograms and opentracing sp
 Python 2.7+ and Python 3.x are supported.
 
 ```
-pip install wavefront_python_sdk
+pip install wavefront-sdk-python
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ pip install wavefront_python_sdk
 Assume you have a running Wavefront proxy listening on at least one of metrics / direct-distribution / tracing ports and you know the proxy hostname.
 
 ```python
-from wavefront_python_sdk import WavefrontProxyClient
+from wavefront_sdk import WavefrontProxyClient
 
 # Create Proxy Client
 # host: Hostname of the Wavefront proxy
@@ -36,7 +36,7 @@ client = WavefrontProxyClient(host="<HOST_ADDR>",
 Assume you have a running Wavefront cluster and you know the server URL (example - https://mydomain.wavefront.com) and the API token.
 
 ```python
-from wavefront_python_sdk import WavefrontDirectClient
+from wavefront_sdk import WavefrontDirectClient
 
 # Create Direct Ingestion Client
 # server: Server address, Example: https://mydomain.wavefront.com
@@ -57,7 +57,7 @@ Using following functions to send one data point to Wavefront via Proxy
 
 ```python
 from uuid import UUID
-from wavefront_python_sdk.entities.histogram import histogram_granularity
+from wavefront_sdk.entities.histogram import histogram_granularity
 
 # 1) Send Metric to Wavefront
 # Wavefront Metrics Data format:
@@ -115,10 +115,10 @@ Using following functions to generate data points manally and send them in batch
 
 ```python
 from uuid import UUID
-from wavefront_python_sdk.entities.histogram import histogram_granularity
-from wavefront_python_sdk.common import metric_to_line_data
-from wavefront_python_sdk.common import histogram_to_line_data
-from wavefront_python_sdk.common import tracing_span_to_line_data
+from wavefront_sdk.entities.histogram import histogram_granularity
+from wavefront_sdk.common import metric_to_line_data
+from wavefront_sdk.common import histogram_to_line_data
+from wavefront_sdk.common import tracing_span_to_line_data
 
 # Using metric_to_line_data() to generate a string data in Wavefront metric format
 one_metric_data = metric_to_line_data(
