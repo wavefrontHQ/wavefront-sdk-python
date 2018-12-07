@@ -9,6 +9,7 @@ Wavefront Direct Ingestion Client.
 from __future__ import absolute_import
 
 from threading import Timer, Lock
+import logging
 import requests
 
 try:
@@ -21,6 +22,7 @@ from wavefront_python_sdk.common.utils import metric_to_line_data, \
     histogram_to_line_data, tracing_span_to_line_data, gzip_compress, chunks
 from wavefront_python_sdk.entities import WavefrontTracingSpanSender, \
     WavefrontMetricSender, WavefrontHistogramSender
+LOGGER = logging.getLogger('wavefront_python_sdk.WavefrontDirectClient')
 
 
 # pylint: disable=too-many-instance-attributes
@@ -109,7 +111,11 @@ class WavefrontDirectClient(ConnectionHandler,
         # Split data into chunks, each with the size of given batch_size
         for batch in chunks(batch_line_data, self._batch_size):
             # report once per batch
-            self._report('\n'.join(batch) + '\n', data_format)
+            try:
+                self._report('\n'.join(batch) + '\n', data_format)
+            except Exception as error:
+                LOGGER.error("Failed to report %s data points to wavefront %s",
+                             data_format, error)
 
     def _internal_flush(self, data_buffer, data_format):
         """

@@ -18,3 +18,5 @@ from wavefront_python_sdk.entities.metrics.sender import \
     WavefrontMetricSender
 from wavefront_python_sdk.entities.histogram.sender import \
     WavefrontHistogramSender
+from wavefront_python_sdk.entities.histogram.histogram_impl import \
+    WavefrontHistogramImpl

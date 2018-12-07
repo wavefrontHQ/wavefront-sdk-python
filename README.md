@@ -51,7 +51,7 @@ client = WavefrontDirectClient(server="<SERVER_ADDR>",
                                flush_interval_seconds=5)
 ```
 
-### Send Single Data Point
+#### Send Single Data Point
 
 Using following functions to send one data point to Wavefront via Proxy
 
@@ -171,12 +171,12 @@ client.send_span_now(batch_span_data)
 ```python
 # If there are any failures observed while sending metrics/histograms/tracing-spans above, 
 # you can get the total failure count using the below API
-total_failures = client.get_failure_count();
+total_failures = client.get_failure_count()
   
 # For proxy client: 
 # close existing connections of the client
 # For direct ingestion client:
 # If you want to mannally flush current buffers and send all data inside them
 # Flush before you close the direct client
-client.close();
+client.close()
 ```
