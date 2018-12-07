@@ -10,7 +10,7 @@ spans to Wavefront via proxy or direct ingestion.
 """
 __version__ = '0.1.0'
 
-from wavefront_python_sdk.direct import WavefrontDirectClient
-from wavefront_python_sdk.proxy import WavefrontProxyClient
+from wavefront_sdk_python.direct import WavefrontDirectClient
+from wavefront_sdk_python.proxy import WavefrontProxyClient
 
 __all__ = ['WavefrontDirectClient', 'WavefrontProxyClient', 'common']

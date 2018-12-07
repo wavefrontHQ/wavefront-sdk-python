@@ -7,8 +7,8 @@ Unit Tests for Wavefront Python SDK - Histogram Impl.
 import unittest
 import time
 import threading
-from wavefront_python_sdk.common.utils import AtomicCounter
-from wavefront_python_sdk.entities import WavefrontHistogramImpl
+from wavefront_sdk_python.common.utils import AtomicCounter
+from wavefront_sdk_python.entities import WavefrontHistogramImpl
 
 
 class TestHistogramImpl(unittest.TestCase):

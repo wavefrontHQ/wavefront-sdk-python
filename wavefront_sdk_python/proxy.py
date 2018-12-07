@@ -9,11 +9,11 @@ Wavefront Proxy Client.
 from __future__ import absolute_import
 
 from socket import gethostname
-from wavefront_python_sdk.common.proxy_connection_handler import \
+from wavefront_sdk_python.common.proxy_connection_handler import \
     ProxyConnectionHandler
-from wavefront_python_sdk.common.utils import metric_to_line_data, \
+from wavefront_sdk_python.common.utils import metric_to_line_data, \
     histogram_to_line_data, tracing_span_to_line_data
-from wavefront_python_sdk.entities import WavefrontTracingSpanSender, \
+from wavefront_sdk_python.entities import WavefrontTracingSpanSender, \
     WavefrontMetricSender, WavefrontHistogramSender
 
 
