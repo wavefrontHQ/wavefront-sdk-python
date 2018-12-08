@@ -6,7 +6,7 @@ A connection handler for both proxy and direct client.
 @author: Hao Song (songhao@vmware.com)
 """
 
-from wavefront_python_sdk.common import utils
+from wavefront_sdk.common import utils
 
 
 class ConnectionHandler(object):

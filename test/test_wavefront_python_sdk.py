@@ -7,19 +7,19 @@ Unit Tests for Wavefront Python SDK.
 import unittest
 from uuid import UUID
 
-from wavefront_python_sdk.common.utils import sanitize, \
+from wavefront_sdk.common.utils import sanitize, \
     metric_to_line_data, histogram_to_line_data, tracing_span_to_line_data
-from wavefront_python_sdk.entities import histogram_granularity
+from wavefront_sdk.entities import histogram_granularity
 
 
 class TestUtils(unittest.TestCase):
     """
-    Test Functions of wavefront_python_sdk.common.utils.
+    Test Functions of wavefront_sdk.common.utils.
     """
 
     def test_sanitize(self):
         """
-        Test wavefront_python_sdk.common.utils.sanitize().
+        Test wavefront_sdk.common.utils.sanitize().
         """
         self.assertEqual('"hello"', sanitize("hello"))
         self.assertEqual('"hello-world"', sanitize("hello world"))
@@ -29,7 +29,7 @@ class TestUtils(unittest.TestCase):
 
     def test_metric_to_line_data(self):
         """
-        Test wavefront_python_sdk.common.utils.metric_to_line_data().
+        Test wavefront_sdk.common.utils.metric_to_line_data().
         """
         self.assertEqual(
             '"new-york.power.usage" 42422.0 1493773500 source="localhost"'
@@ -62,7 +62,7 @@ class TestUtils(unittest.TestCase):
 
     def test_histogram_to_line_data(self):
         """
-        Test wavefront_python_sdk.common.utils.histogram_to_line_data().
+        Test wavefront_sdk.common.utils.histogram_to_line_data().
         """
         self.assertEqual(
             '!M 1493773500 #20 30.0 #10 5.1 "request.latency" '
@@ -120,7 +120,7 @@ class TestUtils(unittest.TestCase):
 
     def test_tracing_span_to_line_data(self):
         """
-        Test wavefront_python_sdk.common.utils.tracing_span_to_line_data().
+        Test wavefront_sdk.common.utils.tracing_span_to_line_data().
         """
         self.assertEqual(
             '"getAllUsers" source="localhost" '
