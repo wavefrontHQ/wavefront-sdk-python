@@ -7,7 +7,7 @@ Service that periodically reports component heartbeats to Wavefront.
 import time
 import logging
 from threading import Timer
-from constants import HEART_BEAT_METRIC, \
+from wavefront_sdk.common.constants import HEART_BEAT_METRIC, \
     APPLICATION_TAG_KEY, CLUSTER_TAG_KEY, SERVICE_TAG_KEY, SHARD_TAG_KEY, \
     COMPONENT_TAG_KEY, NULL_TAG_VAL
 

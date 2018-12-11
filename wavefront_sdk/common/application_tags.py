@@ -4,7 +4,7 @@ Metadata about your application represented as tags in Wavefront.
 @author: Hao Song (songhao@vmware.com)
 """
 
-from constants import APPLICATION_TAG_KEY, \
+from wavefront_sdk.common.constants import APPLICATION_TAG_KEY, \
     SERVICE_TAG_KEY, CLUSTER_TAG_KEY, SHARD_TAG_KEY, NULL_TAG_VAL
 
 
