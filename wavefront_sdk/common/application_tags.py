@@ -11,6 +11,7 @@ from wavefront_sdk.common.constants import APPLICATION_TAG_KEY, \
 class ApplicationTags:
     """Metadata about your application represented as tags in Wavefront."""
 
+    # pylint: disable=too-many-arguments
     def __init__(self, application, service, cluster=None, shard=None,
                  custom_tags=None):
         """
@@ -36,25 +37,31 @@ class ApplicationTags:
 
     @property
     def application(self):
+        """Get Application Name."""
         return self._application
 
     @property
     def service(self):
+        """Get Service Name."""
         return self._service
 
     @property
     def cluster(self):
+        """Get Cluster Name."""
         return self._cluster
 
     @property
     def shard(self):
+        """Get Shard Name."""
         return self._shard
 
     @property
     def custom_tags(self):
+        """Get Custom Tags."""
         return self._custom_tags
 
     def get_as_list(self):
+        """Get all tags as a list."""
         tags = [(APPLICATION_TAG_KEY, self.application),
                 (SERVICE_TAG_KEY, self.service),
                 (CLUSTER_TAG_KEY, self.cluster or NULL_TAG_VAL),

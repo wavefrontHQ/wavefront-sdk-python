@@ -12,12 +12,14 @@ from wavefront_sdk.common.constants import HEART_BEAT_METRIC, \
     COMPONENT_TAG_KEY, NULL_TAG_VAL
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
-class HeartbeaterService:
+# pylint: disable=too-few-public-methods
+class HeartbeaterService(object):
     """Service that periodically reports component heartbeats to Wavefront."""
 
+    # pylint: disable=too-many-arguments
     def __init__(self, wavefront_client, application_tags, component, source,
                  reporting_interval_seconds):
         """
@@ -58,5 +60,4 @@ class HeartbeaterService:
                                               time.time(), self.source,
                                               self.heartbeat_metric_tags)
         except Exception:
-            logging.warning("Cannot report " + HEART_BEAT_METRIC +
-                            " to wavefront")
+            LOGGER.warning('Can not report %s to wavefront', HEART_BEAT_METRIC)
