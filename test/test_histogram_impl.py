@@ -73,6 +73,7 @@ class TestHistogramImpl(unittest.TestCase):
 
     @staticmethod
     def thread_bulk_update(wavefront_histogram, means, counts):
+        """Helper func for multi-thread bulk updating."""
         while True:
             wavefront_histogram.bulk_update(means, counts)
             time.sleep(60)
@@ -159,6 +160,7 @@ class TestHistogramImpl(unittest.TestCase):
         self.assertEqual(1000, self._inc_1000.get_snapshot().get_size())
 
     def test_multi_thread(self):
+        """Test of multi-threading case."""
         w_h = WavefrontHistogramImpl(self._clock.get)
         w_h.bulk_update([21.2, 82.35, 1042.0], [70, 2, 6])
         thread_1 = threading.Thread(
