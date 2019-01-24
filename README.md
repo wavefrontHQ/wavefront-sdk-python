@@ -90,9 +90,9 @@ wavefront_sender = WavefrontProxyClient(
 
 | `WavefrontProxyClient()` parameter | Corresponding property in `wavefront.conf` |
 | ----- | -------- |
-| `metrics_port` | `pushListenerPort=` |
-| `distribution_port` | `histogramDistListenerPort=` |
-| `tracing_port` | `traceListenerPort=` |
+| `metrics_port` | `pushListenerPorts=` |
+| `distribution_port` | `histogramDistListenerPorts=` |
+| `tracing_port` | `traceListenerPorts=` |
 
 
 
