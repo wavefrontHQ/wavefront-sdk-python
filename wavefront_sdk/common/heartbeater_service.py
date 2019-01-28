@@ -41,6 +41,7 @@ class HeartbeaterService(object):
             SHARD_TAG_KEY: application_tags.shard or NULL_TAG_VAL,
             COMPONENT_TAG_KEY: component
         }
+        self._closed = False
         self._timer = None
         self._schedule_timer()
 
@@ -52,7 +53,8 @@ class HeartbeaterService(object):
         try:
             self._report()
         finally:
-            self._schedule_timer()
+            if not self._closed:
+                self._schedule_timer()
 
     def _report(self):
         try:
@@ -61,3 +63,8 @@ class HeartbeaterService(object):
                                               self.heartbeat_metric_tags)
         except Exception:
             LOGGER.warning('Can not report %s to wavefront', HEART_BEAT_METRIC)
+
+    def close(self):
+        self._closed = True
+        if self._timer is not None:
+            self._timer.cancel()
