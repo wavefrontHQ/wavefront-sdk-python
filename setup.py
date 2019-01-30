@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
 # coding: utf-8
+"""Wavefront Python SDK.
 
-"""Wavefront Python SDK
-   <p>This is a Wavefront Python SDK</p>  # noqa: E501
+<p>This is a Wavefront Python SDK</p>
 """
 
 import os
+
 import setuptools
 
 with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
