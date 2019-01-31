@@ -1,33 +1,43 @@
+#!/usr/bin/env python3
 # coding: utf-8
+"""Wavefront Python SDK.
 
+<p>This is a Wavefront Python SDK</p>
 """
-    Wavefront Python SDK
-    <p>This is a Wavefront Python SDK</p>  # noqa: E501
-"""
 
-from setuptools import setup, find_packages  # noqa: H301
+import os
 
-NAME = "wavefront-sdk-python"
-VERSION = "1.0.0"
-# To install the library, run the following
-#
-# python setup.py install
-#
-# prerequisite: setuptools
-# http://pypi.python.org/pypi/setuptools
+import setuptools
 
-REQUIRES = ['requests >= 2.18.4', 'tdigest >= 0.5.2']
+with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                       'README.md')) as fd:
+    LONG_DESCRIPTION = fd.read()
 
-setup(
-    name=NAME,
-    version=VERSION,
-    description="Wavefront Python SDK",
-    author_email="songhao@vmware.com",
-    url="https://github.com/wavefrontHQ/wavefront-sdk-python",
-    keywords=["Wavefront SDK", "Wavefront"],
-    install_requires=REQUIRES,
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+setuptools.setup(
+    name='wavefront-sdk-python',
+    version='1.0.0',
+    author='Wavefront by VMware',
+    author_email='songhao@vmware.com',
+    url='https://github.com/wavefrontHQ/wavefront-sdk-python',
+    license='Apache-2.0',
+    description='Wavefront Python SDK',
+    long_description=LONG_DESCRIPTION,
+    keywords=[
+        'Wavefront',
+        'Wavefront SDK'
+        ],
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7'
+        ],
     include_package_data=True,
-    long_description="""\
-    """
+    packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
+                                               'tests.*', 'tests')),
+    install_requires=(
+        'requests >= 2.18.4',
+        'tdigest >= 0.5.2'
+        )
 )
