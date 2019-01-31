@@ -19,7 +19,7 @@ setuptools.setup(
     author='Wavefront by VMware',
     author_email='songhao@vmware.com',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
-    license='Apache 2.0',
+    license='Apache-2.0',
     description='Wavefront Python SDK',
     long_description=LONG_DESCRIPTION,
     keywords=[
@@ -27,7 +27,7 @@ setuptools.setup(
         'Wavefront SDK'
         ],
     classifiers=[
-        'License :: OSI Approved :: Apache License',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
