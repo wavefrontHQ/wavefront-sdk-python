@@ -171,7 +171,7 @@ class ThreadMinuteBin(object):
         """Convert to Distribution."""
         distributions = []
         for thread_id in self.per_thread_dist:
-            centroids = [(centroid['m'], centroid['c']) for centroid in
+            centroids = [(centroid['m'], int(centroid['c'])) for centroid in
                          self.per_thread_dist[thread_id].centroids_to_list()]
             distributions.append(
                 Distribution(self.minute_millis, centroids))
