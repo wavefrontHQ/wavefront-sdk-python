@@ -20,13 +20,13 @@ class HeartbeaterService(object):
     """Service that periodically reports component heartbeats to Wavefront."""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, wavefront_client, application_tags, component, source,
+    def __init__(self, wavefront_client, application_tags, components, source,
                  reporting_interval_seconds):
         """
         Construct HeartbeaterService.
         @param wavefront_client: Wavefront Proxy or Direct Ingestion client.
         @param application_tags: ApplicationTags.
-        @param component: Component.
+        @param components: List of str indicates Components.
         @param source: Source.
         @param reporting_interval_seconds: Interval of reporting heart beat.
         """
@@ -34,13 +34,19 @@ class HeartbeaterService(object):
         self.application_tags = application_tags
         self.source = source
         self.reporting_interval_seconds = reporting_interval_seconds
-        self.heartbeat_metric_tags = {
-            APPLICATION_TAG_KEY: application_tags.application,
-            CLUSTER_TAG_KEY: application_tags.cluster or NULL_TAG_VAL,
-            SERVICE_TAG_KEY: application_tags.service,
-            SHARD_TAG_KEY: application_tags.shard or NULL_TAG_VAL,
-            COMPONENT_TAG_KEY: component
-        }
+        self.heartbeat_metric_tags_list = []
+        if isinstance(components, str):
+            components = [components]
+        for component in components:
+            self.heartbeat_metric_tags_list.append(
+                {
+                    APPLICATION_TAG_KEY: application_tags.application,
+                    CLUSTER_TAG_KEY: application_tags.cluster or NULL_TAG_VAL,
+                    SERVICE_TAG_KEY: application_tags.service,
+                    SHARD_TAG_KEY: application_tags.shard or NULL_TAG_VAL,
+                    COMPONENT_TAG_KEY: component
+                }
+            )
         self._closed = False
         self._timer = None
         self._schedule_timer()
@@ -58,9 +64,10 @@ class HeartbeaterService(object):
 
     def _report(self):
         try:
-            self.wavefront_client.send_metric(HEART_BEAT_METRIC, 1.0,
-                                              time.time(), self.source,
-                                              self.heartbeat_metric_tags)
+            for heartbeat in self.heartbeat_metric_tags_list:
+                self.wavefront_client.send_metric(HEART_BEAT_METRIC, 1.0,
+                                                  time.time(), self.source,
+                                                  heartbeat)
         except Exception:
             LOGGER.warning('Can not report %s to wavefront', HEART_BEAT_METRIC)
 
