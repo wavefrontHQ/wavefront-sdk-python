@@ -21,7 +21,7 @@ class HeartbeaterService(object):
 
     # pylint: disable=too-many-arguments
     def __init__(self, wavefront_client, application_tags, components, source,
-                 reporting_interval_seconds):
+                 reporting_interval_seconds=300):
         """
         Construct HeartbeaterService.
         @param wavefront_client: Wavefront Proxy or Direct Ingestion client.
