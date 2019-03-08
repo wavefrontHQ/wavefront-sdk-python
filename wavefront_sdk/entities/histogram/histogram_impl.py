@@ -265,7 +265,8 @@ class WavefrontHistogramImpl(object):
                 if len(self._prior_minute_bins_list) > self._MAX_BINS:
                     del self._prior_minute_bins_list[0]
                 self._prior_minute_bins_list.append(self._current_minute_bin)
-                self._current_minute_bin = ThreadMinuteBin(curr_minute_millis)
+                self._current_minute_bin = ThreadMinuteBin(self._ACCURACY,
+                                                           curr_minute_millis)
             return self._current_minute_bin
 
     def get_prior_minute_bins_list(self):
