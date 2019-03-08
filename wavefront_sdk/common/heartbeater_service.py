@@ -20,20 +20,18 @@ class HeartbeaterService(object):
     """Service that periodically reports component heartbeats to Wavefront."""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, wavefront_client, application_tags, components, source,
-                 reporting_interval_seconds=300):
+    def __init__(self, wavefront_client, application_tags, components, source):
         """
         Construct HeartbeaterService.
         @param wavefront_client: Wavefront Proxy or Direct Ingestion client.
         @param application_tags: ApplicationTags.
         @param components: List of str indicates Components.
         @param source: Source.
-        @param reporting_interval_seconds: Interval of reporting heart beat.
         """
         self.wavefront_client = wavefront_client
         self.application_tags = application_tags
         self.source = source
-        self.reporting_interval_seconds = reporting_interval_seconds
+        self.reporting_interval_seconds = 60 * 5
         self.heartbeat_metric_tags_list = []
         if isinstance(components, str):
             components = [components]
@@ -49,7 +47,7 @@ class HeartbeaterService(object):
             )
         self._closed = False
         self._timer = None
-        self._schedule_timer()
+        self._run()
 
     def _schedule_timer(self):
         self._timer = Timer(self.reporting_interval_seconds, self._run)
