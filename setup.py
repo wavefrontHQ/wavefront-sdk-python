@@ -17,7 +17,7 @@ setuptools.setup(
     name='wavefront-sdk-python',
     version='1.1.0',
     author='Wavefront by VMware',
-    author_email='songhao@vmware.com',
+    author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
     description='Wavefront Python SDK',

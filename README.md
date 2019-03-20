@@ -1,4 +1,10 @@
-# wavefront-sdk-python [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python)
+# wavefront-sdk-python
+
+[![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python)
+[![image](https://img.shields.io/pypi/v/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
+[![image](https://img.shields.io/pypi/l/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
+[![image](https://img.shields.io/pypi/pyversions/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
+
 
 Wavefront by VMware SDK for Python is the core library for sending metrics, histograms and trace data from your Python application to Wavefront using via proxy or direct ingestion.
 
