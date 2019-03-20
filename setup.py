@@ -15,13 +15,14 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.1.0',
+    version='1.1.1',
     author='Wavefront by VMware',
     author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
     description='Wavefront Python SDK',
     long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
     keywords=[
         'Wavefront',
         'Wavefront SDK'
