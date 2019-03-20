@@ -8,7 +8,7 @@ spans to Wavefront via proxy or direct ingestion.
 
 @author Hao Song (songhao@vmware.com)
 """
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 from wavefront_sdk.direct import WavefrontDirectClient
 from wavefront_sdk.proxy import WavefrontProxyClient
