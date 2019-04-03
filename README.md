@@ -74,13 +74,13 @@ from wavefront_sdk import WavefrontProxyClient
 # Create a sender with:
    # the proxy hostname or address
    # the default listener port (2878) for sending metrics to 
-   # the recommended listener port (40000) for sending histograms to 
+   # the recommended listener port (2878) for sending histograms to 
    # the recommended listener port (30000) for sending trace data to 
    # a nondefault interval (2 seconds) for flushing data from the sender to the proxy. Default: 5 seconds
 wavefront_sender = WavefrontProxyClient(
    host="<PROXY_HOST>",
    metrics_port=2878,
-   distribution_port=40000,
+   distribution_port=2878,
    tracing_port=30000,
    internal_flush=2
 )
