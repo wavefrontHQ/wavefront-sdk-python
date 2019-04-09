@@ -1,15 +1,17 @@
 dist: xenial
 language: python
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-  - "3.7"
+- "2.7"
+- "3.5"
+- "3.6"
+- "3.7"
 install:
-  - pip install requests
-  - pip install tdigest
+- pip install requests
+- pip install tdigest
 script:
-  - python -m unittest discover
+- python -m unittest discover
+- echo "Check if version was updated in setup.py file..."
+- [[ $(git diff origin/master setup.py | grep version=) ]] || exit 1
 deploy:
 - provider: pypi
   user: wavefront-cs
