@@ -11,7 +11,7 @@ install:
 script:
 - python -m unittest discover
 - echo "Check if version was updated in setup.py file..."
-- [[ $(git diff origin/master setup.py | grep version=) ]] || exit 1
+- test $(git diff origin/master setup.py | grep version=) || exit 1
 deploy:
 - provider: pypi
   user: wavefront-cs
