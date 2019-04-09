@@ -10,8 +10,8 @@ install:
 - pip install tdigest
 script:
 - python -m unittest discover
-- echo "Check if version was updated in setup.py file..."
-- git diff -G version= --exit-code origin/master setup.py
+- echo "Next step will check if version was updated in setup.py file."
+- git diff -G version= --exit-code origin/master setup.py && exit 1
 deploy:
 - provider: pypi
   user: wavefront-cs
