@@ -11,7 +11,7 @@ install:
 script:
 - python -m unittest discover
 - echo "Next step will check if version was updated in setup.py file."
-- git diff -G version= --exit-code origin/master -- setup.py && exit 1
+- git diff -G version= --exit-code $TRAVIS_COMMIT_RANGE setup.py && exit 1
 deploy:
 - provider: pypi
   user: wavefront-cs
