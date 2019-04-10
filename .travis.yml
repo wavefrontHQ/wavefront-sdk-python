@@ -8,6 +8,12 @@ python:
 install:
 - pip install requests
 - pip install tdigest
+- pip install flake8 flake8-colors flake8-docstrings flake8-import-order
+- pip install pep8-naming
+- pip install pylint
+before_script:
+- python -m flake8
+- python -m pylint wavefront_sdk
 script:
 - python -m unittest discover
 - echo "Next step will check if version was updated in setup.py file."
