@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
-"""
-Metrics Entities.
+"""Metrics Entities.
 
 @author Hao Song (songhao@vmware.com)
 """

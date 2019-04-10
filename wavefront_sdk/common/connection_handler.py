@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-
-"""
-A connection handler for both proxy and direct client.
+"""A connection handler for both proxy and direct client.
 
 @author: Hao Song (songhao@vmware.com)
 """
 
-from wavefront_sdk.common import utils
+from . import utils
 
 
+# pylint: disable=E0012,R0205
 class ConnectionHandler(object):
-    """
-    A connection handler for both proxy and direct client.
+    """A connection handler for both proxy and direct client.
 
     Handle the failure atomic counter.
     """
@@ -21,8 +19,7 @@ class ConnectionHandler(object):
         self._failure = utils.AtomicCounter()
 
     def get_failure_count(self):
-        """
-        Get failure count for one connection.
+        """Get failure count for one connection.
 
         @return: failure count
         """

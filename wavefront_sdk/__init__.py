@@ -9,8 +9,8 @@ spans to Wavefront via proxy or direct ingestion.
 
 import pkg_resources
 
-from wavefront_sdk.direct import WavefrontDirectClient
-from wavefront_sdk.proxy import WavefrontProxyClient
+from .direct import WavefrontDirectClient
+from .proxy import WavefrontProxyClient
 
 
 __all__ = ['WavefrontDirectClient', 'WavefrontProxyClient']

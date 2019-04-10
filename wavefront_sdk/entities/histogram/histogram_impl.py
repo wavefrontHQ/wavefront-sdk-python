@@ -1,29 +1,30 @@
-"""
-Wavefront implementation of a histogram.
+"""Wavefront implementation of a histogram.
 
 @author: Hao Song (songhao@vmware.com)
 """
 from __future__ import division
+# pylint: disable=E0012,R0205
+
+import math
 import threading
 import time
-from tdigest import TDigest
+
+import tdigest
 
 
 class Snapshot(object):
     """Wrapper for TDigest distribution."""
 
     def __init__(self, dist):
-        """
-        Construct TDigest Wrapper.
+        """Construct TDigest Wrapper.
 
-        @param dist: TDigest
-        @type dist: TDigest
+        @param dist: tdigest.TDigest
+        @type dist: tdigest.TDigest
         """
         self.distribution = dist
 
     def get_max(self):
-        """
-        Get the maximum value in the distribution.
+        """Get the maximum value in the distribution.
 
         @return: Maximum value
         """
@@ -34,8 +35,7 @@ class Snapshot(object):
         return max_val
 
     def get_min(self):
-        """
-        Get the minimum value in the distribution.
+        """Get the minimum value in the distribution.
 
         @return: minimum value
         """
@@ -46,8 +46,7 @@ class Snapshot(object):
         return min_val
 
     def get_mean(self):
-        """
-        Get the mean of the values in the distribution.
+        """Get the mean of the values in the distribution.
 
         @return: mean value
         """
@@ -63,8 +62,7 @@ class Snapshot(object):
         #                                                      centroids)
 
     def get_sum(self):
-        """
-        Get the sum of the values in the distribution.
+        """Get the sum of the values in the distribution.
 
         @return: sum of value
         """
@@ -72,8 +70,7 @@ class Snapshot(object):
         return sum(c['c'] * c['m'] for c in centroids)
 
     def get_value(self, quantile):
-        """
-        Get the value of given quantile.
+        """Get the value of given quantile.
 
         @param quantile: Quantile, range from 0 to 1
         @type quantile: float
@@ -88,16 +85,14 @@ class Snapshot(object):
             return None
 
     def get_size(self):
-        """
-        Get the size of snapshot.
+        """Get the size of snapshot.
 
         @return: Size of snapshot.
         """
         return self.distribution.n
 
     def get_count(self):
-        """
-        Get the number of values in the distribution.
+        """Get the number of values in the distribution.
 
         @return: Number of values
         """
@@ -105,16 +100,14 @@ class Snapshot(object):
 
 
 class Distribution(object):
-    """
-    Representation of a histogram distribution.
+    """Representation of a histogram distribution.
 
     Containing a timestamp and a list of centroids.
     """
 
     # pylint: disable=too-few-public-methods
     def __init__(self, timestamp, centroids):
-        """
-        Construct a distribution.
+        """Construct a distribution.
 
         @param timestamp: Timestamp in milliseconds since the epoch.
         @type timestamp: long
@@ -130,8 +123,7 @@ class ThreadMinuteBin(object):
 
     # pylint: disable=too-few-public-methods
     def __init__(self, accuracy=100, minute_millis=None):
-        """
-        Construct the Minute Bin.
+        """Construct the Minute Bin.
 
         @param accuracy: Accuracy range from [0, 100]
         @type accuracy: int
@@ -145,7 +137,8 @@ class ThreadMinuteBin(object):
     def get_dist_by_thread_id(self, thread_id):
         """Retrieve the thread-local dist in one given minute."""
         if thread_id not in self.per_thread_dist:
-            self.per_thread_dist[thread_id] = TDigest(delta=1 / self.accuracy)
+            self.per_thread_dist[thread_id] = tdigest.TDigest(delta=1 /
+                                                              self.accuracy)
         return self.per_thread_dist[thread_id]
 
     def update_dist_by_thread_id(self, thread_id, value):
@@ -191,8 +184,7 @@ class WavefrontHistogramImpl(object):
     _MAX_BINS = 10
 
     def __init__(self, clock_millis=None):
-        """
-        Construct Wavefront Histogram.
+        """Construct Wavefront Histogram.
 
         @param clock_millis: A function which returns timestamp.
         @type clock_millis: function
@@ -213,8 +205,7 @@ class WavefrontHistogramImpl(object):
         return int(self._clock_millis() / 60000) * 60000
 
     def update(self, value):
-        """
-        Add one value to the distribution.
+        """Add one value to the distribution.
 
         @param value: value to add.
         @type value: float
@@ -223,8 +214,7 @@ class WavefrontHistogramImpl(object):
             threading.current_thread().ident, value)
 
     def bulk_update(self, means, counts):
-        """
-        Bulk-update this histogram with a set of centroids.
+        """Bulk-update this histogram with a set of centroids.
 
         @param means: the centroid values
         @type means: list of float
@@ -235,8 +225,7 @@ class WavefrontHistogramImpl(object):
             threading.current_thread().ident, means, counts)
 
     def get_current_bin(self):
-        """
-        Retrieve the current bin.
+        """Retrieve the current bin.
 
         Will be invoked on the thread local histogram_bins_list.
         @return: Current minute bin
@@ -245,8 +234,7 @@ class WavefrontHistogramImpl(object):
         return self.get_or_update_current_bin(self.current_minute_millis())
 
     def get_or_update_current_bin(self, curr_minute_millis):
-        """
-        Get current minute bin.
+        """Get current minute bin.
 
         Will update _prior_minute_bins_list if the minute has passed.
         @param curr_minute_millis: Current minute in millis
@@ -280,8 +268,7 @@ class WavefrontHistogramImpl(object):
         return None
 
     def flush_distributions(self):
-        """
-        Aggregate all the minute bins prior to the current minute.
+        """Aggregate all the minute bins prior to the current minute.
 
         Only aggregating before current minute is because threads might be
         updating the current minute bin while the method is invoked.
@@ -320,21 +307,19 @@ class WavefrontHistogramImpl(object):
         return res
 
     def get_snapshot(self):
-        """
-        Return a statistical of the histogram distribution.
+        """Return a statistical of the histogram distribution.
 
         @return: Snapshot of Histogram
         @rtype: Snapshot
         """
-        snapshot = TDigest(1 / self._ACCURACY)
+        snapshot = tdigest.TDigest(1 / self._ACCURACY)
         for minute_bin in self.get_prior_minute_bins_list():
             for thread_id in minute_bin.per_thread_dist:
                 snapshot = snapshot + minute_bin.per_thread_dist[thread_id]
         return Snapshot(snapshot)
 
     def get_max(self):
-        """
-        Get the maximum value in the distribution.
+        """Get the maximum value in the distribution.
 
         Return None if the distribution is empty.
         """
@@ -344,11 +329,10 @@ class WavefrontHistogramImpl(object):
                 max_val = max(max(dist.percentile(100) for dist
                                   in minute_bin.per_thread_dist.values()),
                               max_val)
-        return max_val if max_val == max_val else None
+        return None if math.isnan(max_val) else max_val
 
     def get_min(self):
-        """
-        Get the minimum value in the distribution.
+        """Get the minimum value in the distribution.
 
         Return None if the distribution is empty.
         """
@@ -358,11 +342,10 @@ class WavefrontHistogramImpl(object):
                 min_val = min(min(dist.percentile(0) for dist
                                   in minute_bin.per_thread_dist.values()),
                               min_val)
-        return min_val if min_val == min_val else None
+        return None if math.isnan(min_val) else min_val
 
     def get_mean(self):
-        """
-        Get the mean of the values in the distribution.
+        """Get the mean of the values in the distribution.
 
         Return None if the distribution is empty.
         """
