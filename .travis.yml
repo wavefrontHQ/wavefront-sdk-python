@@ -16,7 +16,7 @@ before_script:
   - python -m pylint wavefront_sdk
 script:
   - python -m unittest discover
-  - if [ "$TRAVIS_PULL_REQUEST" -ne "false" ]; then
+  - if [[ "${TRAVIS_PULL_REQUEST}" != "false" ]]; then
       test -n "$(git diff -G version= $TRAVIS_COMMIT_RANGE setup.py)";
     fi
 deploy:
