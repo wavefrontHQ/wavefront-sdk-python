@@ -1,35 +1,36 @@
 dist: xenial
 language: python
 python:
-- "2.7"
-- "3.5"
-- "3.6"
-- "3.7"
+  - "2.7"
+  - "3.5"
+  - "3.6"
+  - "3.7"
 install:
-- pip install requests
-- pip install tdigest
-- pip install flake8 flake8-colors flake8-docstrings flake8-import-order
-- pip install pep8-naming
-- pip install pylint
+  - pip install requests
+  - pip install tdigest
+  - pip install flake8 flake8-colors flake8-docstrings flake8-import-order
+  - pip install pep8-naming
+  - pip install pylint
 before_script:
-- python -m flake8
-- python -m pylint wavefront_sdk
+  - python -m flake8
+  - python -m pylint wavefront_sdk
 script:
-- python -m unittest discover
-- echo "Next step will check if version was updated in setup.py file."
-- test -n "$(git diff -G version= $TRAVIS_COMMIT_RANGE setup.py)"
+  - python -m unittest discover
+  - if [ "$TRAVIS_PULL_REQUEST" -ne "false" ]; then
+      test -n "$(git diff -G version= $TRAVIS_COMMIT_RANGE setup.py)";
+    fi
 deploy:
-- provider: pypi
-  user: wavefront-cs
-  server: https://test.pypi.org/legacy/
-  password:
-    secure: "w4j8TyINfzCRlcXiZcYj7eIcEYmYIisSHxUsXqC+7pUCFfAwOSJEQJhkYepFWxcmxOIhY5IdWOGsU1JNBkFyzS3NNlU76xvZ7Ykl5zicVd3ng6i/Pj6Eswhf2B5BgCpQwWIXAEHPQL+Q6xmY9tL4YnaLTpXsOOliltt1qdc+W31DilnCEmoFpDUK/KEQckRMvFj60mk3dsep87jxQdtuF+we0piN0JdG5KawjYbwbsLo940ZkXittRw5WKfcIwYbZo1SU8fxflvLKX48qbz6vK9+ACYL/3gav2x2zdopNx8mmK17Q5zgNKuvSm686gXZgzJGrNaSNFm3oNmRMP0dBS4ebYR+jS7ABOiT0SekwBqWkVKLEMnaJC/1k/8JuKabeXcA9mmZP/ZhmRsVMtyP449RBEQKoditMLr10PZbiz5iDu0UjqrF7yOqxwEsIUI7lBXY4r1FBxIrAD/xU8SMFurmb/qTmwB8sbmHxX/L6HBY0giiN039KqhAvcwPbSuDYchzyHouXRkhMgpI2jtpOVottEzMyJtRqaK+qV5zdm1ST6E7WqaIvEkkNM7OGw6jxexTadhQ7w4xdjHYIcgDHHFZJ3C8ZgivaiGaLNxrTT+OJ3fwc+zGcT6ndvYYGzXusre56Zal/PbdElv+sqX0sS/U5UVv9cJU5qQYIv3lpsI="
-  on:
-    python: 3.7
-- provider: pypi
-  user: wavefront-cs
-  password:
-    secure: "w4j8TyINfzCRlcXiZcYj7eIcEYmYIisSHxUsXqC+7pUCFfAwOSJEQJhkYepFWxcmxOIhY5IdWOGsU1JNBkFyzS3NNlU76xvZ7Ykl5zicVd3ng6i/Pj6Eswhf2B5BgCpQwWIXAEHPQL+Q6xmY9tL4YnaLTpXsOOliltt1qdc+W31DilnCEmoFpDUK/KEQckRMvFj60mk3dsep87jxQdtuF+we0piN0JdG5KawjYbwbsLo940ZkXittRw5WKfcIwYbZo1SU8fxflvLKX48qbz6vK9+ACYL/3gav2x2zdopNx8mmK17Q5zgNKuvSm686gXZgzJGrNaSNFm3oNmRMP0dBS4ebYR+jS7ABOiT0SekwBqWkVKLEMnaJC/1k/8JuKabeXcA9mmZP/ZhmRsVMtyP449RBEQKoditMLr10PZbiz5iDu0UjqrF7yOqxwEsIUI7lBXY4r1FBxIrAD/xU8SMFurmb/qTmwB8sbmHxX/L6HBY0giiN039KqhAvcwPbSuDYchzyHouXRkhMgpI2jtpOVottEzMyJtRqaK+qV5zdm1ST6E7WqaIvEkkNM7OGw6jxexTadhQ7w4xdjHYIcgDHHFZJ3C8ZgivaiGaLNxrTT+OJ3fwc+zGcT6ndvYYGzXusre56Zal/PbdElv+sqX0sS/U5UVv9cJU5qQYIv3lpsI="
-  on:
-    python: 3.7
-    tags: true
+  - provider: pypi
+    user: wavefront-cs
+    server: https://test.pypi.org/legacy/
+    password:
+      secure: "w4j8TyINfzCRlcXiZcYj7eIcEYmYIisSHxUsXqC+7pUCFfAwOSJEQJhkYepFWxcmxOIhY5IdWOGsU1JNBkFyzS3NNlU76xvZ7Ykl5zicVd3ng6i/Pj6Eswhf2B5BgCpQwWIXAEHPQL+Q6xmY9tL4YnaLTpXsOOliltt1qdc+W31DilnCEmoFpDUK/KEQckRMvFj60mk3dsep87jxQdtuF+we0piN0JdG5KawjYbwbsLo940ZkXittRw5WKfcIwYbZo1SU8fxflvLKX48qbz6vK9+ACYL/3gav2x2zdopNx8mmK17Q5zgNKuvSm686gXZgzJGrNaSNFm3oNmRMP0dBS4ebYR+jS7ABOiT0SekwBqWkVKLEMnaJC/1k/8JuKabeXcA9mmZP/ZhmRsVMtyP449RBEQKoditMLr10PZbiz5iDu0UjqrF7yOqxwEsIUI7lBXY4r1FBxIrAD/xU8SMFurmb/qTmwB8sbmHxX/L6HBY0giiN039KqhAvcwPbSuDYchzyHouXRkhMgpI2jtpOVottEzMyJtRqaK+qV5zdm1ST6E7WqaIvEkkNM7OGw6jxexTadhQ7w4xdjHYIcgDHHFZJ3C8ZgivaiGaLNxrTT+OJ3fwc+zGcT6ndvYYGzXusre56Zal/PbdElv+sqX0sS/U5UVv9cJU5qQYIv3lpsI="
+    on:
+      python: 3.7
+  - provider: pypi
+    user: wavefront-cs
+    password:
+      secure: "w4j8TyINfzCRlcXiZcYj7eIcEYmYIisSHxUsXqC+7pUCFfAwOSJEQJhkYepFWxcmxOIhY5IdWOGsU1JNBkFyzS3NNlU76xvZ7Ykl5zicVd3ng6i/Pj6Eswhf2B5BgCpQwWIXAEHPQL+Q6xmY9tL4YnaLTpXsOOliltt1qdc+W31DilnCEmoFpDUK/KEQckRMvFj60mk3dsep87jxQdtuF+we0piN0JdG5KawjYbwbsLo940ZkXittRw5WKfcIwYbZo1SU8fxflvLKX48qbz6vK9+ACYL/3gav2x2zdopNx8mmK17Q5zgNKuvSm686gXZgzJGrNaSNFm3oNmRMP0dBS4ebYR+jS7ABOiT0SekwBqWkVKLEMnaJC/1k/8JuKabeXcA9mmZP/ZhmRsVMtyP449RBEQKoditMLr10PZbiz5iDu0UjqrF7yOqxwEsIUI7lBXY4r1FBxIrAD/xU8SMFurmb/qTmwB8sbmHxX/L6HBY0giiN039KqhAvcwPbSuDYchzyHouXRkhMgpI2jtpOVottEzMyJtRqaK+qV5zdm1ST6E7WqaIvEkkNM7OGw6jxexTadhQ7w4xdjHYIcgDHHFZJ3C8ZgivaiGaLNxrTT+OJ3fwc+zGcT6ndvYYGzXusre56Zal/PbdElv+sqX0sS/U5UVv9cJU5qQYIv3lpsI="
+    on:
+      python: 3.7
+      tags: true
