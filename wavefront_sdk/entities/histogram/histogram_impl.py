@@ -5,7 +5,6 @@
 from __future__ import division
 # pylint: disable=E0012,R0205
 
-import math
 import threading
 import time
 
@@ -323,26 +322,26 @@ class WavefrontHistogramImpl(object):
 
         Return None if the distribution is empty.
         """
-        max_val = float('NaN')
+        max_val = float('-inf')
         for minute_bin in self.get_prior_minute_bins_list():
             if minute_bin.per_thread_dist:
                 max_val = max(max(dist.percentile(100) for dist
                                   in minute_bin.per_thread_dist.values()),
                               max_val)
-        return None if math.isnan(max_val) else max_val
+        return None if float('-inf') == max_val else max_val
 
     def get_min(self):
         """Get the minimum value in the distribution.
 
         Return None if the distribution is empty.
         """
-        min_val = float('NaN')
+        min_val = float('inf')
         for minute_bin in self.get_prior_minute_bins_list():
             if minute_bin.per_thread_dist:
                 min_val = min(min(dist.percentile(0) for dist
                                   in minute_bin.per_thread_dist.values()),
                               min_val)
-        return None if math.isnan(min_val) else min_val
+        return None if float('inf') == min_val else min_val
 
     def get_mean(self):
         """Get the mean of the values in the distribution.
