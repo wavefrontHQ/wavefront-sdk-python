@@ -1,21 +1,23 @@
-"""
-Metadata about your application represented as tags in Wavefront.
+"""Metadata about your application represented as tags in Wavefront.
 
 @author: Hao Song (songhao@vmware.com)
 """
 
-from wavefront_sdk.common.constants import APPLICATION_TAG_KEY, \
-    SERVICE_TAG_KEY, CLUSTER_TAG_KEY, SHARD_TAG_KEY, NULL_TAG_VAL
+from .constants import APPLICATION_TAG_KEY
+from .constants import CLUSTER_TAG_KEY
+from .constants import NULL_TAG_VAL
+from .constants import SERVICE_TAG_KEY
+from .constants import SHARD_TAG_KEY
 
 
-class ApplicationTags:
+# pylint: disable=E0012,R0205
+class ApplicationTags(object):
     """Metadata about your application represented as tags in Wavefront."""
 
     # pylint: disable=too-many-arguments
     def __init__(self, application, service, cluster=None, shard=None,
                  custom_tags=None):
-        """
-        Construct ApplicationTags.
+        """Construct ApplicationTags.
 
         @param application: Application Name
         @param service: Service Name

@@ -1,38 +1,35 @@
 # -*- coding: utf-8 -*-
-
-"""
-Wavefront Direct Ingestion Client.
+"""Wavefront Direct Ingestion Client.
 
 @author Hao Song (songhao@vmware.com)
 """
 
 from __future__ import absolute_import
 
-from threading import Timer, Lock
 import logging
+import threading
+
 import requests
 
 try:
-    import Queue as queue
-except ImportError:
     import queue
+except ImportError:
+    import Queue as queue  # noqa
 
-from wavefront_sdk.common.connection_handler import ConnectionHandler
-from wavefront_sdk.common.utils import metric_to_line_data, \
-    histogram_to_line_data, tracing_span_to_line_data, gzip_compress, chunks
-from wavefront_sdk.entities import WavefrontTracingSpanSender, \
-    WavefrontMetricSender, WavefrontHistogramSender
+from . import common
+from . import entities
+from .common import connection_handler
+from .common.utils import gzip_compress
+
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontDirectClient')
 
 
 # pylint: disable=too-many-instance-attributes
-
-class WavefrontDirectClient(ConnectionHandler,
-                            WavefrontMetricSender,
-                            WavefrontHistogramSender,
-                            WavefrontTracingSpanSender):
-    """
-    Wavefront direct ingestion client.
+class WavefrontDirectClient(connection_handler.ConnectionHandler,
+                            entities.WavefrontMetricSender,
+                            entities.WavefrontHistogramSender,
+                            entities.WavefrontTracingSpanSender):
+    """Wavefront direct ingestion client.
 
     Sends data directly to Wavefront cluster via the direct ingestion API.
     """
@@ -44,8 +41,7 @@ class WavefrontDirectClient(ConnectionHandler,
     # pylint: disable=too-many-arguments
     def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
                  flush_interval_seconds=5):
-        """
-        Construct Direct Client.
+        """Construct Direct Client.
 
         @param server: Server address, Example: https://INSTANCE.wavefront.com
         @type server: str
@@ -61,13 +57,13 @@ class WavefrontDirectClient(ConnectionHandler,
         @param flush_interval_seconds: Interval flush time, 5 secs by default
         @type flush_interval_seconds: int
         """
-        ConnectionHandler.__init__(self)
+        connection_handler.ConnectionHandler.__init__(self)
         self.server = server
         self._token = token
         self._max_queue_size = max_queue_size
         self._batch_size = batch_size
         self._flush_interval_seconds = flush_interval_seconds
-        self._default_source = "wavefrontDirectSender"
+        self._default_source = 'wavefrontDirectSender'
         self._metrics_buffer = queue.Queue(max_queue_size)
         self._histograms_buffer = queue.Queue(max_queue_size)
         self._tracing_spans_buffer = queue.Queue(max_queue_size)
@@ -75,13 +71,12 @@ class WavefrontDirectClient(ConnectionHandler,
                          'Content-Encoding': 'gzip',
                          'Authorization': 'Bearer ' + token}
         self._closed = False
-        self._schedule_lock = Lock()
+        self._schedule_lock = threading.Lock()
         self._timer = None
         self._schedule_timer()
 
     def _report(self, points, data_format):
-        r"""
-        One api call sending one given string data.
+        r"""One api call sending one given string data.
 
         @param points: List of data in string format, concat by '\n'
         @type points: str
@@ -100,8 +95,7 @@ class WavefrontDirectClient(ConnectionHandler,
             raise error
 
     def _batch_report(self, batch_line_data, data_format):
-        """
-        One api call sending one given list of data.
+        """One api call sending one given list of data.
 
         @param batch_line_data: List of data to be sent
         @type batch_line_data: list
@@ -109,17 +103,18 @@ class WavefrontDirectClient(ConnectionHandler,
         @type data_format: str
         """
         # Split data into chunks, each with the size of given batch_size
-        for batch in chunks(batch_line_data, self._batch_size):
+        for batch in common.utils.chunks(batch_line_data, self._batch_size):
             # report once per batch
             try:
                 self._report('\n'.join(batch) + '\n', data_format)
+            # pylint: disable=broad-except,fixme
+            # TODO: Please replace a generic Exception with a specific one.
             except Exception as error:
-                LOGGER.error("Failed to report %s data points to wavefront %s",
+                LOGGER.error('Failed to report %s data points to wavefront %s',
                              data_format, error)
 
     def _internal_flush(self, data_buffer, data_format):
-        """
-        Get all data from one data buffer to a list, and report that list.
+        """Get all data from one data buffer to a list, and report that list.
 
         @param data_buffer: Data buffer to be flush and sent
         @type: Queue
@@ -136,7 +131,8 @@ class WavefrontDirectClient(ConnectionHandler,
     def _schedule_timer(self):
         # Flush every 5 secs by default
         if not self._closed:
-            self._timer = Timer(self._flush_interval_seconds, self._flush)
+            self._timer = threading.Timer(self._flush_interval_seconds,
+                                          self._flush)
             self._timer.start()
 
     def _flush(self):
@@ -168,8 +164,7 @@ class WavefrontDirectClient(ConnectionHandler,
     # pylint: disable=too-many-arguments
 
     def send_metric(self, name, value, timestamp, source, tags):
-        """
-        Send Metric Data via proxy.
+        """Send Metric Data via proxy.
 
         Wavefront Metrics Data format
         <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
@@ -187,13 +182,12 @@ class WavefrontDirectClient(ConnectionHandler,
         @param tags: Tags
         @type tags: dict
         """
-        line_data = metric_to_line_data(name, value, timestamp, source, tags,
-                                        self._default_source)
+        line_data = common.utils.metric_to_line_data(
+            name, value, timestamp, source, tags, self._default_source)
         self._metrics_buffer.put(line_data)
 
     def send_metric_now(self, metrics):
-        """
-        Send a list of metrics immediately.
+        """Send a list of metrics immediately.
 
         Have to construct the data manually by calling
         common.utils.metric_to_line_data()
@@ -207,8 +201,7 @@ class WavefrontDirectClient(ConnectionHandler,
 
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
-        """
-        Send Distribution Data via proxy.
+        """Send Distribution Data via proxy.
 
         Wavefront Histogram Data format
         {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids]
@@ -229,14 +222,13 @@ class WavefrontDirectClient(ConnectionHandler,
         @param tags: Tags
         @type tags: dict
         """
-        line_data = histogram_to_line_data(
+        line_data = common.utils.histogram_to_line_data(
             name, centroids, histogram_granularities, timestamp, source, tags,
             self._default_source)
         self._histograms_buffer.put(line_data)
 
     def send_distribution_now(self, distributions):
-        """
-        Send a list of distribution immediately.
+        """Send a list of distribution immediately.
 
         Have to construct the data manually by calling
         common.utils.metric_to_line_data()
@@ -250,8 +242,7 @@ class WavefrontDirectClient(ConnectionHandler,
 
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
-        """
-        Send span data via proxy.
+        """Send span data via proxy.
 
         Wavefront Tracing Span Data format
         <tracingSpanName> source=<source> [pointTags] <start_millis>
@@ -283,7 +274,7 @@ class WavefrontDirectClient(ConnectionHandler,
         @type tags: list
         @param span_logs: Span Log
         """
-        line_data = tracing_span_to_line_data(
+        line_data = common.utils.tracing_span_to_line_data(
             name, start_millis, duration_millis, source, trace_id, span_id,
             parents, follows_from, tags, span_logs, self._default_source)
         self._tracing_spans_buffer.put(line_data)

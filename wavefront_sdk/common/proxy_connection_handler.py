@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
-"""
-Connection Handler class for sending data to a Wavefront proxy.
+"""Connection Handler class for sending data to a Wavefront proxy.
 
 @author: Hao Song (songhao@vmware.com)
 """
@@ -9,24 +7,23 @@ Connection Handler class for sending data to a Wavefront proxy.
 from __future__ import absolute_import
 
 import socket
-from wavefront_sdk.common.connection_handler import ConnectionHandler
+
+from . import connection_handler
 
 
-class ProxyConnectionHandler(ConnectionHandler):
-    """
-    Connection Handler.
+class ProxyConnectionHandler(connection_handler.ConnectionHandler):
+    """Connection Handler.
 
     For sending data to a Wavefront proxy listening on a given port.
     """
 
     def __init__(self, address, port):
-        """
-        Construct ProxyConnectionHandler.
+        """Construct ProxyConnectionHandler.
 
         @param address: Proxy Address
         @param port: Proxy Port
         """
-        ConnectionHandler.__init__(self)
+        super(ProxyConnectionHandler, self).__init__(self)
         self._address = address
         self._port = int(port)
         self._reconnecting_socket = None
@@ -43,8 +40,7 @@ class ProxyConnectionHandler(ConnectionHandler):
             self._reconnecting_socket.close()
 
     def send_data(self, line_data, reconnect=True):
-        """
-        Send data via proxy.
+        """Send data via proxy.
 
         @param line_data: Data to be sent
         @param reconnect: If it's the second time trying to send data

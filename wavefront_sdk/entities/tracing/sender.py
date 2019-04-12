@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
-
-"""
-Tracing Span Sender Interface for both Clients.
+"""Tracing Span Sender Interface for both Clients.
 
 @author Hao Song (songhao@vmware.com)`
 """
 
 
+# pylint: disable=E0012,R0205
 class WavefrontTracingSpanSender(object):
     """Tracing Span Sender Interface for both Clients."""
 
     # pylint: disable=too-many-arguments
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
-        """
-        Send span data via proxy.
+        """Send span data via proxy.
 
         Wavefront Tracing Span Data format
         <tracingSpanName> source=<source> [pointTags] <start_millis>
@@ -49,8 +47,7 @@ class WavefrontTracingSpanSender(object):
         raise NotImplementedError
 
     def send_span_now(self, spans):
-        """
-        Send a list of spans immediately.
+        """Send a list of spans immediately.
 
         Have to construct the data manually by calling
         common.utils.metric_to_line_data()

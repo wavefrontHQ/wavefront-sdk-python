@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
-
-
-"""
-Interface of Metric Sender for both clients.
+"""Interface of Metric Sender for both clients.
 
 @author Hao Song (songhao@vmware.com)
 """
-
 from __future__ import unicode_literals
 
 
+# pylint: disable=E0012,R0205
 class WavefrontMetricSender(object):
     """Interface of Metric Sender for both clients."""
 
@@ -21,8 +18,7 @@ class WavefrontMetricSender(object):
 
     # pylint: disable=too-many-arguments
     def send_metric(self, name, value, timestamp, source, tags):
-        """
-        Send Metric Data.
+        """Send Metric Data.
 
         Wavefront Metrics Data format
         <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
@@ -43,8 +39,7 @@ class WavefrontMetricSender(object):
         raise NotImplementedError
 
     def send_delta_counter(self, name, value, source, tags):
-        """
-        Send Delta Counter Data.
+        """Send Delta Counter Data.
 
         @param name: Metric Name
         @type name: str
