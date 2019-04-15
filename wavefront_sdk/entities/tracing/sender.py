@@ -57,13 +57,13 @@ class WavefrontTracingSpanSender(object):
         """
         raise NotImplementedError
 
-    def send_span_log_now(self, spans_logs):
+    def send_span_log_now(self, span_logs):
         """Send a list of span logs immediately.
 
         Have to construct the data manually by calling
         common.utils.span_log_to_line_data()
 
-        @param spans_logs: List of string span logs data
-        @type spans_logs: list[str]
+        @param span_logs: List of string span logs data
+        @type span_logs: list[str]
         """
         raise NotImplementedError

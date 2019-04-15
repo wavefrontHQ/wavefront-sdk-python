@@ -7,8 +7,8 @@ Utils module contains useful function for preparing and processing data.
 
 import gzip
 import io
-import re
 import json
+import re
 import threading
 
 
@@ -267,6 +267,14 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
 
 
 def span_log_to_line_data(trace_id, span_id, span_logs, scrambler=None):
+    """Wavefront Tracing Span Log JSON format.
+
+    @param trace_id: Trace ID
+    @param span_id: Span ID
+    @param span_logs: Span Log
+    @param scrambler: Additional UUID, optional
+    @return: Span Log in JSON Format
+    """
     span_log_json = {'traceId': str(trace_id),
                      'spanId': str(span_id),
                      'logs': span_logs}
