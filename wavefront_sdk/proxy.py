@@ -221,8 +221,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             raise error
 
     def send_span_now(self, spans):
-        """
-        Send a list of spans immediately.
+        """Send a list of spans immediately.
 
         Have to construct the data manually by calling
         common.utils.tracing_span_to_line_data()
@@ -239,8 +238,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                 raise error
 
     def send_span_log_now(self, span_logs):
-        """
-        Send a list of span logs immediately.
+        """Send a list of span logs immediately.
 
         Have to construct the data manually by calling
         common.utils.tracing_span_to_line_data()
