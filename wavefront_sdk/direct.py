@@ -37,6 +37,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
     WAVEFRONT_METRIC_FORMAT = 'wavefront'
     WAVEFRONT_HISTOGRAM_FORMAT = 'histogram'
     WAVEFRONT_TRACING_SPAN_FORMAT = 'trace'
+    WAVEFRONT_SPAN_LOG_FORMAT = 'spanLogs'
 
     # pylint: disable=too-many-arguments
     def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
@@ -67,6 +68,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._metrics_buffer = queue.Queue(max_queue_size)
         self._histograms_buffer = queue.Queue(max_queue_size)
         self._tracing_spans_buffer = queue.Queue(max_queue_size)
+        self._spans_log_buffer = queue.Queue(max_queue_size)
         self._headers = {'Content-Type': 'application/octet-stream',
                          'Content-Encoding': 'gzip',
                          'Authorization': 'Bearer ' + token}
@@ -152,6 +154,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                              self.WAVEFRONT_HISTOGRAM_FORMAT)
         self._internal_flush(self._tracing_spans_buffer,
                              self.WAVEFRONT_TRACING_SPAN_FORMAT)
+        self._internal_flush(self._spans_log_buffer,
+                             self.WAVEFRONT_SPAN_LOG_FORMAT)
 
     def close(self):
         """Flush all buffer before close the client."""
@@ -278,6 +282,10 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             name, start_millis, duration_millis, source, trace_id, span_id,
             parents, follows_from, tags, span_logs, self._default_source)
         self._tracing_spans_buffer.put(line_data)
+        if span_logs:
+            span_log_line_data = common.utils.span_log_to_line_data(
+                trace_id, span_id, span_logs)
+            self._spans_log_buffer.put(span_log_line_data)
 
     def send_span_now(self, spans):
         """
@@ -290,3 +298,15 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type spans: list[str]
         """
         self._batch_report(spans, self.WAVEFRONT_TRACING_SPAN_FORMAT)
+
+    def send_span_log_now(self, span_logs):
+        """
+        Send a list of spans logs immediately.
+
+        Have to construct the data manually by calling
+        common.utils.span_log_to_line_data()
+
+        @param span_logs: List of string span logs data
+        @type span_logs: list[str]
+        """
+        self._batch_report(span_logs, self.WAVEFRONT_SPAN_LOG_FORMAT)

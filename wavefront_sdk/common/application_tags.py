@@ -68,5 +68,6 @@ class ApplicationTags(object):
                 (SERVICE_TAG_KEY, self.service),
                 (CLUSTER_TAG_KEY, self.cluster or NULL_TAG_VAL),
                 (SHARD_TAG_KEY, self.shard or NULL_TAG_VAL)]
-        tags.extend(self.custom_tags)
+        if self.custom_tags:
+            tags.extend(self.custom_tags)
         return tags

@@ -211,13 +211,17 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                 name, start_millis, duration_millis, source, trace_id, span_id,
                 parents, follows_from, tags, span_logs, self._default_source)
             self._tracing_proxy_connection_handler.send_data(line_data)
+            if span_logs:
+                span_log_line_data = common.utils.span_log_to_line_data(
+                    trace_id, span_id, span_logs)
+                self._tracing_proxy_connection_handler.send_data(
+                    span_log_line_data)
         except Exception as error:
             self._tracing_proxy_connection_handler.increment_failure_count()
             raise error
 
     def send_span_now(self, spans):
-        """
-        Send a list of spans immediately.
+        """Send a list of spans immediately.
 
         Have to construct the data manually by calling
         common.utils.tracing_span_to_line_data()
@@ -231,4 +235,21 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             except Exception as error:
                 self._tracing_proxy_connection_handler.increment_failure_count(
                     )
+                raise error
+
+    def send_span_log_now(self, span_logs):
+        """Send a list of span logs immediately.
+
+        Have to construct the data manually by calling
+        common.utils.tracing_span_to_line_data()
+
+        @param span_logs: List of string span log data
+        @type span_logs: list[str]
+        """
+        for span_log in span_logs:
+            try:
+                self._tracing_proxy_connection_handler.send_data(span_log)
+            except Exception as error:
+                self._tracing_proxy_connection_handler.increment_failure_count(
+                )
                 raise error
