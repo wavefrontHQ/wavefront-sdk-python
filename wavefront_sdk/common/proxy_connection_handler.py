@@ -23,7 +23,7 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
         @param address: Proxy Address
         @param port: Proxy Port
         """
-        super(ProxyConnectionHandler, self).__init__(self)
+        super(ProxyConnectionHandler, self).__init__()
         self._address = address
         self._port = int(port)
         self._reconnecting_socket = None
