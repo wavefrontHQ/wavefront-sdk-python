@@ -102,7 +102,7 @@ class TestHistogramImpl(unittest.TestCase):
         self.assertEqual(0, snapshot.get_count())
         self.assertAlmostEqual(None, snapshot.get_max(), delta=self._DELTA)
         self.assertAlmostEqual(None, snapshot.get_min(), delta=self._DELTA)
-        self.assertAlmostEqual(None, snapshot.get_mean(), delta=self._DELTA)
+        self.assertAlmostEqual(0, snapshot.get_mean(), delta=self._DELTA)
         self.assertAlmostEqual(0, snapshot.get_sum(), delta=self._DELTA)
         self.assertAlmostEqual(None, snapshot.get_value(0.5),
                                delta=self._DELTA)
