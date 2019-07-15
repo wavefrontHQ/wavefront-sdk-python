@@ -196,7 +196,7 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
 # pylint: disable=unused-argument
 def tracing_span_to_line_data(name, start_millis, duration_millis, source,
                               trace_id, span_id, parents, follows_from, tags,
-                              span_logs, default_source):
+                              span_logs, default_source, logging=None):
     """Wavefront Tracing Span Data format.
 
     <tracingSpanName> source=<source> [pointTags] <start_millis>
@@ -256,7 +256,10 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
             if is_blank(key):
                 raise ValueError('Span tag key cannot be blank')
             if is_blank(val):
-                raise ValueError('Span tag val cannot be blank')
+                if logging and callable(getattr(logging, 'warning', None)):
+                    logging.warning('Span tag value cannot be blank for tag '
+                                    'key: %s', key)
+                continue
             cur_tag = sanitize(key) + '=' + sanitize(val)
             if cur_tag not in tag_set:
                 str_builder.append(cur_tag)

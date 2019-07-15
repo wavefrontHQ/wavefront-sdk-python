@@ -191,6 +191,20 @@ class TestUtils(unittest.TestCase):
                 uuid.UUID('0313bafe-9457-11e8-9eb6-529269fb1459'),
                 None, None, None, None, 'defaultSource'))
 
+        # empty tag value
+        self.assertEqual(
+            '"getAllUsers" source="localhost" '
+            'traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 '
+            'spanId=0313bafe-9457-11e8-9eb6-529269fb1459 '
+            '"abc"="123" '
+            '1493773500 343500\n',
+            tracing_span_to_line_data(
+                'getAllUsers', 1493773500, 343500, 'localhost',
+                uuid.UUID('7b3bf470-9456-11e8-9eb6-529269fb1459'),
+                uuid.UUID('0313bafe-9457-11e8-9eb6-529269fb1459'),
+                None, None, [('abc', '123'), ('empty_key', '')], None,
+                'defaultSource'))
+
 
 if __name__ == '__main__':
     # run 'python -m unittest discover' from top-level to run tests
