@@ -12,7 +12,7 @@ from wavefront_sdk.common.metrics import counter, gauge
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontSdkMetricsRegistry')
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,E0012,R0205
 class WavefrontSdkMetricsRegistry(object):
     """Wavefront SDK Metrics Registry."""
 
