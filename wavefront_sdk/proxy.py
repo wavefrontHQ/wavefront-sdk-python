@@ -6,11 +6,15 @@
 
 from __future__ import absolute_import
 
+import logging
 from socket import gethostname
 
-from . import common
 from . import entities
+from .common import constants, utils
+from .common.metrics import registry
 from .common.proxy_connection_handler import ProxyConnectionHandler
+
+LOGGER = logging.getLogger('wavefront_sdk.WavefrontDirectClient')
 
 
 # pylint: disable=too-many-instance-attributes
@@ -38,16 +42,63 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         self.metrics_port = metrics_port
         self.distribution_port = distribution_port
         self.tracing_port = tracing_port
+
+        self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
+            wf_metric_sender=self,
+            prefix='{}.core.sender.proxy'.format(constants.SDK_METRIC_PREFIX))
+
         self._metrics_proxy_connection_handler = (
             None if metrics_port is None
-            else ProxyConnectionHandler(host, metrics_port))
+            else ProxyConnectionHandler(host, metrics_port,
+                                        self._sdk_metrics_registry,
+                                        'metricHandler'))
         self._histogram_proxy_connection_handler = (
             None if distribution_port is None
-            else ProxyConnectionHandler(host, distribution_port))
+            else ProxyConnectionHandler(host, distribution_port,
+                                        self._sdk_metrics_registry,
+                                        'histogramHandler'))
         self._tracing_proxy_connection_handler = (
             None if tracing_port is None
-            else ProxyConnectionHandler(host, tracing_port))
+            else ProxyConnectionHandler(host, tracing_port,
+                                        self._sdk_metrics_registry,
+                                        'tracingHandler'))
         self._default_source = gethostname()
+
+        self._points_discarded = self._sdk_metrics_registry.new_counter(
+            'points.discarded')
+        self._points_dropped = self._sdk_metrics_registry.new_counter(
+            'points.dropped')
+        self._points_valid = self._sdk_metrics_registry.new_counter(
+            'points.valid')
+        self._points_invalid = self._sdk_metrics_registry.new_counter(
+            'points.invalid')
+
+        self._histograms_dropped = self._sdk_metrics_registry.new_counter(
+            'histograms.dropped')
+        self._histograms_discarded = self._sdk_metrics_registry.new_counter(
+            'histograms.discarded')
+        self._histograms_valid = self._sdk_metrics_registry.new_counter(
+            'histograms.valid')
+        self._histograms_invalid = self._sdk_metrics_registry.new_counter(
+            'histograms.invalid')
+
+        self._spans_dropped = self._sdk_metrics_registry.new_counter(
+            'spans.dropped')
+        self._spans_discarded = self._sdk_metrics_registry.new_counter(
+            'spans.discarded')
+        self._spans_valid = self._sdk_metrics_registry.new_counter(
+            'spans.valid')
+        self._spans_invalid = self._sdk_metrics_registry.new_counter(
+            'spans.invalid')
+
+        self._span_logs_dropped = self._sdk_metrics_registry.new_counter(
+            'span_logs.dropped')
+        self._span_logs_discarded = self._sdk_metrics_registry.new_counter(
+            'span_logs.discarded')
+        self._span_logs_valid = self._sdk_metrics_registry.new_counter(
+            'span_logs.valid')
+        self._span_logs_invalid = self._sdk_metrics_registry.new_counter(
+            'span_logs.invalid')
 
     def close(self):
         """Close all proxy connections."""
@@ -95,11 +146,19 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         @param tags: Tags
         @type tags: dict
         """
+        if not self._metrics_proxy_connection_handler:
+            self._points_discarded.inc()
+            LOGGER.warning("Can't send data to Wavefront. Please configure "
+                           "metrics port for Wavefront proxy.")
         try:
-            line_data = common.utils.metric_to_line_data(
+            line_data = utils.metric_to_line_data(
                 name, value, timestamp, source, tags, self._default_source)
+            self._points_valid.inc()
             self._metrics_proxy_connection_handler.send_data(line_data)
+        except ValueError:
+            self._points_invalid.inc()
         except Exception as error:
+            self._points_dropped.inc()
             self._metrics_proxy_connection_handler.increment_failure_count()
             raise error
 
@@ -112,10 +171,15 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         @param metrics: List of string spans data
         @type metrics: list[str]
         """
+        if not self._metrics_proxy_connection_handler:
+            self._points_discarded.inc()
+            LOGGER.warning("Can't send data to Wavefront. Please configure "
+                           "metrics port for Wavefront proxy.")
         for metric in metrics:
             try:
                 self._metrics_proxy_connection_handler.send_data(metric)
             except Exception as error:
+                self._points_dropped.inc()
                 self._metrics_proxy_connection_handler.increment_failure_count(
                 )
                 raise error
@@ -144,12 +208,20 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         @param tags: Tags
         @type tags: dict
         """
+        if not self._histogram_proxy_connection_handler:
+            self._histograms_discarded.inc()
+            LOGGER.warning("Can't send data to Wavefront. Please configure "
+                           "histogram distribution port for Wavefront proxy.")
         try:
-            line_data = common.utils.histogram_to_line_data(
+            line_data = utils.histogram_to_line_data(
                 name, centroids, histogram_granularities, timestamp, source,
                 tags, self._default_source)
+            self._histograms_valid.inc()
             self._histogram_proxy_connection_handler.send_data(line_data)
+        except ValueError:
+            self._histograms_invalid.inc()
         except Exception as error:
+            self._histograms_dropped.inc()
             self._histogram_proxy_connection_handler.increment_failure_count()
             raise error
 
@@ -162,11 +234,16 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         @param distributions: List of string distribution data
         @type distributions: list[str]
         """
+        if not self._histogram_proxy_connection_handler:
+            self._histograms_discarded.inc()
+            LOGGER.warning("Can't send data to Wavefront. Please configure "
+                           "histogram distribution port for Wavefront proxy.")
         for distribution in distributions:
             try:
                 self._histogram_proxy_connection_handler.send_data(
                     distribution)
             except Exception as error:
+                self._histograms_dropped.inc()
                 (self._histogram_proxy_connection_handler
                  .increment_failure_count())
                 raise error
@@ -206,19 +283,39 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         @type tags: list
         @param span_logs: Span Log
         """
-        try:
-            line_data = common.utils.tracing_span_to_line_data(
-                name, start_millis, duration_millis, source, trace_id, span_id,
-                parents, follows_from, tags, span_logs, self._default_source)
-            self._tracing_proxy_connection_handler.send_data(line_data)
+        if not self._tracing_proxy_connection_handler:
+            self._spans_discarded.inc()
             if span_logs:
-                span_log_line_data = common.utils.span_log_to_line_data(
-                    trace_id, span_id, span_logs)
-                self._tracing_proxy_connection_handler.send_data(
-                    span_log_line_data)
+                self._span_logs_discarded.inc()
+            LOGGER.warning("Can't send data to Wavefront. Please configure "
+                           "tracing port for Wavefront proxy.")
+        try:
+            line_data = utils.tracing_span_to_line_data(
+                name, start_millis, duration_millis, source, trace_id,
+                span_id, parents, follows_from, tags, span_logs,
+                self._default_source)
+            self._spans_valid.inc()
+            self._tracing_proxy_connection_handler.send_data(line_data)
+        except ValueError:
+            self._spans_invalid.inc()
         except Exception as error:
+            self._spans_dropped.inc()
             self._tracing_proxy_connection_handler.increment_failure_count()
             raise error
+        if span_logs:
+            try:
+                span_log_line_data = utils.span_log_to_line_data(
+                    trace_id, span_id, span_logs)
+                self._span_logs_valid.inc()
+                self._tracing_proxy_connection_handler.send_data(
+                    span_log_line_data)
+            except ValueError:
+                self._span_logs_invalid.inc()
+            except Exception as error:
+                self._span_logs_dropped.inc()
+                (self._tracing_proxy_connection_handler.
+                 increment_failure_count())
+                raise error
 
     def send_span_now(self, spans):
         """Send a list of spans immediately.
@@ -229,10 +326,15 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         @param spans: List of string tracing span data
         @type spans: list[str]
         """
+        if not self._tracing_proxy_connection_handler:
+            self._spans_discarded.inc()
+            LOGGER.warning("Can't send data to Wavefront. Please configure "
+                           "tracing port for Wavefront proxy.")
         for span in spans:
             try:
                 self._tracing_proxy_connection_handler.send_data(span)
             except Exception as error:
+                self._spans_dropped.inc()
                 self._tracing_proxy_connection_handler.increment_failure_count(
                     )
                 raise error
@@ -246,10 +348,15 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         @param span_logs: List of string span log data
         @type span_logs: list[str]
         """
+        if not self._tracing_proxy_connection_handler:
+            self._span_logs_discarded.inc()
+            LOGGER.warning("Can't send data to Wavefront. Please configure "
+                           "tracing port for Wavefront proxy.")
         for span_log in span_logs:
             try:
                 self._tracing_proxy_connection_handler.send_data(span_log)
             except Exception as error:
+                self._span_logs_dropped.inc()
                 self._tracing_proxy_connection_handler.increment_failure_count(
                 )
                 raise error

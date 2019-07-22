@@ -35,6 +35,14 @@ class WavefrontHistogramSender(object):
         """
         raise NotImplementedError
 
+    def send_formatted_metric(self, distribution):
+        """Send a formatted histogram immediately.
+
+        @param distribution: Formatted distribution
+        @type: str
+        """
+        self.send_distribution_now([distribution])
+
     def send_distribution_now(self, distributions):
         """Send a list of distributions immediately.
 

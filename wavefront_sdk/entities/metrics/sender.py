@@ -38,6 +38,25 @@ class WavefrontMetricSender(object):
         """
         raise NotImplementedError
 
+    def send_formatted_metric(self, point):
+        """Send a formatted metric immediately.
+
+        @param point: Formatted metric point
+        @type: str
+        """
+        self.send_metric_now([point])
+
+    def send_metric_now(self, metrics):
+        """Send a list of metrics immediately.
+
+        Have to construct the data manually by calling
+        common.utils.metric_to_line_data()
+
+        @param metrics: List of string spans data
+        @type metrics: list[str]
+        """
+        raise NotImplementedError
+
     def send_delta_counter(self, name, value, source, tags):
         """Send Delta Counter Data.
 
