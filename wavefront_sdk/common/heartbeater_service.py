@@ -38,6 +38,7 @@ class HeartbeaterService(object):
         self.source = source
         self.reporting_interval_seconds = 60 * 5
         self.heartbeat_metric_tags_list = []
+        self.custom_tags_set = set()
         if isinstance(components, str):
             components = [components]
         for component in components:
@@ -53,6 +54,14 @@ class HeartbeaterService(object):
         self._closed = False
         self._timer = None
         self._run()
+
+    def report_custom_tags(self, custom_tags):
+        """
+        Append custom tags for heartbeat reporting.
+
+        @param custom_tags: dict of custom tags.
+        """
+        self.custom_tags_set.add(custom_tags)
 
     def _schedule_timer(self):
         self._timer = threading.Timer(self.reporting_interval_seconds,
@@ -72,6 +81,11 @@ class HeartbeaterService(object):
                 self.wavefront_client.send_metric(HEART_BEAT_METRIC, 1.0,
                                                   time.time(), self.source,
                                                   heartbeat)
+            while self.custom_tags_set:
+                self.wavefront_client.send_metric(HEART_BEAT_METRIC, 1.0,
+                                                  time.time(), self.source,
+                                                  self.custom_tags_set.pop())
+
         # pylint: disable=broad-except,fixme
         # TODO: Please make sure we catch more specific exception here.
         except Exception:
