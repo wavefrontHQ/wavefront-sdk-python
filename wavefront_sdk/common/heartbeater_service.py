@@ -21,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 
 # pylint: disable=E0012,R0205
 # pylint: disable=too-few-public-methods
+# pylint: disable=too-many-instance-attributes
 class HeartbeaterService(object):
     """Service that periodically reports component heartbeats to Wavefront."""
 
