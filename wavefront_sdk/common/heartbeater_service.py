@@ -42,12 +42,12 @@ class HeartbeaterService(object):
             components = [components]
         for component in components:
             metric_tags = {
-                    APPLICATION_TAG_KEY: application_tags.application,
-                    CLUSTER_TAG_KEY: application_tags.cluster or NULL_TAG_VAL,
-                    SERVICE_TAG_KEY: application_tags.service,
-                    SHARD_TAG_KEY: application_tags.shard or NULL_TAG_VAL,
-                    COMPONENT_TAG_KEY: component
-                }
+                APPLICATION_TAG_KEY: application_tags.application,
+                CLUSTER_TAG_KEY: application_tags.cluster or NULL_TAG_VAL,
+                SERVICE_TAG_KEY: application_tags.service,
+                SHARD_TAG_KEY: application_tags.shard or NULL_TAG_VAL,
+                COMPONENT_TAG_KEY: component
+            }
             if application_tags.custom_tags:
                 metric_tags.update(dict(application_tags.custom_tags))
             self.heartbeat_metric_tags_list.append(metric_tags)
