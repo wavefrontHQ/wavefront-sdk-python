@@ -3,7 +3,6 @@
 
 @author Hao Song (songhao@vmware.com)
 """
-import numbers
 import threading
 
 from wavefront_sdk.common.metrics import metrics
