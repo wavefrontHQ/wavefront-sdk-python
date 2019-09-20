@@ -15,8 +15,6 @@ from .constants import NULL_TAG_VAL
 from .constants import SERVICE_TAG_KEY
 from .constants import SHARD_TAG_KEY
 
-LOGGER = logging.getLogger(__name__)
-
 
 # pylint: disable=E0012,R0205
 # pylint: disable=too-few-public-methods
@@ -90,7 +88,7 @@ class HeartbeaterService(object):
         # pylint: disable=broad-except,fixme
         # TODO: Please make sure we catch more specific exception here.
         except Exception:
-            LOGGER.warning('Can not report %s to wavefront', HEART_BEAT_METRIC)
+            logging.warning('Can not report %s to wavefront', HEART_BEAT_METRIC)
 
     def close(self):
         """Cancel the timer."""
