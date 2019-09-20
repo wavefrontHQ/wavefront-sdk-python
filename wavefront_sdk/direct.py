@@ -21,8 +21,6 @@ from . import entities
 from .common import connection_handler
 from .common.utils import gzip_compress
 
-LOGGER = logging.getLogger('wavefront_sdk.WavefrontDirectClient')
-
 
 # pylint: disable=too-many-instance-attributes
 class WavefrontDirectClient(connection_handler.ConnectionHandler,
@@ -112,8 +110,9 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             # pylint: disable=broad-except,fixme
             # TODO: Please replace a generic Exception with a specific one.
             except Exception as error:
-                LOGGER.error('Failed to report %s data points to wavefront %s',
-                             data_format, error)
+                logging.error(
+                    'Failed to report %s data points to wavefront %s',
+                    data_format, error)
 
     def _internal_flush(self, data_buffer, data_format):
         """Get all data from one data buffer to a list, and report that list.

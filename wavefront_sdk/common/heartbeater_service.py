@@ -88,7 +88,8 @@ class HeartbeaterService(object):
         # pylint: disable=broad-except,fixme
         # TODO: Please make sure we catch more specific exception here.
         except Exception:
-            logging.warning('Can not report %s to wavefront', HEART_BEAT_METRIC)
+            logging.warning('Can not report %s to wavefront',
+                            HEART_BEAT_METRIC)
 
     def close(self):
         """Cancel the timer."""
