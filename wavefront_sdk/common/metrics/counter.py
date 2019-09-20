@@ -17,11 +17,10 @@ class WavefrontSdkCounter(metrics.WavefrontSdkMetric):
         self._lock = threading.Lock()
         self._count = 0
 
-    def inc(self, val=None):
+    def inc(self, val=1):
         """Increase the value of the counter."""
         with self._lock:
-            self._count += val if val and isinstance(val, numbers.Number) \
-                else 1
+            self._count += val
 
     def count(self):
         """Get the value of the counter."""
