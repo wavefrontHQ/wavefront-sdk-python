@@ -45,9 +45,11 @@ class WavefrontSdkMetricsRegistry(object):
             name = self.prefix + key
             try:
                 if isinstance(val, gauge.WavefrontSdkGauge):
-                    self.wf_metric_sender.send_metric(
-                        name, val.get_value(), timestamp, self.source,
-                        self.tags)
+                    gauge_value = val.get_value()
+                    if gauge_value:
+                        self.wf_metric_sender.send_metric(
+                            name, gauge_value, timestamp, self.source,
+                            self.tags)
                 elif isinstance(val, counter.WavefrontSdkCounter):
                     self.wf_metric_sender.send_metric(
                         name + '.count', val.count(), timestamp,

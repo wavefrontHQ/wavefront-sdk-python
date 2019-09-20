@@ -106,8 +106,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'histograms.invalid')
         self._histograms_dropped = self._sdk_metrics_registry.new_counter(
             'histograms.dropped')
-        self._histograms_report_errors = self._sdk_metrics_registry. \
-            new_counter('histograms.report.errors')
+        self._histograms_report_errors = (
+            self._sdk_metrics_registry.new_counter('histograms.report.errors'))
 
         self._sdk_metrics_registry.new_gauge(
             'spans.queue.size', self._tracing_spans_buffer.qsize)
@@ -424,8 +424,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     def get_failure_count(self):
         """Get failure count for one connection."""
-        return self._points_report_errors + self._histograms_report_errors + \
-            self._spans_report_errors + self._span_logs_report_errors
+        return (self._points_report_errors + self._histograms_report_errors +
+                self._spans_report_errors + self._span_logs_report_errors)
 
 
 def remaining_capacity_getter(buf):

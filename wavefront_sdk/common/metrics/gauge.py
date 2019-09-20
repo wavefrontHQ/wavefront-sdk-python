@@ -17,4 +17,6 @@ class WavefrontSdkGauge(metrics.WavefrontSdkMetric):
 
     def get_value(self):
         """Get value of the gauge."""
-        return self.supplier()
+        if callable(self.supplier):
+            return self.supplier()
+        return None
