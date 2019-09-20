@@ -15,7 +15,6 @@ from .constants import NULL_TAG_VAL
 from .constants import SERVICE_TAG_KEY
 from .constants import SHARD_TAG_KEY
 
-logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
