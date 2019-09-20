@@ -47,3 +47,6 @@ COMPONENT_TAG_KEY = 'component'
 
 # Heart beat interval.
 HEART_BEAT_INTERVAL = 10
+
+# Name prefix for internal diagnostic metrics for Wavefront SDKs.
+SDK_METRIC_PREFIX = '~sdk.python'

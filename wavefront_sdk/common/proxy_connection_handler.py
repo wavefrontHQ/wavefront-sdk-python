@@ -17,7 +17,8 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
     For sending data to a Wavefront proxy listening on a given port.
     """
 
-    def __init__(self, address, port):
+    def __init__(self, address, port, wavefront_sdk_metrics_registry,
+                 entity_prefix=None):
         """Construct ProxyConnectionHandler.
 
         @param address: Proxy Address
@@ -26,6 +27,12 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
         super(ProxyConnectionHandler, self).__init__()
         self._address = address
         self._port = int(port)
+        self.entity_prefix = '' if not entity_prefix else entity_prefix + ''
+        self.wf_metrics_registry = wavefront_sdk_metrics_registry
+        self._write_successes = self.wf_metrics_registry.new_counter(
+            self.entity_prefix + 'write.success')
+        self._write_errors = self.wf_metrics_registry.new_counter(
+            self.entity_prefix + 'write.errors')
         self._reconnecting_socket = None
 
     def connect(self):
@@ -49,6 +56,7 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
             if not self._reconnecting_socket:
                 self.connect()
             self._reconnecting_socket.sendall(line_data.encode('utf-8'))
+            self._write_successes.inc()
         except socket.error as error:
             if reconnect:
                 self._reconnecting_socket = None
@@ -56,4 +64,5 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
                 self.send_data(line_data, reconnect=False)
             else:
                 # Second time trying failed
+                self._write_errors.inc()
                 raise error

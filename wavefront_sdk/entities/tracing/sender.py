@@ -46,6 +46,14 @@ class WavefrontTracingSpanSender(object):
         """
         raise NotImplementedError
 
+    def send_formatted_span(self, span):
+        """Send a formatted span immediately.
+
+        @param span: Formatted span
+        @type: str
+        """
+        self.send_span_now([span])
+
     def send_span_now(self, spans):
         """Send a list of spans immediately.
 
