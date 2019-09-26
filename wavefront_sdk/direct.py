@@ -21,8 +21,6 @@ from . import entities
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
 
-LOGGER = logging.getLogger('wavefront_sdk.WavefrontDirectClient')
-
 
 # pylint: disable=too-many-instance-attributes
 class WavefrontDirectClient(connection_handler.ConnectionHandler,
@@ -177,8 +175,9 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             # pylint: disable=broad-except,fixme
             # TODO: Please replace a generic Exception with a specific one.
             except Exception as error:
-                LOGGER.error('Failed to report %s data points to wavefront %s',
-                             data_format, error)
+                logging.error(
+                    'Failed to report %s data points to wavefront %s',
+                    data_format, error)
 
     def _internal_flush(self, data_buffer, data_format, entity_prefix,
                         report_errors):
