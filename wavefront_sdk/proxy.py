@@ -27,7 +27,8 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
     when exceptions are thrown from any methods.
     """
 
-    def __init__(self, host, metrics_port, distribution_port, tracing_port, timeout=None):
+    def __init__(self, host, metrics_port, distribution_port, tracing_port,
+                 timeout=None):
         """Construct Proxy Client.
 
         @param host: Hostname of the Wavefront proxy, 2878 by default
