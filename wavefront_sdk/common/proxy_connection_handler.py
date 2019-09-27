@@ -11,12 +11,14 @@ import socket
 from . import connection_handler
 
 
+# pylint: disable=too-many-instance-attributes
 class ProxyConnectionHandler(connection_handler.ConnectionHandler):
     """Connection Handler.
 
     For sending data to a Wavefront proxy listening on a given port.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, address, port, wavefront_sdk_metrics_registry,
                  entity_prefix=None, timeout=None):
         """Construct ProxyConnectionHandler.
