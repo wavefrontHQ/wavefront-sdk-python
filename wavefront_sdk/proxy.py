@@ -27,7 +27,9 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
     when exceptions are thrown from any methods.
     """
 
-    def __init__(self, host, metrics_port, distribution_port, tracing_port):
+    # pylint: disable=too-many-arguments
+    def __init__(self, host, metrics_port, distribution_port, tracing_port,
+                 timeout=None):
         """Construct Proxy Client.
 
         @param host: Hostname of the Wavefront proxy, 2878 by default
@@ -37,6 +39,8 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         Distribution Port on which the Wavefront proxy is listening on
         @param tracing_port:
         Tracing Port on which the Wavefront proxy is listening on
+        @param timeout:
+        Timeout to set on socket connecting to proxy
         """
         self.proxy_host = host
         self.metrics_port = metrics_port
@@ -51,17 +55,20 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             None if metrics_port is None
             else ProxyConnectionHandler(host, metrics_port,
                                         self._sdk_metrics_registry,
-                                        'metricHandler'))
+                                        'metricHandler',
+                                        timeout=timeout))
         self._histogram_proxy_connection_handler = (
             None if distribution_port is None
             else ProxyConnectionHandler(host, distribution_port,
                                         self._sdk_metrics_registry,
-                                        'histogramHandler'))
+                                        'histogramHandler',
+                                        timeout=timeout))
         self._tracing_proxy_connection_handler = (
             None if tracing_port is None
             else ProxyConnectionHandler(host, tracing_port,
                                         self._sdk_metrics_registry,
-                                        'tracingHandler'))
+                                        'tracingHandler',
+                                        timeout=timeout))
         self._default_source = gethostname()
 
         self._points_discarded = self._sdk_metrics_registry.new_counter(

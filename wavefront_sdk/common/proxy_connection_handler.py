@@ -11,14 +11,16 @@ import socket
 from . import connection_handler
 
 
+# pylint: disable=too-many-instance-attributes
 class ProxyConnectionHandler(connection_handler.ConnectionHandler):
     """Connection Handler.
 
     For sending data to a Wavefront proxy listening on a given port.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, address, port, wavefront_sdk_metrics_registry,
-                 entity_prefix=None):
+                 entity_prefix=None, timeout=None):
         """Construct ProxyConnectionHandler.
 
         @param address: Proxy Address
@@ -28,6 +30,7 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
         self._address = address
         self._port = int(port)
         self.entity_prefix = '' if not entity_prefix else entity_prefix + ''
+        self.timeout = timeout
         self.wf_metrics_registry = wavefront_sdk_metrics_registry
         self._write_successes = self.wf_metrics_registry.new_counter(
             self.entity_prefix + 'write.success')
@@ -39,6 +42,7 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
         """Initialize socket and connect to given address:port."""
         self._reconnecting_socket = socket.socket(socket.AF_INET,
                                                   socket.SOCK_STREAM)
+        self._reconnecting_socket.settimeout(self.timeout)
         self._reconnecting_socket.connect((self._address, self._port))
 
     def close(self):
