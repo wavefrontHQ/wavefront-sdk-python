@@ -200,6 +200,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         if not self._closed:
             self._timer = threading.Timer(self._flush_interval_seconds,
                                           self._flush)
+            self._timer.daemon = True
             self._timer.start()
 
     def _flush(self):

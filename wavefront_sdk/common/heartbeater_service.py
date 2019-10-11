@@ -65,6 +65,7 @@ class HeartbeaterService(object):
     def _schedule_timer(self):
         self._timer = threading.Timer(self.reporting_interval_seconds,
                                       self._run)
+        self._timer.daemon = True
         self._timer.start()
 
     def _run(self):
