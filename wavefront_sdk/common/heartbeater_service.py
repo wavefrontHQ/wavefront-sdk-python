@@ -7,6 +7,8 @@ import logging
 import threading
 import time
 
+from wavefront_sdk.common.utils import HashableDict
+
 from .constants import APPLICATION_TAG_KEY
 from .constants import CLUSTER_TAG_KEY
 from .constants import COMPONENT_TAG_KEY
@@ -60,7 +62,7 @@ class HeartbeaterService(object):
 
         @param custom_tags: dict of custom tags.
         """
-        self.custom_tags_set.add(custom_tags)
+        self.custom_tags_set.add(HashableDict(custom_tags))
 
     def _schedule_timer(self):
         self._timer = threading.Timer(self.reporting_interval_seconds,

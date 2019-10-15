@@ -43,6 +43,14 @@ class AtomicCounter(object):
         return self.value
 
 
+class HashableDict(dict):
+    """Hashable Dict."""
+
+    def __hash__(self):
+        """Hash of the dict."""
+        return hash(tuple(sorted(self.items())))
+
+
 def chunks(data_list, batch_size):
     """Split list of data into chunks with fixed batch size.
 
