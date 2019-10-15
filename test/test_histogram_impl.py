@@ -151,6 +151,15 @@ class TestHistogramImpl(unittest.TestCase):
         self.assertAlmostEqual(121121.1, self._pow_10.get_snapshot().get_sum(),
                                delta=self._DELTA)
 
+    def test_std_dev(self):
+        """Test get std dev of distribution."""
+        self.assertAlmostEqual(30859.85, self._pow_10.std_dev(),
+                               delta=self._DELTA)
+        self.assertAlmostEqual(28.87, self._inc_100.std_dev(),
+                               delta=self._DELTA)
+        self.assertAlmostEqual(288.67, self._inc_1000.std_dev(),
+                               delta=self._DELTA)
+
     def test_size(self):
         """Test get size of distribution."""
         self.assertEqual(9, self._pow_10.get_snapshot().get_size())

@@ -36,6 +36,7 @@ class WavefrontSdkMetricsRegistry(object):
         if not self._closed:
             self._timer = threading.Timer(self.reporting_interval_secs,
                                           self._run)
+            self._timer.daemon = True
             self._timer.start()
 
     # pylint: disable=broad-except

@@ -5,6 +5,7 @@
 from __future__ import division
 # pylint: disable=E0012,R0205
 
+import math
 import threading
 import time
 
@@ -261,10 +262,18 @@ class WavefrontHistogramImpl(object):
         self.get_or_update_current_bin(self.current_minute_millis())
         return self._prior_minute_bins_list
 
-    @staticmethod
-    def std_dev():
-        """Not supported. Return None."""
-        return None
+    def std_dev(self):
+        """Return the stdDev of the values in the distribution."""
+        mean = self.get_mean()
+        variance_sum = 0
+        count = 0
+        for minute_bin in self.get_prior_minute_bins_list():
+            centroids = minute_bin.get_centroids()
+            count += sum(c['c'] for c in centroids)
+            variance_sum += sum(c['c'] * ((c['m'] - mean) ** 2) for c in
+                                centroids)
+        variance = variance_sum / count
+        return math.sqrt(variance)
 
     def flush_distributions(self):
         """Aggregate all the minute bins prior to the current minute.
