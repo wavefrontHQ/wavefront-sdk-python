@@ -18,7 +18,7 @@ class WavefrontSdkMetricsRegistry(object):
 
     # pylint: disable=too-many-arguments
     def __init__(self, wf_metric_sender, source=None, tags=None, prefix=None,
-                 reporting_interval_secs=5):
+                 reporting_interval_secs=60):
         """Construct Wavefront SDK Metrics Registry."""
         self.wf_metric_sender = wf_metric_sender
         self.source = source
