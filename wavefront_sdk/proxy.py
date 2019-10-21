@@ -29,7 +29,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
 
     # pylint: disable=too-many-arguments
     def __init__(self, host, metrics_port, distribution_port, tracing_port,
-                 timeout=None):
+                 timeout=None, enable_internal_metrics=True):
         """Construct Proxy Client.
 
         @param host: Hostname of the Wavefront proxy, 2878 by default
@@ -47,9 +47,14 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         self.distribution_port = distribution_port
         self.tracing_port = tracing_port
 
-        self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
-            wf_metric_sender=self,
-            prefix='{}.core.sender.proxy'.format(constants.SDK_METRIC_PREFIX))
+        if enable_internal_metrics:
+            self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
+                wf_metric_sender=self,
+                prefix='{}.core.sender.proxy'.format(
+                    constants.SDK_METRIC_PREFIX))
+        else:
+            self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
+                wf_metric_sender=None)
 
         self._metrics_proxy_connection_handler = (
             None if metrics_port is None

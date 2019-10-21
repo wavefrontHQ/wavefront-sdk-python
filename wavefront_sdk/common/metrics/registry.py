@@ -69,7 +69,8 @@ class WavefrontSdkMetricsRegistry(object):
     def close(self):
         """Close Wavefront SDK Metrics Registry."""
         try:
-            self._report()
+            if self.wf_metric_sender:
+                self._report()
         finally:
             with self._schedule_lock:
                 self._closed = True

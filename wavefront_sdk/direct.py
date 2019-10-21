@@ -39,7 +39,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     # pylint: disable=too-many-arguments
     def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
-                 flush_interval_seconds=5):
+                 flush_interval_seconds=5, enable_internal_metrics=True):
         """Construct Direct Client.
 
         @param server: Server address, Example: https://INSTANCE.wavefront.com
@@ -75,9 +75,14 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._timer = None
         self._schedule_timer()
 
-        self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
-            wf_metric_sender=self,
-            prefix='{}.core.sender.direct'.format(constants.SDK_METRIC_PREFIX))
+        if enable_internal_metrics:
+            self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
+                wf_metric_sender=self,
+                prefix='{}.core.sender.direct'.format(
+                    constants.SDK_METRIC_PREFIX))
+        else:
+            self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
+                wf_metric_sender=None)
 
         self._sdk_metrics_registry.new_gauge(
             'points.queue.size', self._metrics_buffer.qsize)
