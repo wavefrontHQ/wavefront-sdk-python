@@ -11,6 +11,8 @@ import json
 import re
 import threading
 
+from wavefront_sdk.common.constants import SPAN_LOG_KEY
+
 
 # pylint: disable=E0012,R0205
 class AtomicCounter(object):
@@ -257,7 +259,7 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
         for uuid in follows_from:
             str_builder.append('followsFrom=' + str(uuid))
     if span_logs:
-        tags.append(('spanLogs', 'true'))
+        tags.append((SPAN_LOG_KEY, 'true'))
     if tags is not None:
         tag_set = set()
         for key, val in tags:
