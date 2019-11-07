@@ -429,8 +429,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     def get_failure_count(self):
         """Get failure count for one connection."""
-        return (self._points_report_errors + self._histograms_report_errors +
-                self._spans_report_errors + self._span_logs_report_errors)
+        return (self._points_report_errors.count() + self._histograms_report_errors.count() +
+                self._spans_report_errors.count() + self._span_logs_report_errors.count())
 
 
 def remaining_capacity_getter(buf):
