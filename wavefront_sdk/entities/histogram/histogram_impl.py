@@ -272,7 +272,7 @@ class WavefrontHistogramImpl(object):
             count += sum(c['c'] for c in centroids)
             variance_sum += sum(c['c'] * ((c['m'] - mean) ** 2) for c in
                                 centroids)
-        variance = variance_sum / count
+        variance = 0 if count == 0 else variance_sum / count
         return math.sqrt(variance)
 
     def flush_distributions(self):
