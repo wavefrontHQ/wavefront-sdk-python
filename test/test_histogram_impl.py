@@ -36,6 +36,9 @@ class TestHistogramImpl(unittest.TestCase):
         for i in range(1, 1001):
             cls._inc_1000.update(i)
 
+        # Empty Wavefront Histogram
+        cls._empty_hist = WavefrontHistogramImpl(cls._clock.get)
+
         # Simulate that 1 min has passed so that values prior to the
         # current min are ready to be read
         cls._clock.increment(60000 + 1)
@@ -159,6 +162,7 @@ class TestHistogramImpl(unittest.TestCase):
                                delta=self._DELTA)
         self.assertAlmostEqual(288.67, self._inc_1000.std_dev(),
                                delta=self._DELTA)
+        self.assertEqual(0.0, self._empty_hist.std_dev())
 
     def test_size(self):
         """Test get size of distribution."""
