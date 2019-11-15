@@ -44,7 +44,7 @@ class WavefrontSdkMetricsRegistry(object):
         timestamp = time.time()
         for key, val in self.metrics.items():
             if timeout_secs and time.time() - timestamp > timeout_secs:
-                return
+                break
             name = self.prefix + key
             try:
                 if isinstance(val, gauge.WavefrontSdkGauge):
