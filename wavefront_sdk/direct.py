@@ -239,7 +239,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             self._closed = True
             if self._timer is not None:
                 self._timer.cancel()
-        self._sdk_metrics_registry.close(timeout=1)
+        self._sdk_metrics_registry.close(timeout_secs=1)
 
     # pylint: disable=too-many-arguments
 

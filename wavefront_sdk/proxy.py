@@ -120,7 +120,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             self._histogram_proxy_connection_handler.close()
         if self._tracing_proxy_connection_handler:
             self._tracing_proxy_connection_handler.close()
-        self._sdk_metrics_registry.close(timeout=1)
+        self._sdk_metrics_registry.close(timeout_secs=1)
 
     def get_failure_count(self):
         """Get Total Failure Count for all connections.
