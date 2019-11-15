@@ -40,9 +40,11 @@ class WavefrontSdkMetricsRegistry(object):
             self._timer.start()
 
     # pylint: disable=broad-except
-    def _report(self):
+    def _report(self, timeout=None):
         timestamp = time.time()
         for key, val in self.metrics.items():
+            if timeout and time.time() - timestamp > timeout:
+                return
             name = self.prefix + key
             try:
                 if isinstance(val, gauge.WavefrontSdkGauge):
@@ -66,11 +68,11 @@ class WavefrontSdkMetricsRegistry(object):
                 if not self._closed:
                     self._schedule_timer()
 
-    def close(self):
+    def close(self, timeout=None):
         """Close Wavefront SDK Metrics Registry."""
         try:
             if self.wf_metric_sender:
-                self._report()
+                self._report(timeout)
         finally:
             with self._schedule_lock:
                 self._closed = True
