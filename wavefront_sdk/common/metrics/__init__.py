@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Metrics Entities.
+"""Wavefront SDK Metrics.
 
 @author Hao Song (songhao@vmware.com)
 """

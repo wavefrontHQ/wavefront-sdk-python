@@ -1,13 +1,13 @@
-"""
-Unit Tests for Wavefront Python SDK - Histogram Impl.
+"""Unit Tests for Wavefront Python SDK - Histogram Impl.
 
 @author Hao Song (songhao@vmware.com)
 """
 
-import unittest
-import time
 import threading
-from wavefront_sdk.common.utils import AtomicCounter
+import time
+import unittest
+
+from wavefront_sdk.common import utils
 from wavefront_sdk.entities import WavefrontHistogramImpl
 
 
@@ -17,12 +17,11 @@ class TestHistogramImpl(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Initialize for tests."""
-
         # Delta for error
         cls._DELTA = 1e-1
 
         # Atomic clock
-        cls._clock = AtomicCounter(time.time() * 1000)
+        cls._clock = utils.AtomicCounter(time.time() * 1000)
 
         # WavefrontHistogramImpl with values that are powers of 10
         cls._pow_10 = cls.create_pow_10_histogram(cls._clock.get)
@@ -36,6 +35,9 @@ class TestHistogramImpl(unittest.TestCase):
         cls._inc_1000 = WavefrontHistogramImpl(cls._clock.get)
         for i in range(1, 1001):
             cls._inc_1000.update(i)
+
+        # Empty Wavefront Histogram
+        cls._empty_hist = WavefrontHistogramImpl(cls._clock.get)
 
         # Simulate that 1 min has passed so that values prior to the
         # current min are ready to be read
@@ -58,8 +60,7 @@ class TestHistogramImpl(unittest.TestCase):
 
     @staticmethod
     def distribution_to_map(distributions):
-        """
-        Return Distributions in map format.
+        """Return Distributions in map format.
 
         @return: Distributions in map format.
         @rtype: dict
@@ -73,7 +74,7 @@ class TestHistogramImpl(unittest.TestCase):
 
     @staticmethod
     def thread_bulk_update(wavefront_histogram, means, counts):
-        """Helper func for multi-thread bulk updating."""
+        """Act as a helper func for multi-thread bulk updating."""
         while True:
             wavefront_histogram.bulk_update(means, counts)
             time.sleep(60)
@@ -104,7 +105,7 @@ class TestHistogramImpl(unittest.TestCase):
         self.assertEqual(0, snapshot.get_count())
         self.assertAlmostEqual(None, snapshot.get_max(), delta=self._DELTA)
         self.assertAlmostEqual(None, snapshot.get_min(), delta=self._DELTA)
-        self.assertAlmostEqual(None, snapshot.get_mean(), delta=self._DELTA)
+        self.assertAlmostEqual(0, snapshot.get_mean(), delta=self._DELTA)
         self.assertAlmostEqual(0, snapshot.get_sum(), delta=self._DELTA)
         self.assertAlmostEqual(None, snapshot.get_value(0.5),
                                delta=self._DELTA)
@@ -152,6 +153,16 @@ class TestHistogramImpl(unittest.TestCase):
                                delta=self._DELTA)
         self.assertAlmostEqual(121121.1, self._pow_10.get_snapshot().get_sum(),
                                delta=self._DELTA)
+
+    def test_std_dev(self):
+        """Test get std dev of distribution."""
+        self.assertAlmostEqual(30859.85, self._pow_10.std_dev(),
+                               delta=self._DELTA)
+        self.assertAlmostEqual(28.87, self._inc_100.std_dev(),
+                               delta=self._DELTA)
+        self.assertAlmostEqual(288.67, self._inc_1000.std_dev(),
+                               delta=self._DELTA)
+        self.assertEqual(0.0, self._empty_hist.std_dev())
 
     def test_size(self):
         """Test get size of distribution."""

@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-
 """
 Utils module contains useful function for preparing and processing data.
 
 @author: Hao Song (songhao@vmware.com)
 """
 
-import re
+import gzip
 import io
-from gzip import GzipFile
+import json
+import re
 import threading
 
+from wavefront_sdk.common.constants import SPAN_LOG_KEY
 
-# pylint: disable=too-few-public-methods
 
+# pylint: disable=E0012,R0205
 class AtomicCounter(object):
     """An atomic, thread-safe incrementing counter."""
 
     def __init__(self, initial=0):
-        """
-        Construct Atomic Counter.
+        """Construct Atomic Counter.
 
         @param initial: Initial value of the counter
         """
@@ -27,8 +27,7 @@ class AtomicCounter(object):
         self._lock = threading.Lock()
 
     def increment(self, num=1):
-        """
-        Increment atomic counter value.
+        """Increment atomic counter value.
 
         @param num: Num to be increased, 1 by default
         @return: Current value after increment
@@ -38,8 +37,7 @@ class AtomicCounter(object):
             return self.value
 
     def get(self):
-        """
-        Get current atomic counter value.
+        """Get current atomic counter value.
 
         @return: Current atomic counter value.
         @rtype: float or int
@@ -47,9 +45,16 @@ class AtomicCounter(object):
         return self.value
 
 
+class HashableDict(dict):
+    """Hashable Dict."""
+
+    def __hash__(self):
+        """Hash of the dict."""
+        return hash(tuple(sorted(self.items())))
+
+
 def chunks(data_list, batch_size):
-    """
-    Split list of data into chunks with fixed batch size.
+    """Split list of data into chunks with fixed batch size.
 
     @param data_list: List of data
     @param batch_size: Batch size of each chunk
@@ -60,30 +65,28 @@ def chunks(data_list, batch_size):
 
 
 def gzip_compress(data, compresslevel=9):
-    """
-    Compress data using GZIP.
+    """Compress data using GZIP.
 
     @param data: Data to compress
     @param compresslevel: Compress Level
     @return: Compressed data
     """
     buf = io.BytesIO()
-    with GzipFile(fileobj=buf, mode='wb', compresslevel=compresslevel) \
-            as gzip_file:
+    with gzip.GzipFile(fileobj=buf, mode='wb',
+                       compresslevel=compresslevel) as gzip_file:
         gzip_file.write(data)
     return buf.getvalue()
 
 
 def sanitize(string):
-    """
-    Sanitize a string, replace whitespace with "-".
+    """Sanitize a string, replace whitespace with "-".
 
     @param string: Input string
     @return: Sanitized string
     """
-    whitespace_sanitized = re.sub(r"[\s]+", "-", string)
+    whitespace_sanitized = re.sub(r'[\s]+', '-', string)
     if '"' in whitespace_sanitized:
-        return '"' + re.sub(r"[\"]+", '\\\\\"', whitespace_sanitized) + '"'
+        return '"' + re.sub(r'[\"]+', '\\\\\"', whitespace_sanitized) + '"'
     return '"' + whitespace_sanitized + '"'
 
 
@@ -95,14 +98,13 @@ def is_blank(string):
     @return: Is blank or not
     """
     return string is None or len(string) == 0 or string.isspace()
-    # return len(re.sub(r"[\s]+", "", s)) == 0
+    # return len(re.sub(r'[\s]+', '', s)) == 0
 
 
 # pylint: disable=too-many-arguments
 
 def metric_to_line_data(name, value, timestamp, source, tags, default_source):
-    """
-    Metric Data to String.
+    """Metric Data to String.
 
     Wavefront Metrics Data format
     <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
@@ -124,7 +126,7 @@ def metric_to_line_data(name, value, timestamp, source, tags, default_source):
     @return: String
     """
     if is_blank(name):
-        raise ValueError("Metrics name cannot be blank")
+        raise ValueError('Metrics name cannot be blank')
 
     if is_blank(source):
         source = default_source
@@ -132,23 +134,20 @@ def metric_to_line_data(name, value, timestamp, source, tags, default_source):
     str_builder = [sanitize(name), str(float(value))]
     if timestamp is not None:
         str_builder.append(str(int(timestamp)))
-    str_builder.append("source=" + sanitize(source))
+    str_builder.append('source=' + sanitize(source))
     if tags is not None:
         for key, val in tags.items():
             if is_blank(key):
-                raise ValueError("Metric point tag key cannot be blank")
+                raise ValueError('Metric point tag key cannot be blank')
             if is_blank(val):
-                raise ValueError("Metric point tag value cannot be blank")
+                raise ValueError('Metric point tag value cannot be blank')
             str_builder.append(sanitize(key) + '=' + sanitize(val))
     return ' '.join(str_builder) + '\n'
 
 
-# pylint: disable=too-many-arguments
-
 def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
                            source, tags, default_source):
-    """
-    Wavefront Histogram Data format.
+    """Wavefront Histogram Data format.
 
     {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids] <histogramName>
     source=<source> [pointTags]
@@ -172,13 +171,13 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
     @return: String data of Histogram
     """
     if is_blank(name):
-        raise ValueError("Histogram name cannot be blank")
+        raise ValueError('Histogram name cannot be blank')
 
     if not histogram_granularities:
-        raise ValueError("Histogram granularities cannot be null or empty")
+        raise ValueError('Histogram granularities cannot be null or empty')
 
     if not centroids:
-        raise ValueError("A distribution should have at least one centroid")
+        raise ValueError('A distribution should have at least one centroid')
 
     if is_blank(source):
         source = default_source
@@ -189,27 +188,26 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
         if timestamp is not None:
             str_builder.append(str(int(timestamp)))
         for centroid_1, centroid_2 in centroids:
-            str_builder.append("#" + str(centroid_2))
+            str_builder.append('#' + str(centroid_2))
             str_builder.append(str(centroid_1))
         str_builder.append(sanitize(name))
-        str_builder.append("source=" + sanitize(source))
+        str_builder.append('source=' + sanitize(source))
         if tags is not None:
             for key in tags:
                 if is_blank(key):
-                    raise ValueError("Histogram tag key cannot be blank")
+                    raise ValueError('Histogram tag key cannot be blank')
                 if is_blank(tags[key]):
-                    raise ValueError("Histogram tag value cannot be blank")
+                    raise ValueError('Histogram tag value cannot be blank')
                 str_builder.append(sanitize(key) + '=' + sanitize(tags[key]))
         line_builder.append(' '.join(str_builder))
     return '\n'.join(line_builder) + '\n'
 
 
-# pylint: disable=too-many-arguments,unused-argument,too-many-locals
+# pylint: disable=unused-argument
 def tracing_span_to_line_data(name, start_millis, duration_millis, source,
                               trace_id, span_id, parents, follows_from, tags,
                               span_logs, default_source):
-    """
-    Wavefront Tracing Span Data format.
+    """Wavefront Tracing Span Data format.
 
     <tracingSpanName> source=<source> [pointTags] <start_millis>
     <duration_milli_seconds>
@@ -243,33 +241,53 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
     @type default_source: str
     @return: String data of tracing span
     """
+    # pylint: disable=too-many-locals
     if is_blank(name):
-        raise ValueError("Span name cannot be blank")
+        raise ValueError('Span name cannot be blank')
 
     if is_blank(source):
         source = default_source
 
     str_builder = [sanitize(name),
-                   "source=" + sanitize(source),
-                   "traceId=" + str(trace_id),
-                   "spanId=" + str(span_id)]
+                   'source=' + sanitize(source),
+                   'traceId=' + str(trace_id),
+                   'spanId=' + str(span_id)]
     if parents is not None:
         for uuid in parents:
-            str_builder.append("parent=" + str(uuid))
+            str_builder.append('parent=' + str(uuid))
     if follows_from is not None:
         for uuid in follows_from:
-            str_builder.append("followsFrom=" + str(uuid))
+            str_builder.append('followsFrom=' + str(uuid))
+    if span_logs:
+        tags.append((SPAN_LOG_KEY, 'true'))
     if tags is not None:
         tag_set = set()
         for key, val in tags:
             if is_blank(key):
-                raise ValueError("Span tag key cannot be blank")
+                raise ValueError('Span tag key cannot be blank')
             if is_blank(val):
-                raise ValueError("Span tag val cannot be blank")
-            cur_tag = sanitize(key) + "=" + sanitize(val)
+                raise ValueError('Span tag val cannot be blank')
+            cur_tag = sanitize(key) + '=' + sanitize(val)
             if cur_tag not in tag_set:
                 str_builder.append(cur_tag)
                 tag_set.add(cur_tag)
     str_builder.append(str(start_millis))
     str_builder.append(str(duration_millis))
     return ' '.join(str_builder) + '\n'
+
+
+def span_log_to_line_data(trace_id, span_id, span_logs, scrambler=None):
+    """Wavefront Tracing Span Log JSON format.
+
+    @param trace_id: Trace ID
+    @param span_id: Span ID
+    @param span_logs: Span Log
+    @param scrambler: Additional UUID, optional
+    @return: Span Log in JSON Format
+    """
+    span_log_json = {'traceId': str(trace_id),
+                     'spanId': str(span_id),
+                     'logs': span_logs}
+    if scrambler:
+        span_log_json['_scrambler'] = str(scrambler)
+    return json.dumps(span_log_json, default=lambda o: o.__dict__) + '\n'

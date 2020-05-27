@@ -15,13 +15,14 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.0.0',
+    version='1.6.3',
     author='Wavefront by VMware',
-    author_email='songhao@vmware.com',
+    author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
     description='Wavefront Python SDK',
     long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
     keywords=[
         'Wavefront',
         'Wavefront SDK'
@@ -37,7 +38,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
                                                'tests.*', 'tests')),
     install_requires=(
-        'requests >= 2.18.4',
-        'tdigest >= 0.5.2'
+        'requests>=2.18.4',
+        'tdigest>=0.5.2'
         )
 )

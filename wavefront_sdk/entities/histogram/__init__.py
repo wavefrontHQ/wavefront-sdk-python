@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
-"""
-Histogram Entities.
+"""Histogram Entities.
 
 @author Hao Song (songhao@vmware.com)
 """

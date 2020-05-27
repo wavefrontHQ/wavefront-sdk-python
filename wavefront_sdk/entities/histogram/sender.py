@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
-
-
-"""
-Interface of Histogram Sender for both clients.
+"""Interface of Histogram Sender for both clients.
 
 @author Hao Song (songhao@vmware.com)
 """
 
 
+# pylint: disable=E0012,R0205
 class WavefrontHistogramSender(object):
     """Interface of Histogram Sender for both clients."""
 
     # pylint: disable=too-many-arguments
-
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
-        """
-        Send Distribution Data.
+        """Send Distribution Data.
 
         Wavefront Histogram Data format
         {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids]
@@ -39,9 +35,16 @@ class WavefrontHistogramSender(object):
         """
         raise NotImplementedError
 
-    def send_distribution_now(self, distributions):
+    def send_formatted_metric(self, distribution):
+        """Send a formatted histogram immediately.
+
+        @param distribution: Formatted distribution
+        @type: str
         """
-        Send a list of distributions immediately.
+        self.send_distribution_now([distribution])
+
+    def send_distribution_now(self, distributions):
+        """Send a list of distributions immediately.
 
         Have to construct the data manually by calling
         common.utils.histogram_to_line_data()

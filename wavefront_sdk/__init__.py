@@ -1,16 +1,26 @@
 # -*- coding: utf-8 -*-
-
-"""
-Wavefront Python SDK.
+"""Wavefront Python SDK.
 
 This library provides support for sending metrics, histograms and opentracing
 spans to Wavefront via proxy or direct ingestion.
 
 @author Hao Song (songhao@vmware.com)
 """
-__version__ = '0.1.0'
 
-from wavefront_sdk.direct import WavefrontDirectClient
-from wavefront_sdk.proxy import WavefrontProxyClient
+import pkg_resources
 
-__all__ = ['WavefrontDirectClient', 'WavefrontProxyClient', 'common']
+from .direct import WavefrontDirectClient
+from .proxy import WavefrontProxyClient
+
+
+__all__ = ['WavefrontDirectClient', 'WavefrontProxyClient']
+
+__version__ = None
+
+try:
+    __version__ = pkg_resources.get_distribution(
+        'wavefront-sdk-python'
+    ).version
+except pkg_resources.DistributionNotFound:
+    # __version__ is only available when distribution is installed.
+    pass
