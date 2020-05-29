@@ -291,3 +291,118 @@ def span_log_to_line_data(trace_id, span_id, span_logs, scrambler=None):
     if scrambler:
         span_log_json['_scrambler'] = str(scrambler)
     return json.dumps(span_log_json, default=lambda o: o.__dict__) + '\n'
+
+
+# pylint: disable=too-many-branches
+def event_to_json(name, start_time, end_time, source, tags,
+                  annotations, default_source):
+    """Wavefront Event JSON format.
+
+    @param name: Event Name
+    @type name: str
+    @param start_time: Event Start Time
+    @type start_time: long
+    @param end_time: Event End Time
+    @type end_time: long
+    @param source: Source
+    @type source: str
+    @param tags: Tags
+    @type tags: list[str]
+    @param annotations: Annotations
+    @type annotations: dict
+    @param default_source: Default Host Name
+    @type default_source: str
+    @return: Event JSON as String
+    """
+    if is_blank(name):
+        raise ValueError('Event name cannot be blank')
+
+    if not start_time:
+        raise ValueError('Event start time cannot be blank')
+
+    if not source:
+        source = default_source
+
+    event = {'name': sanitize(name), 'annotations': {}, 'hosts': source}
+    if start_time:
+        event['startTime'] = start_time
+
+    if end_time:
+        event['endTime'] = end_time
+    else:
+        event['endTime'] = start_time + 1
+
+    if annotations:
+        for key, value in annotations.items():
+            if is_blank(key):
+                raise ValueError('Annotation key cannot be blank')
+            if is_blank(value):
+                raise ValueError('Annotation value cannot be blank')
+
+        event['annotations'] = annotations
+
+    if tags is not None:
+        temp_tags = []
+        for key in tags:
+            if is_blank(key):
+                raise ValueError('Event tag cannot be blank')
+            temp_tags.append(sanitize(key))
+
+        event['tags'] = temp_tags
+
+    return str(json.dumps(event))
+
+
+def event_to_line_data(name, start_time, end_time, source, tags,
+                       annotations, default_source):
+    """Wavefront Event Line format.
+
+    @param name: Event Name
+    @type name: str
+    @param start_time: Event Start Time
+    @type start_time: long
+    @param end_time: Event End Time
+    @type end_time: long
+    @param source: Source
+    @type source: str
+    @param tags: Tags
+    @type tags: list[str]
+    @param annotations: Annotations
+    @type annotations: dict
+    @param default_source: Default Host Name
+    @type default_source: str
+    @return: Event as String
+    """
+    str_builder = ['@Event']
+    if is_blank(name):
+        raise ValueError('Event name cannot be blank')
+
+    if not start_time:
+        raise ValueError('Event start time cannot be blank')
+
+    str_builder.append(str(start_time))
+
+    if end_time:
+        str_builder.append(str(end_time))
+    else:
+        str_builder.append(str(start_time + 1))
+
+    str_builder.append(sanitize(name))
+
+    if annotations:
+        for key, value in annotations.items():
+            if is_blank(key):
+                raise ValueError('Annotations key cannot be blank')
+            if is_blank(value):
+                raise ValueError('Annotations value cannot be blank')
+            str_builder.append(key + '="' + value + '"')
+
+    if not source:
+        source = default_source
+
+    str_builder.append('host="' + source + '"')
+
+    if tags:
+        str_builder.append('tag="' + ' '.join(tags) + '"')
+
+    return ' '.join(str_builder) + '\n'

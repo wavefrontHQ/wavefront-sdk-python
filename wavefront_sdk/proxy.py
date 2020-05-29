@@ -29,7 +29,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
 
     # pylint: disable=too-many-arguments
     def __init__(self, host, metrics_port, distribution_port, tracing_port,
-                 timeout=None, enable_internal_metrics=True):
+                 event_port, timeout=None, enable_internal_metrics=True):
         """Construct Proxy Client.
 
         @param host: Hostname of the Wavefront proxy, 2878 by default
@@ -46,6 +46,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         self.metrics_port = metrics_port
         self.distribution_port = distribution_port
         self.tracing_port = tracing_port
+        self.event_port = event_port
 
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
@@ -73,6 +74,12 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             else ProxyConnectionHandler(host, tracing_port,
                                         self._sdk_metrics_registry,
                                         'tracingHandler',
+                                        timeout=timeout))
+        self._event_proxy_connection_handler = (
+            None if event_port is None
+            else ProxyConnectionHandler(host, event_port,
+                                        self._sdk_metrics_registry,
+                                        'eventHandler',
                                         timeout=timeout))
         self._default_source = gethostname()
 
@@ -112,6 +119,15 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         self._span_logs_invalid = self._sdk_metrics_registry.new_counter(
             'span_logs.invalid')
 
+        self._events_discarded = self._sdk_metrics_registry.new_counter(
+            'events.discarded')
+        self._events_dropped = self._sdk_metrics_registry.new_counter(
+            'events.dropped')
+        self._events_valid = self._sdk_metrics_registry.new_counter(
+            'events.valid')
+        self._events_invalid = self._sdk_metrics_registry.new_counter(
+            'events.invalid')
+
     def close(self):
         """Close all proxy connections."""
         if self._metrics_proxy_connection_handler:
@@ -120,6 +136,8 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             self._histogram_proxy_connection_handler.close()
         if self._tracing_proxy_connection_handler:
             self._tracing_proxy_connection_handler.close()
+        if self._event_proxy_connection_handler:
+            self._event_proxy_connection_handler.close()
         self._sdk_metrics_registry.close(timeout_secs=1)
 
     def get_failure_count(self):
@@ -137,9 +155,11 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         if self._tracing_proxy_connection_handler:
             failure_count += (
                 self._tracing_proxy_connection_handler.get_failure_count())
+        if self._event_proxy_connection_handler:
+            failure_count += (
+                self._event_proxy_connection_handler.get_failure_count())
         return failure_count
 
-    # pylint: disable=too-many-arguments
     def send_metric(self, name, value, timestamp, source, tags):
         """Send Metric Data via proxy.
 
@@ -197,7 +217,6 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                 )
                 raise error
 
-    # pylint: disable=too-many-arguments
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
         """Send Distribution Data via proxy.
@@ -372,4 +391,65 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                 self._span_logs_dropped.inc()
                 self._tracing_proxy_connection_handler.increment_failure_count(
                 )
+                raise error
+
+    def send_event(self, name, start_time, end_time, source, tags,
+                   annotations):
+        """Send Event Data via proxy.
+
+        Wavefront Event Data format
+        @Event start_time end_time name [annotations]  host=<source> [Tags]
+        Example: @Event 1590650592 1590650692 "event_via_proxy" severity="info"
+         type="backup" details="broker backup" host="localhost" tag="env: dev"
+
+        @param name: Event Name
+        @type name: str
+        @param start_time: Event Start Time
+        @type start_time: long
+        @param end_time: Event End Time
+        @type end_time: long
+        @param source: Source
+        @type source: str
+        @param tags: Tags
+        @type tags: list[str]
+        @param annotations: Annotations
+        @type annotations: dict
+        """
+        if not self._event_proxy_connection_handler:
+            self._events_discarded.inc()
+            LOGGER.warning("Can't send event to Wavefront. Please configure "
+                           "events port for Wavefront proxy.")
+        try:
+            line_data = utils.event_to_line_data(
+                name, start_time, end_time, source, tags, annotations,
+                self._default_source)
+            self._events_valid.inc()
+            self._event_proxy_connection_handler.send_data(line_data)
+        except ValueError:
+            self._events_invalid.inc()
+        except Exception as error:
+            self._events_dropped.inc()
+            self._event_proxy_connection_handler.increment_failure_count()
+            raise error
+
+    def send_event_now(self, events):
+        """Send a list of events immediately.
+
+        Have to construct the data manually by calling
+        common.utils.event_to_line_data()
+
+        @param events: List of string events data
+        @type events: list[str]
+        """
+        if not self._event_proxy_connection_handler:
+            self._events_discarded.inc()
+            LOGGER.warning("Can't send event to Wavefront. Please configure "
+                           "events port for Wavefront proxy.")
+
+        for event in events:
+            try:
+                self._event_proxy_connection_handler.send_data(event)
+            except Exception as error:
+                self._events_dropped.inc()
+                self._event_proxy_connection_handler.increment_failure_count()
                 raise error
