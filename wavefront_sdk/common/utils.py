@@ -323,7 +323,7 @@ def event_to_json(name, start_time, end_time, source, tags,
     if not source:
         source = default_source
 
-    event = {'name': sanitize(name), 'annotations': {}, 'hosts': source}
+    event = {'name': name, 'annotations': {}, 'hosts': source}
     if start_time:
         event['startTime'] = start_time
 
@@ -387,7 +387,7 @@ def event_to_line_data(name, start_time, end_time, source, tags,
     else:
         str_builder.append(str(start_time + 1))
 
-    str_builder.append(sanitize(name))
+    str_builder.append('"' + name + '"')
 
     if annotations:
         for key, value in annotations.items():

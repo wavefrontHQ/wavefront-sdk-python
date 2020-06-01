@@ -131,7 +131,7 @@ if __name__ == '__main__':
             send_delta_counter_via_direct_ingestion(wavefront_direct_client)
             send_event_via_direct_ingestion(wavefront_direct_client)
 
-            time.sleep(5)
+            time.sleep(1)
     finally:
         wavefront_proxy_client.close()
         wavefront_direct_client.close()
