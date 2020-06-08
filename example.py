@@ -80,9 +80,9 @@ def send_tracing_span_via_direct_ingestion(direct_ingestion_client):
         None, [('application', 'Wavefront'), ('http.method', 'GET')], None)
 
 
-def send_event_via_proxy(direct_ingestion_client):
+def send_event_via_proxy(wavefront_proxy_client):
     """Send an event via proxy."""
-    direct_ingestion_client.send_event('event_via_proxy', 1590650592,
+    wavefront_proxy_client.send_event('event_via_proxy', 1590650592,
                                        1590650692, 'localhost',
                                        ["env:", "test"],
                                        {"severity": "info",
@@ -90,9 +90,9 @@ def send_event_via_proxy(direct_ingestion_client):
                                         "details": "broker backup"})
 
 
-def send_event_via_direct_ingestion(wavefront_proxy_client):
+def send_event_via_direct_ingestion(direct_ingestion_client):
     """Send an event through direct ingestion."""
-    wavefront_proxy_client.send_event('event_via_direct', 1590730937,
+    direct_ingestion_client.send_event('event_via_direct', 1590730937,
                                       1590731037, ['localhost'],
                                       ["env:", "test"],
                                       {"severity": "severe",
@@ -109,11 +109,11 @@ if __name__ == '__main__':
     tracing_port = None if len(sys.argv) <= 6 else sys.argv[6]
     event_port = None if len(sys.argv) <= 7 else sys.argv[7]
 
-    wavefront_proxy_client = WavefrontProxyClient(proxy_host,
-                                                  metrics_port,
-                                                  distribution_port,
-                                                  tracing_port,
-                                                  event_port)
+    wavefront_proxy_client = WavefrontProxyClient(host=proxy_host,
+                                                  metrics_port=metrics_port,
+                                                  distribution_port=distribution_port,
+                                                  tracing_port=tracing_port,
+                                                  event_port=event_port)
 
     wavefront_direct_client = WavefrontDirectClient(wavefront_server, token)
 

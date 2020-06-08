@@ -29,7 +29,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
 
     # pylint: disable=too-many-arguments
     def __init__(self, host, metrics_port, distribution_port, tracing_port,
-                 event_port, timeout=None, enable_internal_metrics=True):
+                 event_port=None, timeout=None, enable_internal_metrics=True):
         """Construct Proxy Client.
 
         @param host: Hostname of the Wavefront proxy, 2878 by default
@@ -39,8 +39,12 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         Distribution Port on which the Wavefront proxy is listening on
         @param tracing_port:
         Tracing Port on which the Wavefront proxy is listening on
+        @param event_port:
+        Event Port on which the Wavefront proxy is listening on
         @param timeout:
         Timeout to set on socket connecting to proxy
+        @param enable_internal_metrics
+        Flag to enable/disable internal metrics
         """
         self.proxy_host = host
         self.metrics_port = metrics_port
@@ -419,18 +423,19 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             self._events_discarded.inc()
             LOGGER.warning("Can't send event to Wavefront. Please configure "
                            "events port for Wavefront proxy.")
-        try:
-            line_data = utils.event_to_line_data(
-                name, start_time, end_time, source, tags, annotations,
-                self._default_source)
-            self._events_valid.inc()
-            self._event_proxy_connection_handler.send_data(line_data)
-        except ValueError:
-            self._events_invalid.inc()
-        except Exception as error:
-            self._events_dropped.inc()
-            self._event_proxy_connection_handler.increment_failure_count()
-            raise error
+        else:
+            try:
+                line_data = utils.event_to_line_data(
+                    name, start_time, end_time, source, tags, annotations,
+                    self._default_source)
+                self._events_valid.inc()
+                self._event_proxy_connection_handler.send_data(line_data)
+            except ValueError:
+                self._events_invalid.inc()
+            except Exception as error:
+                self._events_dropped.inc()
+                self._event_proxy_connection_handler.increment_failure_count()
+                raise error
 
     def send_event_now(self, events):
         """Send a list of events immediately.
@@ -445,11 +450,11 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             self._events_discarded.inc()
             LOGGER.warning("Can't send event to Wavefront. Please configure "
                            "events port for Wavefront proxy.")
-
-        for event in events:
-            try:
-                self._event_proxy_connection_handler.send_data(event)
-            except Exception as error:
-                self._events_dropped.inc()
-                self._event_proxy_connection_handler.increment_failure_count()
-                raise error
+        else:
+            for event in events:
+                try:
+                    self._event_proxy_connection_handler.send_data(event)
+                except Exception as error:
+                    self._events_dropped.inc()
+                    self._event_proxy_connection_handler.increment_failure_count()
+                    raise error
