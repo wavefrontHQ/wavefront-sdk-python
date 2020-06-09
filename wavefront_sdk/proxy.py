@@ -456,5 +456,6 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                     self._event_proxy_connection_handler.send_data(event)
                 except Exception as error:
                     self._events_dropped.inc()
-                    self._event_proxy_connection_handler.increment_failure_count()
+                    self._event_proxy_connection_handler\
+                        .increment_failure_count()
                     raise error
