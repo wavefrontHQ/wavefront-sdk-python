@@ -85,7 +85,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                          'Authorization': 'Bearer ' + token}
         self._event_headers = {'Content-Type': 'application/json',
                                'Content-Encoding': 'gzip',
-                               'Authorization': 'Bearer ' + self._token}
+                               'Authorization': 'Bearer ' + token}
         self._closed = False
         self._schedule_lock = threading.Lock()
         self._timer = None

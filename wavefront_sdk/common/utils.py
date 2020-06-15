@@ -101,6 +101,35 @@ def is_blank(string):
     # return len(re.sub(r'[\s]+', '', s)) == 0
 
 
+def validate_tags(tags):
+    """
+    Ensure that the tag is not empty, otherwise throw the error.
+
+    :param tags:
+    :return:
+    """
+    for tag in tags:
+        if is_blank(tag):
+            raise ValueError('Event tag: ' + tag + ' cannot be blank')
+
+
+def validate_annotations(annotations):
+    """
+    Ensure that annotation key and value are not empty.
+
+    Otherwise throw the error.
+
+    :param annotations:
+    :return:
+    """
+    for key, value in annotations.items():
+        if is_blank(key):
+            raise ValueError('Annotation key: ' + key + ' cannot be blank')
+        if is_blank(value):
+            raise ValueError('Annotation value: '
+                             + value + ' cannot be blank')
+
+
 # pylint: disable=too-many-arguments
 
 def metric_to_line_data(name, value, timestamp, source, tags, default_source):
@@ -296,7 +325,7 @@ def span_log_to_line_data(trace_id, span_id, span_logs, scrambler=None):
 # pylint: disable=too-many-branches
 def event_to_json(name, start_time, end_time, source, tags,
                   annotations, default_source):
-    """Wavefront Event JSON format.
+    """Wavefront Event JSON format for direct data ingestion.
 
     @param name: Event Name
     @type name: str
@@ -333,29 +362,19 @@ def event_to_json(name, start_time, end_time, source, tags,
         event['endTime'] = start_time + 1
 
     if annotations:
-        for key, value in annotations.items():
-            if is_blank(key):
-                raise ValueError('Annotation key cannot be blank')
-            if is_blank(value):
-                raise ValueError('Annotation value cannot be blank')
-
+        validate_annotations(annotations)
         event['annotations'] = annotations
 
-    if tags is not None:
-        temp_tags = []
-        for key in tags:
-            if is_blank(key):
-                raise ValueError('Event tag cannot be blank')
-            temp_tags.append(sanitize(key))
-
-        event['tags'] = temp_tags
+    if tags:
+        validate_tags(tags)
+        event['tags'] = tags
 
     return str(json.dumps(event))
 
 
 def event_to_line_data(name, start_time, end_time, source, tags,
                        annotations, default_source):
-    """Wavefront Event Line format.
+    """Wavefront Event Line format for data ingestion via proxy.
 
     @param name: Event Name
     @type name: str
@@ -390,11 +409,8 @@ def event_to_line_data(name, start_time, end_time, source, tags,
     str_builder.append('"' + name + '"')
 
     if annotations:
+        validate_annotations(annotations)
         for key, value in annotations.items():
-            if is_blank(key):
-                raise ValueError('Annotations key cannot be blank')
-            if is_blank(value):
-                raise ValueError('Annotations value cannot be blank')
             str_builder.append(key + '="' + value + '"')
 
     if not source:
@@ -403,6 +419,7 @@ def event_to_line_data(name, start_time, end_time, source, tags,
     str_builder.append('host="' + source + '"')
 
     if tags:
+        validate_tags(tags)
         str_builder.append('tag="' + ' '.join(tags) + '"')
 
     return ' '.join(str_builder) + '\n'
