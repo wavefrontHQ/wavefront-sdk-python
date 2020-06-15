@@ -268,7 +268,7 @@ one_event_data = event_to_line_data(name="event name", start_time=1592200048, en
 
 # Result of one_event_data:
 # '@Event 1592200048 1592201048 "event name" severity="info" type="backup" details="broker backup"
-host="localhost" tag="env name: dev"\n'
+# host="localhost" tag="env name: dev"\n'
 
 # List of events
 batch_event_data = [one_event_data, one_event_data]
