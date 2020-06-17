@@ -352,7 +352,7 @@ def event_to_json(name, start_time, end_time, source, tags,
     if not source:
         source = default_source
 
-    event = {'name': name, 'annotations': {}, 'hosts': source}
+    event = {'name': name, 'annotations': {}, 'host': source}
     if start_time:
         event['startTime'] = start_time
 

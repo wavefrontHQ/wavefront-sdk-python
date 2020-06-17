@@ -99,7 +99,7 @@ def send_event_via_direct_ingestion(direct_ingestion_client):
         'event_via_direct',
         1590730937,
         1590731037,
-        ['localhost'],
+        'localhost',
         ["env:", "test"],
         {"severity": "severe",
          "type": "backup",
