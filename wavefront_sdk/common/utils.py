@@ -110,7 +110,7 @@ def validate_tags(tags):
     """
     for tag in tags:
         if is_blank(tag):
-            raise ValueError('Event tag: ' + tag + ' cannot be blank')
+            raise ValueError('Event tag cannot be blank')
 
 
 def validate_annotations(annotations):
@@ -124,10 +124,10 @@ def validate_annotations(annotations):
     """
     for key, value in annotations.items():
         if is_blank(key):
-            raise ValueError('Annotation key: ' + key + ' cannot be blank')
+            raise ValueError('Annotation key cannot be blank')
         if is_blank(value):
-            raise ValueError('Annotation value: '
-                             + value + ' cannot be blank')
+            raise ValueError('Annotation value cannot be blank for key: '
+                             + key)
 
 
 # pylint: disable=too-many-arguments
@@ -352,7 +352,7 @@ def event_to_json(name, start_time, end_time, source, tags,
     if not source:
         source = default_source
 
-    event = {'name': name, 'annotations': {}, 'host': source}
+    event = {'name': name, 'annotations': {}, 'hosts': source}
     if start_time:
         event['startTime'] = start_time
 
