@@ -372,7 +372,7 @@ def event_to_json(name, start_time, end_time, source, tags,
     return str(json.dumps(event))
 
 
-def event_to_line_data(name, start_time, end_time, source, tags,
+def event_to_line_data(name, start_time, end_time, sources, tags,
                        annotations, default_source):
     """Wavefront Event Line format for data ingestion via proxy.
 
@@ -382,8 +382,8 @@ def event_to_line_data(name, start_time, end_time, source, tags,
     @type start_time: long
     @param end_time: Event End Time
     @type end_time: long
-    @param source: Source
-    @type source: str
+    @param sources: Source
+    @type sources: list[str]
     @param tags: Tags
     @type tags: list[str]
     @param annotations: Annotations
@@ -413,13 +413,15 @@ def event_to_line_data(name, start_time, end_time, source, tags,
         for key, value in annotations.items():
             str_builder.append(key + '="' + value + '"')
 
-    if not source:
-        source = default_source
+    if not sources:
+        sources = [default_source]
 
-    str_builder.append('host="' + source + '"')
+    for source in sources:
+        str_builder.append('host="' + source + '"')
 
     if tags:
         validate_tags(tags)
-        str_builder.append('tag="' + ' '.join(tags) + '"')
+        for tag in tags:
+            str_builder.append('tag="' + tag + '"')
 
     return ' '.join(str_builder) + '\n'

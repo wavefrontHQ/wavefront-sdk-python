@@ -10,17 +10,17 @@ class WavefrontEventSender(object):
     """Interface of Event Sender for both clients."""
 
     # pylint: disable=too-many-arguments
-    def send_event(self, name, start_time, end_time, source,
+    def send_event(self, name, start_time, end_time, sources,
                    tags, annotations):
         """Send Event Data.
 
         Wavefront Event Data format
         {"name": <Event Name>, "annotations": <Annotations>,
-         "hosts": <Host Name>,"startTime": <Start Time>,
+         "hosts": <Host List>,"startTime": <Start Time>,
           "endTime": <End Time>, "tags": <Tags>}
         Example: {"name": event_via_direct_ingestion, "annotations": {
         "severity": "severe", "type": "backup", "details": "broker backup"},
-         "hosts": "localhost", "startTime": 1590678089, "endTime": 1590679089,
+         "hosts": ["localhost"], "startTime": 1590678089, "endTime": 1590679089,
          "tags": ["env:", "test"]}
 
         @param name: Event Name
@@ -29,8 +29,8 @@ class WavefrontEventSender(object):
         @type start_time: long
         @param end_time: Event End Time
         @type end_time: long
-        @param source: Source
-        @type source: str
+        @param sources: Source
+        @type sources: list[str]
         @param tags: Tags
         @type tags: list[str]
         @param annotations: Annotations

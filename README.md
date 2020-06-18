@@ -173,7 +173,7 @@ wavefront_sender.send_span(
 # Wavefront event format:
 # @Event <StartTime> <EndTime> "<EventName>"  severity="<Severity>"
 # type="<Type>" details="<EventDetail>" host="<Source>" tag="<Tags>"
-wavefront_sender.send_event('event name', 1592200048, 1592201048, 'localhost',
+wavefront_sender.send_event('event name', 1592200048, 1592201048, ["localhost"],
     ["env:", "dev"], {"severity": "info", "type": "backup", "details": "broker backup"})
 ```
 
@@ -264,11 +264,11 @@ from wavefront_sdk.common import event_to_line_data
 
 # Generate string data in Wavefront event format
 one_event_data = event_to_line_data(name="event name", start_time=1592200048, end_time=1592201048,
- source=localhost, tags=["env:", "dev"], annotations={"severity": "info", "type": "backup", "details": "broker backup"})
+ sources=["localhost"], tags=["env", "dev"], annotations={"severity": "info", "type": "backup", "details": "broker backup"})
 
 # Result of one_event_data:
 # '@Event 1592200048 1592201048 "event name" severity="info" type="backup" details="broker backup"
-# host="localhost" tag="env name: dev"\n'
+# host="localhost" tag="env" tag="dev"\n'
 
 # List of events
 batch_event_data = [one_event_data, one_event_data]
