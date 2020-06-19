@@ -464,7 +464,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._batch_report(span_logs, self.WAVEFRONT_SPAN_LOG_FORMAT,
                            'span_logs', self._span_logs_report_errors)
 
-    def send_event(self, name, start_time, end_time, sources, tags,
+    def send_event(self, name, start_time, end_time, source, tags,
                    annotations):
         """Send Event Data via direct ingestion client.
 
@@ -474,8 +474,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
           "endTime": <End Time>, "tags": <Tags>}
         Example: {"name": event_via_direct_ingestion, "annotations": {
         "severity": "severe", "type": "backup", "details": "broker backup"},
-         "hosts": "localhost", "startTime": 1590678089, "endTime": 1590679089,
-         "tags": ["env:", "test"]}
+         "hosts": ["localhost"], "startTime": 1590678089,
+         "endTime": 1590679089, "tags": ["env:", "test"]}
 
         @param name: Event Name
         @type name: str
@@ -483,8 +483,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type start_time: long
         @param end_time: Event End Time
         @type end_time: long
-        @param sources: Source
-        @type sources: list[str]
+        @param source: Source
+        @type source: str
         @param tags: Tags
         @type tags: list[str]
         @param annotations: Annotations
@@ -492,7 +492,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         """
         try:
             line_data = utils.event_to_json(
-                name, start_time, end_time, sources, tags, annotations,
+                name, start_time, end_time, source, tags, annotations,
                 self._default_source)
             self._events_valid.inc()
         except ValueError as error:

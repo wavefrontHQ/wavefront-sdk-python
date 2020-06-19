@@ -350,9 +350,9 @@ def event_to_json(name, start_time, end_time, source, tags,
         raise ValueError('Event start time cannot be blank')
 
     if not source:
-        source = [default_source]
+        source = default_source
 
-    event = {'name': name, 'annotations': {}, 'hosts': source}
+    event = {'name': name, 'annotations': {}, 'hosts': [source]}
     if start_time:
         event['startTime'] = start_time
 
@@ -372,7 +372,7 @@ def event_to_json(name, start_time, end_time, source, tags,
     return str(json.dumps(event))
 
 
-def event_to_line_data(name, start_time, end_time, sources, tags,
+def event_to_line_data(name, start_time, end_time, source, tags,
                        annotations, default_source):
     """Wavefront Event Line format for data ingestion via proxy.
 
@@ -382,8 +382,8 @@ def event_to_line_data(name, start_time, end_time, sources, tags,
     @type start_time: long
     @param end_time: Event End Time
     @type end_time: long
-    @param sources: Source
-    @type sources: list[str]
+    @param source: Source
+    @type source: str
     @param tags: Tags
     @type tags: list[str]
     @param annotations: Annotations
@@ -413,11 +413,10 @@ def event_to_line_data(name, start_time, end_time, sources, tags,
         for key, value in annotations.items():
             str_builder.append(key + '="' + value + '"')
 
-    if not sources:
-        sources = [default_source]
+    if not source:
+        source = default_source
 
-    for source in sources:
-        str_builder.append('host="' + source + '"')
+    str_builder.append('host="' + source + '"')
 
     if tags:
         validate_tags(tags)
