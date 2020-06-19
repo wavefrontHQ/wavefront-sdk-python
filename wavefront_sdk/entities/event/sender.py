@@ -20,8 +20,8 @@ class WavefrontEventSender(object):
           "endTime": <End Time>, "tags": <Tags>}
         Example: {"name": event_via_direct_ingestion, "annotations": {
         "severity": "severe", "type": "backup", "details": "broker backup"},
-         "hosts": ["localhost"], "startTime": 1590678089, "endTime": 1590679089,
-         "tags": ["env:", "test"]}
+         "hosts": ["localhost"], "startTime": 1590678089,
+          "endTime": 1590679089, "tags": ["env:", "test"]}
 
         @param name: Event Name
         @type name: str

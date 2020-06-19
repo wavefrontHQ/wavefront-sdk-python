@@ -350,7 +350,7 @@ def event_to_json(name, start_time, end_time, source, tags,
         raise ValueError('Event start time cannot be blank')
 
     if not source:
-        source = default_source
+        source = [default_source]
 
     event = {'name': name, 'annotations': {}, 'hosts': source}
     if start_time:

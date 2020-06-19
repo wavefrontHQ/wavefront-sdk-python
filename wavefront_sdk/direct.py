@@ -464,7 +464,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._batch_report(span_logs, self.WAVEFRONT_SPAN_LOG_FORMAT,
                            'span_logs', self._span_logs_report_errors)
 
-    def send_event(self, name, start_time, end_time, source, tags,
+    def send_event(self, name, start_time, end_time, sources, tags,
                    annotations):
         """Send Event Data via direct ingestion client.
 
@@ -483,8 +483,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type start_time: long
         @param end_time: Event End Time
         @type end_time: long
-        @param source: Source
-        @type source: str
+        @param sources: Source
+        @type sources: list[str]
         @param tags: Tags
         @type tags: list[str]
         @param annotations: Annotations
@@ -492,7 +492,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         """
         try:
             line_data = utils.event_to_json(
-                name, start_time, end_time, source, tags, annotations,
+                name, start_time, end_time, sources, tags, annotations,
                 self._default_source)
             self._events_valid.inc()
         except ValueError as error:
