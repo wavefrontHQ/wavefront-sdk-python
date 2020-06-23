@@ -373,7 +373,7 @@ batch_span_data = [one_tracing_span_data, one_tracing_span_data]
 wavefront_sender.send_span_now(batch_span_data)
 ```
 
-## Get them Failure Count
+## Get the Failure Count
 
 If the application failed to send metrics, histograms, or trace data via the `wavefront_sender`, you can get the total failure count.
 
