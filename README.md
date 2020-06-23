@@ -18,7 +18,7 @@
 
 # Welcome to the Wavefront Python SDK
 
-Wavefront by VMware Python SDK lets you send raw data from your Go application to Wavefront using a `wavefront_sender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python. 
+Wavefront by VMware Python SDK lets you send raw data from your Python application to Wavefront using a `wavefront_sender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python. 
 
 Although this library is mostly used by the other Wavefront Python SDKs to send data to Wavefront, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Wavefront.
 
@@ -409,10 +409,3 @@ total_failures = wavefront_sender.get_failure_count()
 
 * Reach out to us on our public [Slack channel](https://www.wavefront.com/join-public-slack).
 * If you run into any issues, let us know by creating a GitHub issue.
-
-[ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-go.svg?branch=master
-[ci]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-go
-[godoc]: https://godoc.org/github.com/wavefrontHQ/wavefront-sdk-go/senders
-[godoc-img]: https://godoc.org/github.com/wavefrontHQ/wavefront-sdk-go/senders?status.svg
-[go-report-img]: https://goreportcard.com/badge/github.com/wavefronthq/wavefront-sdk-go
-[go-report]: https://goreportcard.com/report/github.com/wavefronthq/wavefront-sdk-go
