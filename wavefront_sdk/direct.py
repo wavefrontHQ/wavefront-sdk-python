@@ -26,7 +26,8 @@ from .common.metrics import registry
 class WavefrontDirectClient(connection_handler.ConnectionHandler,
                             entities.WavefrontMetricSender,
                             entities.WavefrontHistogramSender,
-                            entities.WavefrontTracingSpanSender):
+                            entities.WavefrontTracingSpanSender,
+                            entities.WavefrontEventSender):
     """Wavefront direct ingestion client.
 
     Sends data directly to Wavefront cluster via the direct ingestion API.
@@ -36,10 +37,21 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
     WAVEFRONT_HISTOGRAM_FORMAT = 'histogram'
     WAVEFRONT_TRACING_SPAN_FORMAT = 'trace'
     WAVEFRONT_SPAN_LOG_FORMAT = 'spanLogs'
+    WAVEFRONT_EVENT_FORMAT = 'event'
+
+    REPORT_END_POINT = '/report'
+    EVENT_END_POINT = '/api/v2/event'
 
     # pylint: disable=too-many-arguments
-    def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
-                 flush_interval_seconds=5, enable_internal_metrics=True):
+    # pylint: disable=too-many-statements
+
+    def __init__(self,
+                 server,
+                 token,
+                 max_queue_size=50000,
+                 batch_size=10000,
+                 flush_interval_seconds=5,
+                 enable_internal_metrics=True):
         """Construct Direct Client.
 
         @param server: Server address, Example: https://INSTANCE.wavefront.com
@@ -67,9 +79,13 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._histograms_buffer = queue.Queue(max_queue_size)
         self._tracing_spans_buffer = queue.Queue(max_queue_size)
         self._spans_log_buffer = queue.Queue(max_queue_size)
+        self._events_buffer = queue.Queue(max_queue_size)
         self._headers = {'Content-Type': 'application/octet-stream',
                          'Content-Encoding': 'gzip',
                          'Authorization': 'Bearer ' + token}
+        self._event_headers = {'Content-Type': 'application/json',
+                               'Content-Encoding': 'gzip',
+                               'Authorization': 'Bearer ' + token}
         self._closed = False
         self._schedule_lock = threading.Lock()
         self._timer = None
@@ -140,6 +156,20 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._span_logs_report_errors = self._sdk_metrics_registry.new_counter(
             'span_logs.report.errors')
 
+        self._sdk_metrics_registry.new_gauge(
+            'events.queue.size', self._events_buffer.qsize)
+        self._sdk_metrics_registry.new_gauge(
+            'events.queue.remaining_capacity',
+            remaining_capacity_getter(self._events_buffer))
+        self._events_valid = self._sdk_metrics_registry.new_counter(
+            'events.valid')
+        self._events_invalid = self._sdk_metrics_registry.new_counter(
+            'events.invalid')
+        self._events_dropped = self._sdk_metrics_registry.new_counter(
+            'events.dropped')
+        self._events_report_errors = self._sdk_metrics_registry.new_counter(
+            'events.report.errors')
+
     def _report(self, points, data_format, entity_prefix, report_errors):
         r"""One api call sending one given string data.
 
@@ -149,11 +179,19 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type data_format: str
         """
         try:
-            params = {'f': data_format}
-            compressed_data = utils.gzip_compress(points.encode('utf-8'))
-            response = requests.post(self.server + '/report', params=params,
-                                     headers=self._headers,
-                                     data=compressed_data)
+            if data_format == self.WAVEFRONT_EVENT_FORMAT:
+                response = requests.post(self.server + self.EVENT_END_POINT,
+                                         params=None,
+                                         headers=self._event_headers,
+                                         data=points)
+            else:
+                params = {'f': data_format}
+                compressed_data = utils.gzip_compress(points.encode('utf-8'))
+                response = requests.post(self.server + self.REPORT_END_POINT,
+                                         params=params,
+                                         headers=self._headers,
+                                         data=compressed_data)
+
             self._sdk_metrics_registry.new_counter(
                 '{}.report.{}'.format(entity_prefix,
                                       response.status_code)).inc()
@@ -231,6 +269,9 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._internal_flush(self._spans_log_buffer,
                              self.WAVEFRONT_SPAN_LOG_FORMAT, 'span_logs',
                              self._span_logs_report_errors)
+        self._internal_flush(self._events_buffer,
+                             self.WAVEFRONT_EVENT_FORMAT, 'events',
+                             self._events_report_errors)
 
     def close(self):
         """Flush all buffer before close the client."""
@@ -241,10 +282,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                 self._timer.cancel()
         self._sdk_metrics_registry.close(timeout_secs=1)
 
-    # pylint: disable=too-many-arguments
-
     def send_metric(self, name, value, timestamp, source, tags):
-        """Send Metric Data via proxy.
+        """Send Metric Data via direct ingestion client.
 
         Wavefront Metrics Data format
         <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
@@ -287,11 +326,9 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._batch_report(metrics, self.WAVEFRONT_METRIC_FORMAT, 'points',
                            self._points_report_errors)
 
-    # pylint: disable=too-many-arguments
-
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
-        """Send Distribution Data via proxy.
+        """Send Distribution Data via direct ingestion client.
 
         Wavefront Histogram Data format
         {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids]
@@ -330,7 +367,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         """Send a list of distribution immediately.
 
         Have to construct the data manually by calling
-        common.utils.metric_to_line_data()
+        common.utils.histogram_to_line_data()
 
         @param distributions: List of string spans data
         @type distributions: list[str]
@@ -342,7 +379,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
-        """Send span data via proxy.
+        """Send span data via direct ingestion client.
 
         Wavefront Tracing Span Data format
         <tracingSpanName> source=<source> [pointTags] <start_millis>
@@ -406,7 +443,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         Send a list of spans immediately.
 
         Have to construct the data manually by calling
-        common.utils.metric_to_line_data()
+        common.utils.tracing_span_to_line_data()
 
         @param spans: List of string spans data
         @type spans: list[str]
@@ -427,12 +464,65 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._batch_report(span_logs, self.WAVEFRONT_SPAN_LOG_FORMAT,
                            'span_logs', self._span_logs_report_errors)
 
+    def send_event(self, name, start_time, end_time, source, tags,
+                   annotations):
+        """Send Event Data via direct ingestion client.
+
+        Wavefront Event Data format
+        {"name": <Event Name>, "annotations": <Annotations>,
+         "hosts": <Host Name>,"startTime": <Start Time>,
+          "endTime": <End Time>, "tags": <Tags>}
+        Example: {"name": event_via_direct_ingestion, "annotations": {
+        "severity": "severe", "type": "backup", "details": "broker backup"},
+         "hosts": ["localhost"], "startTime": 1590678089,
+         "endTime": 1590679089, "tags": ["env:", "test"]}
+
+        @param name: Event Name
+        @type name: str
+        @param start_time: Event Start Time
+        @type start_time: long
+        @param end_time: Event End Time
+        @type end_time: long
+        @param source: Source
+        @type source: str
+        @param tags: Tags
+        @type tags: list[str]
+        @param annotations: Annotations
+        @type annotations: dict
+        """
+        try:
+            line_data = utils.event_to_json(
+                name, start_time, end_time, source, tags, annotations,
+                self._default_source)
+            self._events_valid.inc()
+        except ValueError as error:
+            self._events_invalid.inc()
+            raise error
+        try:
+            self._events_buffer.put(line_data)
+        except queue.Full as error:
+            self._events_dropped.inc()
+            raise error
+
+    def send_event_now(self, events):
+        """Send a list of events immediately.
+
+        Have to construct the data manually by calling
+        common.utils.event_to_json()
+
+        @param events: List of string events data
+        @type events: list[str]
+        """
+        self._batch_report(events, self.WAVEFRONT_EVENT_FORMAT, 'events',
+                           self._events_report_errors)
+
     def get_failure_count(self):
         """Get failure count for one connection."""
         return (self._points_report_errors.count() +
                 self._histograms_report_errors.count() +
                 self._spans_report_errors.count() +
-                self._span_logs_report_errors.count())
+                self._span_logs_report_errors.count() +
+                self._events_report_errors.count())
 
 
 def remaining_capacity_getter(buf):
