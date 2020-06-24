@@ -208,7 +208,8 @@ wavefront_sender = WavefrontProxyClient(
    metrics_port=2878,
    distribution_port=2878,
    tracing_port=30000,
-   internal_flush=2
+   event_port=2878
+   internal_flush=2,
 )
 ```
 
@@ -287,6 +288,16 @@ wavefront_sender.send_span(
     follows_from=None, tags=[("application", "Wavefront"),
                              ("http.method", "GET")],
     span_logs=None)
+```
+
+### Single Event
+
+```python
+# Wavefront event format:
+# @Event <StartTime> <EndTime> "<EventName>"  severity="<Severity>"
+# type="<Type>" details="<EventDetail>" host="<Source>" tag="<Tags>"
+wavefront_sender.send_event('event name', 1592200048, 1592201048, "localhost",
+    ["env:", "dev"], {"severity": "info", "type": "backup", "details": "broker backup"})
 ```
 
 ## Send Batch Data to Wavefront
@@ -371,6 +382,26 @@ batch_span_data = [one_tracing_span_data, one_tracing_span_data]
 
 # Send list of data immediately
 wavefront_sender.send_span_now(batch_span_data)
+```
+
+### Batch Events
+
+```python
+from wavefront_sdk.common import event_to_line_data
+
+# Generate string data in Wavefront event format
+one_event_data = event_to_line_data(name="event name", start_time=1592200048, end_time=1592201048,
+ source="localhost", tags=["env", "dev"], annotations={"severity": "info", "type": "backup", "details": "broker backup"})
+
+# Result of one_event_data:
+# '@Event 1592200048 1592201048 "event name" severity="info" type="backup" details="broker backup"
+# host="localhost" tag="env" tag="dev"\n'
+
+# List of events
+batch_event_data = [one_event_data, one_event_data]
+
+# Send list of events immediately
+wavefront_sender.send_event_now(batch_event_data)
 ```
 
 ## Get the Failure Count
