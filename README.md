@@ -6,38 +6,154 @@
 [![image](https://img.shields.io/pypi/pyversions/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
 
 
-Wavefront by VMware SDK for Python is the core library for sending metrics, histograms and trace data from your Python application to Wavefront using via proxy or direct ingestion.
+## Table of Content
+* [Prerequisites](#Prerequisites)
+* [Set Up a Wavefront Sender](#set-up-a-wavefront-sender)
+* [Send a Single Data Point to Wavefront](#send-a-single-data-point-to-wavefront)
+* [Send Batch Data to Wavefront](#send-batch-data-to-wavefront)
+* [Get the Failure Count](#get-the-failure-count)
+* [Close the Connection](#close-the-connection)
+* [License](#License)
+* [How to Get Support and Contribute](#how-to-get-support-and-contribute)
 
-## Requirements and Installation
-Python 2.7+ and Python 3.x are supported.
+# Welcome to the Wavefront Python SDK
 
-```
-pip install wavefront-sdk-python
-```
+Wavefront by VMware Python SDK lets you send raw data from your Python application to Wavefront using a `wavefront_sender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python. 
+
+Although this library is mostly used by the other Wavefront Python SDKs to send data to Wavefront, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Wavefront.
+
+**Before you start implementing, let us make sure you are using the correct SDK!**
+
+![Python Sender SDK Decision Tree](docs/python_sender_sdk.png)
+
+> ***Note***:
+> </br>
+>   * **This is the Wavefront by VMware SDK for Python (Wavefront Sender SDK for Python)!**
+>   If this SDK is not what you were looking for, see the [table](#wavefront-sdks) below.
+
+#### Wavefront SDKs
+<table id="SDKlevels" style="width: 100%">
+<tr>
+  <th width="10%">SDK Type</th>
+  <th width="45%">SDK Description</th>
+  <th width="45%">Supported Languages</th>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-collecting-trace-data">OpenTracing SDK</a></td>
+  <td align="justify">Implements the OpenTracing specification. Lets you define, collect, and report custom trace data from any part of your application code. <br>Automatically derives Rate Errors Duration (RED) metrics from the reported spans. </td>
+  <td>
+    <ul>
+    <li>
+      <b>Java</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java">OpenTracing SDK</a> <b>|</b> <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java">Tracing Agent</a>
+    </li>
+    <li>
+      <b>Python</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python">OpenTracing SDK</a>
+    </li>
+    <li>
+      <b>Go</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-go">OpenTracing SDK</a>
+    </li>
+    <li>
+      <b>.Net/C#</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-csharp">OpenTracing SDK</a>
+    </li>
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-collecting-metrics-and-histograms">Metrics SDK</a></td>
+  <td align="justify">Implements a standard metrics library. Lets you define, collect, and report custom business metrics and histograms from any part of your application code.   </td>
+  <td>
+    <ul>
+    <li>
+    <b>Java</b>: <a href ="https://github.com/wavefrontHQ/wavefront-dropwizard-metrics-sdk-java">Dropwizard</a> <b>|</b> <a href ="https://github.com/wavefrontHQ/wavefront-runtime-sdk-jvm">JVM</a>
+    </li>
+    <li>
+    <b>Python</b>: <a href ="https://github.com/wavefrontHQ/wavefront-pyformance">Pyformance SDK</a>
+    </li>
+    <li>
+      <b>Go</b>: <a href ="https://github.com/wavefrontHQ/go-metrics-wavefront">Go Metrics SDK</a>
+      </li>
+    <li>
+    <b>.Net/C#</b>: <a href ="https://github.com/wavefrontHQ/wavefront-appmetrics-sdk-csharp">App Metrics SDK</a>
+    </li>
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-that-instrument-frameworks">Framework SDK</a></td>
+  <td align="justify">Reports predefined traces, metrics, and histograms from the APIs of a supported app framework. Lets you get started quickly with minimal code changes.</td>
+  <td>
+    <ul>
+    <li><b>Java</b>:
+    <a href="https://github.com/wavefrontHQ/wavefront-dropwizard-sdk-java">Dropwizard</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-gRPC-sdk-java">gRPC</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-jaxrs-sdk-java">JAX-RS</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-jersey-sdk-java">Jersey</a></li>
+    <li><b>.Net/C#</b>:
+    <a href="https://github.com/wavefrontHQ/wavefront-aspnetcore-sdk-csharp">ASP.Net core</a> </li>
+    <!--- [Python](wavefront_sdks_python.html#python-sdks-that-instrument-frameworks) --->
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-sending-raw-data-to-wavefront">Sender SDK</a></td>
+  <td align="justify">Lets you send raw data to Wavefront for storage as metrics, histograms, or traces, e.g., to import CSV data into Wavefront.
+  </td>
+  <td>
+    <ul>
+    <li>
+    <b>Java</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-java">Sender SDK</a>
+    </li>
+    <li>
+    <b>Python</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-python">Sender SDK</a>
+    </li>
+    <li>
+    <b>Go</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-go">Sender SDK</a>
+    </li>
+    <li>
+    <b>.Net/C#</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-csharp">Sender SDK</a>
+    </li>
+    <li>
+    <b>C++</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-cpp">Sender SDK</a>
+    </li>
+    </ul>
+  </td>
+</tr>
+
+</tbody>
+</table>
+
+## Prerequisites
+
+* Python 2.7+ and Python 3.x are supported.
+* Install `wavefront-sdk-python`
+    ```
+    pip install wavefront-sdk-python
+    ```
 
 ## Set Up a Wavefront Sender
 
-You can choose to send metrics, histograms, or trace data from your application to the Wavefront service using one of the following techniques:
-* Use [direct ingestion](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly.
-* Use a [Wavefront proxy](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
+You can send metrics, histograms, or trace data from your application to the Wavefront service using a Wavefront proxy or direct ingestions.
+
+* Use [**direct ingestion**](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly.
+* Use a [**Wavefront proxy**](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 
 You instantiate an object that corresponds to your choice:
 * Option 1: [Create a `WavefrontDirectClient`](#option-1-create-a-wavefrontdirectclient) to send data directly to a Wavefront service.
 * Option 2: [Create a `WavefrontProxyClient`](#option-2-create-a-wavefrontproxyclient) to send data to a Wavefront proxy.
 
 ### Option 1: Create a WavefrontDirectClient
-To create a `WavefrontDirectClient`, you initialize it with the information it needs to send data directly to Wavefront.
+When sending data via direct ingestion, you need to create a `WavefrontDirectClient`, and build it with the Wavefront URL and API token to send data directly to Wavefront.
 
-#### Step 1. Obtain Wavefront Access Information
-Gather the following access information:
+>**Prerequisites**
+> * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
+> * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
+> * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
-* Identify the URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://mydomain.wavefront.com`.
-* In Wavefront, verify that you have Direct Data Ingestion permission, and [obtain an API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
+#### Initialize the WavefrontDirectClient
+You initialize a `WavefrontDirectClient` by providing the access information you obtained in the Prerequisites section..
 
-#### Step 2. Initialize the WavefrontDirectClient
-You initialize a `WavefrontDirectClient` by providing the access information you obtained in Step 1.
-
-You can optionally specify parameters to tune the following ingestion properties:
+Optionally, you can specify parameters to tune the following ingestion properties:
 
 * Max queue size - Internal buffer capacity of the Wavefront sender. Any data in excess of this size is dropped.
 * Flush interval - Interval for flushing data from the Wavefront sender directly to Wavefront.
@@ -66,13 +182,16 @@ wavefront_sender = WavefrontDirectClient(
 
 ### Option 2: Create a WavefrontProxyClient
 
-**Note:** Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://github.com/wavefrontHQ/java/tree/master/proxy#set-up-a-wavefront-proxy).
+>**Prerequisite** <br/>
+>Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
 
-To create a `WavefrontProxyClient`, you instantiate it with the information it needs to send data to a Wavefront proxy, including:
+When sending data via the Wavefront proxy, you need to create a `WavefrontProxyClient`. Include the following information.
 
 * The name of the host that will run the Wavefront proxy.
-* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port.
-* Optional setting for tuning communication with the proxy.
+* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port. 
+* Optional settings for tuning communication with the proxy.
+
+> **Note**: See [Advanced Proxy Configuration and Installation](https://docs.wavefront.com/proxies_configuring.html) for details.
 
 ```python
 from wavefront_sdk import WavefrontProxyClient
@@ -83,6 +202,7 @@ from wavefront_sdk import WavefrontProxyClient
    # the recommended listener port (2878) for sending histograms to
    # the recommended listener port (30000) for sending trace data to
    # a nondefault interval (2 seconds) for flushing data from the sender to the proxy. Default: 5 seconds
+   # if you are directly using the sender sdk to send spans without using any other sdk, use the same port as the customTracingListenerPorts configured in the wavefront proxy for the tracing_port
 wavefront_sender = WavefrontProxyClient(
    host="<PROXY_HOST>",
    metrics_port=2878,
@@ -93,7 +213,7 @@ wavefront_sender = WavefrontProxyClient(
 )
 ```
 
-**Note:** When you [set up a Wavefront proxy](https://github.com/wavefrontHQ/java/tree/master/proxy#set-up-a-wavefront-proxy) on the specified proxy host, you specify the port it will listen to for each type of data to be sent. The `WavefrontProxyClient` must send data to the same ports that the Wavefront proxy listens to. Consequently, the port-related parameters must specify the same port numbers as the corresponding proxy configuration properties:
+> **Note:** When you set up a Wavefront proxy on the specified proxy host, you specify the port it will listen to for each type of data to be sent. The `WavefrontProxyClient` must send data to the same ports that the Wavefront proxy listens to. Consequently, the port-related parameters must specify the same port numbers as the corresponding proxy configuration properties:
 
 | `WavefrontProxyClient()` parameter | Corresponding property in `wavefront.conf` |
 | ----- | -------- |
@@ -102,11 +222,9 @@ wavefront_sender = WavefrontProxyClient(
 | `tracing_port` | `traceListenerPorts=` |
 
 
-
 ## Send a Single Data Point to Wavefront
 
 The following examples show how to send a single data point to Wavefront. You use the Wavefront sender you created above.
-
 
 ### Single Metric or  Delta Counter
 
@@ -125,6 +243,8 @@ wavefront_sender.send_delta_counter(
     name="delta.counter", value=1.0,
     source="localhost", tags={"datacenter": "dc1"})
 ```
+***Note***: If your metric name has a bad character, that character is replaced with a `-`.
+
 ### Single Histogram Distribution
 
 ```python
@@ -146,6 +266,9 @@ wavefront_sender.send_distribution(
 ```
 
 ### Single Span
+
+If you are directly using the Sender SDK to send data to Wavefront, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
+
 ```python
 from uuid import UUID
 
@@ -177,7 +300,7 @@ wavefront_sender.send_event('event name', 1592200048, 1592201048, "localhost",
     ["env:", "dev"], {"severity": "info", "type": "backup", "details": "broker backup"})
 ```
 
-## Send Batch Data
+## Send Batch Data to Wavefront
 
 The following examples show how to generate data points manually and send them as a batch to Wavefront.
 
@@ -202,6 +325,8 @@ batch_metric_data = [one_metric_data, one_metric_data]
 # Send list of data immediately
 wavefront_sender.send_metric_now(batch_metric_data)
 ```
+***Note***: If your metric name has a bad character, that character is replaced with a `-`.
+
 ### Batch Histograms
 
 ```python
@@ -230,6 +355,8 @@ batch_histogram_data = [one_histogram_data, one_histogram_data]
 wavefront_sender.send_distribution_now(batch_histogram_data)
 ```
 ### Batch Trace Data
+
+If you are directly using the Sender SDK to send data to Wavefront, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
 ```python
 from uuid import UUID
@@ -277,9 +404,9 @@ batch_event_data = [one_event_data, one_event_data]
 wavefront_sender.send_event_now(batch_event_data)
 ```
 
-## Get a Failure Count
+## Get the Failure Count
 
-If there are any failures observed while sending metrics, histograms, or trace data, you can get the total failure count.
+If the application failed to send metrics, histograms, or trace data via the `wavefront_sender`, you can get the total failure count.
 
 ```python
 # Get the total failure count
@@ -287,21 +414,29 @@ total_failures = wavefront_sender.get_failure_count()
 ```
 ## Close the Connection
 
-If the Wavefront sender is a `WavefrontDirectClient`, flush all buffers and then close the connection before shutting down the application.
+* If the Wavefront sender is a `WavefrontDirectClient`, flush all buffers and then close the connection before shutting down the application.
 
-```python
-# To shut down a WavefrontDirectClient
-# Flush all buffers.
-wavefront_sender.flush_now()
+    ```python
+    # To shut down a WavefrontDirectClient
+    # Flush all buffers.
+    wavefront_sender.flush_now()
 
-# Close the sender connection
-wavefront_sender.close()
-```
-If the Wavefront sender is a `WavefrontProxyClient`, close the connection before shutting down the application.
+    # Close the sender connection
+    wavefront_sender.close()
+    ```
+* If the Wavefront sender is a `WavefrontProxyClient`, close the connection before shutting down the application.
 
-```python
-# To shut down a WavefrontProxyClient
+    ```python
+    # To shut down a WavefrontProxyClient
 
-# Close the sender connection
-wavefront_sender.close()
-```
+    # Close the sender connection
+    wavefront_sender.close()
+    ```
+
+## License
+[Apache 2.0 License](LICENSE).
+
+## How to Get Support and Contribute
+
+* Reach out to us on our public [Slack channel](https://www.wavefront.com/join-public-slack).
+* If you run into any issues, let us know by creating a GitHub issue.
