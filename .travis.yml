@@ -1,7 +1,6 @@
 dist: bionic
 language: python
 python:
-  - "2.7"
   - "3.5"
   - "3.6"
   - "3.7"
@@ -9,13 +8,15 @@ python:
 install:
   - pip install requests
   - pip install tdigest
+  - pip install uri
+  - pip install Deprecated
   - pip install flake8 flake8-colors flake8-import-order
   - pip install pep8-naming
   - pip install pydocstyle
   - pip install pylint
 before_script:
   - python -m flake8
-  - python -m pylint wavefront_sdk
+  - python -m pylint -d duplicate-code wavefront_sdk
   - python -m pydocstyle
 script:
   - python -m unittest discover

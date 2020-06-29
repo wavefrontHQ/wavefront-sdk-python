@@ -15,7 +15,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.6.5',
+    version='1.6.6',
     author='Wavefront by VMware',
     author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
@@ -39,6 +39,8 @@ setuptools.setup(
                                                'tests.*', 'tests')),
     install_requires=(
         'requests>=2.18.4',
-        'tdigest>=0.5.2'
+        'tdigest>=0.5.2',
+        'uri>=2.0.1',
+        'Deprecated>=1.2.10'
         )
 )

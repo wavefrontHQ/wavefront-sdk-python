@@ -9,11 +9,14 @@ spans to Wavefront via proxy or direct ingestion.
 
 import pkg_resources
 
+from .client_factory import WavefrontClientFactory
 from .direct import WavefrontDirectClient
 from .proxy import WavefrontProxyClient
 
 
-__all__ = ['WavefrontDirectClient', 'WavefrontProxyClient']
+__all__ = ['WavefrontDirectClient',
+           'WavefrontProxyClient',
+           'WavefrontClientFactory']
 
 __version__ = None
 

@@ -1,7 +1,8 @@
+# pylint: disable=duplicate-code
 # -*- coding: utf-8 -*-
-"""Wavefront Direct Ingestion Client.
+"""Wavefront Client for Proxy and Direct Ingestion.
 
-@author Hao Song (songhao@vmware.com)
+@author Yogesh Prasad Kurmi (ykurmi@vmware.com)
 """
 
 from __future__ import absolute_import
@@ -10,10 +11,7 @@ import logging
 import socket
 import threading
 
-from deprecated import deprecated
-
 import requests
-
 
 try:
     import queue
@@ -26,15 +24,14 @@ from .common.metrics import registry
 
 
 # pylint: disable=too-many-instance-attributes
-@deprecated
-class WavefrontDirectClient(connection_handler.ConnectionHandler,
-                            entities.WavefrontMetricSender,
-                            entities.WavefrontHistogramSender,
-                            entities.WavefrontTracingSpanSender,
-                            entities.WavefrontEventSender):
-    """Wavefront direct ingestion client.
+class WavefrontClient(connection_handler.ConnectionHandler,
+                      entities.WavefrontMetricSender,
+                      entities.WavefrontHistogramSender,
+                      entities.WavefrontTracingSpanSender,
+                      entities.WavefrontEventSender):
+    """Wavefront data ingestion client.
 
-    Sends data directly to Wavefront cluster via the direct ingestion API.
+    Sends data directly/via proxy to Wavefront cluster..
     """
 
     WAVEFRONT_METRIC_FORMAT = 'wavefront'
@@ -58,9 +55,9 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                  enable_internal_metrics=True):
         """Construct Direct Client.
 
-        @param server: Server address, Example: https://INSTANCE.wavefront.com
+        @param server: Server address,
         @type server: str
-        @param token: Token with Direct Data Ingestion permission granted
+        @param token: Server token,
         @type token: str
         @param max_queue_size:
         @type max_queue_size: int
@@ -72,7 +69,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @param flush_interval_seconds: Interval flush time, 5 secs by default
         @type flush_interval_seconds: int
         """
-        super(WavefrontDirectClient, self).__init__()
+        super(WavefrontClient, self).__init__()
         self.server = server
         self._token = token
         self._max_queue_size = max_queue_size
@@ -85,21 +82,26 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._spans_log_buffer = queue.Queue(max_queue_size)
         self._events_buffer = queue.Queue(max_queue_size)
         self._headers = {'Content-Type': 'application/octet-stream',
-                         'Content-Encoding': 'gzip',
-                         'Authorization': 'Bearer ' + token}
+                         'Content-Encoding': 'gzip'}
         self._event_headers = {'Content-Type': 'application/json',
-                               'Content-Encoding': 'gzip',
-                               'Authorization': 'Bearer ' + token}
+                               'Content-Encoding': 'gzip'}
         self._closed = False
         self._schedule_lock = threading.Lock()
         self._timer = None
         self._schedule_timer()
 
+        if token:
+            self._headers['Authorization'] = 'Bearer ' + token
+            self._event_headers['Authorization'] = 'Bearer ' + token
+            ingestion_type = 'direct'
+        else:
+            ingestion_type = 'proxy'
+
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
-                prefix='{}.core.sender.direct'.format(
-                    constants.SDK_METRIC_PREFIX))
+                prefix='{}.core.sender.{}'.format(
+                    constants.SDK_METRIC_PREFIX, ingestion_type))
         else:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
@@ -181,9 +183,13 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type points: str
         @param data_format: Type of data to be sent
         @type data_format: str
+        @param entity_prefix: Type of metric
+        @type: str
+        @param report_errors: metrics registry to report errors
+        @type: metrics registry
         """
         try:
-            if data_format == self.WAVEFRONT_EVENT_FORMAT:
+            if data_format == self.WAVEFRONT_EVENT_FORMAT and self._token:
                 response = requests.post(self.server + self.EVENT_END_POINT,
                                          params=None,
                                          headers=self._event_headers,
@@ -212,6 +218,10 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type batch_line_data: list
         @param data_format: Type of data to be sent
         @type data_format: str
+        @param entity_prefix: Type of metric
+        @type: str
+        @param report_errors: metrics registry to report errors
+        @type: metrics registry
         """
         # Split data into chunks, each with the size of given batch_size
         for batch in utils.chunks(batch_line_data, self._batch_size):
@@ -234,6 +244,10 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type: Queue
         @param data_format: Type of data to be sent
         @type: str
+        @param entity_prefix: Type of metric
+        @type: str
+        @param report_errors: metrics registry to report errors
+        @type: metrics registry
         """
         data = []
         size = data_buffer.qsize()
@@ -287,7 +301,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._sdk_metrics_registry.close(timeout_secs=1)
 
     def send_metric(self, name, value, timestamp, source, tags):
-        """Send Metric Data via direct ingestion client.
+        """Send Metric Data via proxy/direct ingestion client.
 
         Wavefront Metrics Data format
         <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
@@ -332,7 +346,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
-        """Send Distribution Data via direct ingestion client.
+        """Send Distribution Data via proxy/direct ingestion client.
 
         Wavefront Histogram Data format
         {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids]
@@ -383,7 +397,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
-        """Send span data via direct ingestion client.
+        """Send span data via proxy/direct ingestion client.
 
         Wavefront Tracing Span Data format
         <tracingSpanName> source=<source> [pointTags] <start_millis>
@@ -470,7 +484,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     def send_event(self, name, start_time, end_time, source, tags,
                    annotations):
-        """Send Event Data via direct ingestion client.
+        """Send Event Data via proxy/direct ingestion client.
 
         Wavefront Event Data format
         {"name": <Event Name>, "annotations": <Annotations>,
@@ -478,8 +492,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
           "endTime": <End Time>, "tags": <Tags>}
         Example: {"name": event_via_direct_ingestion, "annotations": {
         "severity": "severe", "type": "backup", "details": "broker backup"},
-         "hosts": ["localhost"], "startTime": 1590678089,
-         "endTime": 1590679089, "tags": ["env:", "test"]}
+         "hosts": "localhost", "startTime": 1590678089, "endTime": 1590679089,
+         "tags": ["env:", "test"]}
 
         @param name: Event Name
         @type name: str
@@ -495,9 +509,14 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type annotations: dict
         """
         try:
-            line_data = utils.event_to_json(
-                name, start_time, end_time, source, tags, annotations,
-                self._default_source)
+            if self._token:
+                line_data = utils.event_to_json(
+                    name, start_time, end_time, source, tags, annotations,
+                    self._default_source)
+            else:
+                line_data = utils.event_to_line_data(
+                    name, start_time, end_time, source, tags, annotations,
+                    self._default_source)
             self._events_valid.inc()
         except ValueError as error:
             self._events_invalid.inc()
