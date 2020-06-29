@@ -39,6 +39,7 @@ setuptools.setup(
                                                'tests.*', 'tests')),
     install_requires=(
         'requests>=2.18.4',
-        'tdigest>=0.5.2'
+        'tdigest>=0.5.2',
+        'uri'
         )
 )
