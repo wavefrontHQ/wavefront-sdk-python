@@ -5,6 +5,7 @@ import sys
 import time
 import uuid
 
+from wavefront_sdk.client_factory import WavefrontClientFactory
 from wavefront_sdk.direct import WavefrontDirectClient
 from wavefront_sdk.entities.histogram import histogram_granularity
 from wavefront_sdk.proxy import WavefrontProxyClient
@@ -106,6 +107,56 @@ def send_event_via_direct_ingestion(direct_ingestion_client):
          "details": "broker backup"})
 
 
+def send_metrics_multi_client(proxy_client):
+    """Send a metric using multi client."""
+    proxy_client.send_metric(
+        'python' + str(sys.version_info[0])
+        + '.multi.client.new york.power.usage',
+        42422.0, None, 'localhost', None)
+
+
+def send_delta_counter_multi_client(proxy_client):
+    """Send a delta counter using multi client."""
+    proxy_client.send_delta_counter(
+        'python' + str(sys.version_info[0])
+        + '.delta.multi.client.counter',
+        1.0, 'localhost', None)
+
+
+def send_histogram_multi_client(proxy_client):
+    """Send a histogram using multi client."""
+    proxy_client.send_distribution(
+        'python' + str(sys.version_info[0]) + '.multi.client.request.latency',
+        [(30, 20), (5.1, 10)], {histogram_granularity.DAY,
+                                histogram_granularity.HOUR,
+                                histogram_granularity.MINUTE},
+        None, 'appServer1', {'region': 'us-west'})
+
+
+def send_tracing_span_multi_client(proxy_client):
+    """Send a tracing span using multi client."""
+    proxy_client.send_span(
+        'getAllUsersFromPythonMultiClient', time.time(), 343500, 'localhost',
+        uuid.UUID('7b3bf470-9456-11e8-9eb6-529269fb1459'),
+        uuid.UUID('0313bafe-9457-11e8-9eb6-529269fb1459'),
+        [uuid.UUID('2f64e538-9457-11e8-9eb6-529269fb1459')], None,
+        [('application', 'Wavefront'),
+         ('http.method', 'GET')], None)
+
+
+def send_event_via_multi_client(direct_ingestion_client):
+    """Send an event through multi ingestion."""
+    direct_ingestion_client.send_event(
+        'event_via_multi_client',
+        time.time(),
+        None,
+        "localhost",
+        ["env:", "test"],
+        {"severity": "severe",
+         "type": "backup",
+         "details": "broker backup"})
+
+
 if __name__ == '__main__':
     wavefront_server = sys.argv[1]
     token = sys.argv[2]
@@ -114,6 +165,10 @@ if __name__ == '__main__':
     distribution_port = None if len(sys.argv) <= 5 else sys.argv[5]
     tracing_port = None if len(sys.argv) <= 6 else sys.argv[6]
     event_port = None if len(sys.argv) <= 7 else sys.argv[7]
+    # Proxy url: proxy://<proxy-host-ip>:2878
+    proxy_url = None if len(sys.argv) <= 8 else sys.argv[8]
+    # Direct url: https://<api-key>@<cluster-name>.wavefront.com
+    direct_url = None if len(sys.argv) <= 9 else sys.argv[9]
 
     wavefront_proxy_client = WavefrontProxyClient(
         host=proxy_host,
@@ -123,6 +178,11 @@ if __name__ == '__main__':
         event_port=event_port)
 
     wavefront_direct_client = WavefrontDirectClient(wavefront_server, token)
+
+    multi_client_factory = WavefrontClientFactory()
+    multi_client_factory.add_client(proxy_url)
+    multi_client_factory.add_client(direct_url)
+    multi_client = multi_client_factory.get_client()
 
     try:
         while True:
@@ -138,7 +198,14 @@ if __name__ == '__main__':
             send_delta_counter_via_direct_ingestion(wavefront_direct_client)
             send_event_via_direct_ingestion(wavefront_direct_client)
 
+            send_metrics_multi_client(multi_client)
+            send_histogram_multi_client(multi_client)
+            send_tracing_span_multi_client(multi_client)
+            send_delta_counter_multi_client(multi_client)
+            send_event_via_multi_client(multi_client)
+
             time.sleep(1)
     finally:
         wavefront_proxy_client.close()
         wavefront_direct_client.close()
+        multi_client.close()
