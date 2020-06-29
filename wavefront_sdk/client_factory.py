@@ -72,12 +72,12 @@ class WavefrontClientFactory:
          Multi-Client, if there are multiple clients
 
         """
-        if not self.clients:
-            return None
-        elif len(self.clients) == 1:
-            return self.clients[0]
-
-        wf_multi_clients = WavefrontMultiClient()
-        for client in self.clients:
-            wf_multi_clients.with_wavefront_sender(client)
-        return wf_multi_clients
+        data = None
+        if len(self.clients) == 1:
+            data = self.clients[0]
+        else:
+            wf_multi_clients = WavefrontMultiClient()
+            for client in self.clients:
+                wf_multi_clients.with_wavefront_sender(client)
+            data = wf_multi_clients
+        return data
