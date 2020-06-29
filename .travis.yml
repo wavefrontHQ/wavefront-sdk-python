@@ -15,7 +15,7 @@ install:
   - pip install pylint
 before_script:
   - python -m flake8
-  - python -m pylint wavefront_sdk
+  - python -m pylint -d duplicate-code wavefront_sdk
   - python -m pydocstyle
 script:
   - python -m unittest discover
