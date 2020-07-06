@@ -67,9 +67,9 @@ class WavefrontClientFactory:
         """Get client.
 
         Return
-         None, if there is no client
-         Client, if there is only one client
-         Multi-Client, if there are multiple clients
+          None, if there is no client
+          Client, if there is only one client
+          Multi-Client, if there are multiple clients
 
         """
         data = None
