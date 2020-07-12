@@ -40,6 +40,6 @@ setuptools.setup(
     install_requires=(
         'requests>=2.18.4',
         'tdigest>=0.5.2',
-        'uri'
+        'uri>=2.0.1'
         )
 )
