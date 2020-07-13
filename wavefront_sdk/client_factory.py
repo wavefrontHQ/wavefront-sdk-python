@@ -75,7 +75,7 @@ class WavefrontClientFactory:
         data = None
         if len(self.clients) == 1:
             data = self.clients[0]
-        else:
+        elif len(self.clients) > 1:
             wf_multi_clients = WavefrontMultiClient()
             for client in self.clients:
                 wf_multi_clients.with_wavefront_sender(client)
