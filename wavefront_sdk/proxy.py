@@ -9,15 +9,19 @@ from __future__ import absolute_import
 import logging
 from socket import gethostname
 
+from deprecated import deprecated
+
 from . import entities
 from .common import constants, utils
 from .common.metrics import registry
 from .common.proxy_connection_handler import ProxyConnectionHandler
 
+
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontDirectClient')
 
 
 # pylint: disable=too-many-instance-attributes
+@deprecated
 class WavefrontProxyClient(entities.WavefrontMetricSender,
                            entities.WavefrontHistogramSender,
                            entities.WavefrontTracingSpanSender):

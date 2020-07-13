@@ -10,7 +10,10 @@ import logging
 import socket
 import threading
 
+from deprecated import deprecated
+
 import requests
+
 
 try:
     import queue
@@ -23,6 +26,7 @@ from .common.metrics import registry
 
 
 # pylint: disable=too-many-instance-attributes
+@deprecated
 class WavefrontDirectClient(connection_handler.ConnectionHandler,
                             entities.WavefrontMetricSender,
                             entities.WavefrontHistogramSender,
