@@ -10,6 +10,7 @@ install:
   - pip install requests
   - pip install tdigest
   - pip install uri
+  - pip install Deprecated
   - pip install flake8 flake8-colors flake8-import-order
   - pip install pep8-naming
   - pip install pydocstyle
