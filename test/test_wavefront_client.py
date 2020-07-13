@@ -54,7 +54,8 @@ class WavefrontClient(unittest.TestCase):
         proxy_base_url = "proxy://192.114.71.230:2878"
         multi_client_factory.add_client(proxy_base_url)
         self.assertTrue(isinstance(multi_client_factory.get_client(),
-                                   wavefront_sdk.multi_clients.WavefrontMultiClient))
+                                   wavefront_sdk.multi_clients
+                                   .WavefrontMultiClient))
 
     def test_existing_client(self):
         """Test existing_client of WavefrontClientFactory"""
