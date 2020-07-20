@@ -11,6 +11,8 @@ import json
 import re
 import threading
 
+import pkg_resources
+
 from wavefront_sdk.common.constants import SPAN_LOG_KEY
 
 
@@ -370,6 +372,32 @@ def event_to_json(name, start_time, end_time, source, tags,
 
     return str(json.dumps(event))
 
+
+def get_sem_ver(name):
+    """Returns semantic version of sdk used in Wavefront reportable format.
+    Ex: <major>.<2-digit-minor><2-digit-patch> (1.0603 => v1.6.3)
+
+    @param name: SDK Name
+    @type name: str
+    @return: Semantic version in wavefront format as String
+    """
+    version = pkg_resources.require(name)[0].version
+    return get_sem_ver_value(version)
+
+def get_sem_ver_value(version):
+    """Returns semantic version of sdk in Wavefront reportable format.
+    Ex: <major>.<2-digit-minor><2-digit-patch> (1.0603 => v1.6.3)
+
+    @param name: SDK Version
+    @type name: str
+    @return: Semantic version in wavefront format as String
+    """
+    for m in re.finditer("([0-9]\\d*)\\.(\\d+)\\.(\\d+)(?:-([a-zA-Z0-9]+))?", version):
+        major = m.group(1) + "."
+        minor = m.group(2) if len(m.group(2)) != 1 else "0" + m.group(2)
+        patch = m.group(3) if len(m.group(3)) != 1 else "0" + m.group(3)
+        return major + minor + patch
+    return "0.0"
 
 def event_to_line_data(name, start_time, end_time, source, tags,
                        annotations, default_source):

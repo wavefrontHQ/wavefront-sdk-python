@@ -9,6 +9,7 @@ from __future__ import absolute_import
 import logging
 from socket import gethostname
 
+from wavefront_sdk.common.utils import get_sem_ver
 from . import entities
 from .common import constants, utils
 from .common.metrics import registry
@@ -87,6 +88,10 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                                         timeout=timeout))
         self._default_source = gethostname()
 
+        semver = get_sem_ver("wavefront-sdk-python")
+        def version():
+            return semver
+        self._sdk_metrics_registry.new_gauge('version', version)
         self._points_discarded = self._sdk_metrics_registry.new_counter(
             'points.discarded')
         self._points_dropped = self._sdk_metrics_registry.new_counter(

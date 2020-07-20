@@ -12,6 +12,8 @@ import threading
 
 import requests
 
+from wavefront_sdk.common.utils import get_sem_ver
+
 try:
     import queue
 except ImportError:
@@ -100,6 +102,10 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
 
+        semver = get_sem_ver("wavefront-sdk-python")
+        def version():
+            return semver
+        self._sdk_metrics_registry.new_gauge('version', version)
         self._sdk_metrics_registry.new_gauge(
             'points.queue.size', self._metrics_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
