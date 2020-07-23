@@ -9,7 +9,7 @@ from uri import URI
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
 
-
+# pylint: disable=C1001,W0232
 class WavefrontClientFactory:
     """Wavefront client factory.
 
