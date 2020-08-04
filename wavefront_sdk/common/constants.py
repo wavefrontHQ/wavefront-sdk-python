@@ -53,3 +53,6 @@ SDK_METRIC_PREFIX = '~sdk.python'
 
 # Tag key for span logs.
 SPAN_LOG_KEY = "_spanLogs"
+
+# Distribution name for sdk
+WAVEFRONT_SDK_PYTHON = 'wavefront-sdk-python'

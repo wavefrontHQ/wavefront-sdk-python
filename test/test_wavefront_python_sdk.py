@@ -6,19 +6,19 @@
 import unittest
 import uuid
 
+from wavefront_sdk.common.utils import get_sem_ver_value
 from wavefront_sdk.common.utils import histogram_to_line_data
 from wavefront_sdk.common.utils import metric_to_line_data
 from wavefront_sdk.common.utils import sanitize
 from wavefront_sdk.common.utils import tracing_span_to_line_data
-from wavefront_sdk.common.utils import get_sem_ver_value
 from wavefront_sdk.entities import histogram_granularity
 
 
 class TestUtils(unittest.TestCase):
     """Test Functions of wavefront_sdk.common.utils."""
 
-    def test_get_sem_ver(self):
-        """Test wavefront_sdk.common.utils.sanitize()."""
+    def test_get_sem_ver_value(self):
+        """Test wavefront_sdk.common.utils.get_sem_ver_value()."""
         self.assertEqual("0.0", get_sem_ver_value(""))
         self.assertEqual("1.0100", get_sem_ver_value("1.1.0"))
         self.assertEqual("1.0100", get_sem_ver_value("1.1.0-SNAPSHOT"))
@@ -28,7 +28,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual("1.0001", get_sem_ver_value("1.0.1"))
         self.assertEqual("1.0010", get_sem_ver_value("1.0.10"))
         self.assertEqual("1.1010", get_sem_ver_value("1.10.10"))
-
 
     def test_sanitize(self):
         """Test wavefront_sdk.common.utils.sanitize()."""
