@@ -70,6 +70,13 @@ class TestUtils(unittest.TestCase):
                                 'localhost', {'datacenter': 'dc1'},
                                 'defaultSource'))
 
+        self.assertEqual(
+            '"new-york.power.usage" 42422.0 1493773500 source="localhost:5050"'
+            ' "datacenter"="dc1"\n',
+            metric_to_line_data('new-york.power.usage', 42422, 1493773500,
+                                'localhost:5050', {'datacenter': 'dc1'},
+                                'defaultSource'))
+
         # null timestamp
         self.assertEqual(
             '"new-york.power.usage" 42422.0 source="localhost" '
@@ -98,6 +105,14 @@ class TestUtils(unittest.TestCase):
             histogram_to_line_data('request.latency', [(30.0, 20), (5.1, 10)],
                                    {histogram_granularity.MINUTE}, 1493773500,
                                    'appServer1', {'region': 'us-west'},
+                                   'defaultSource'))
+
+        self.assertEqual(
+            '!M 1493773500 #20 30.0 #10 5.1 "request.latency" '
+            'source="127.0.0.1:5050" "region"="us-west"\n',
+            histogram_to_line_data('request.latency', [(30.0, 20), (5.1, 10)],
+                                   {histogram_granularity.MINUTE}, 1493773500,
+                                   '127.0.0.1:5050', {'region': 'us-west'},
                                    'defaultSource'))
 
         # null timestamp
@@ -165,6 +180,23 @@ class TestUtils(unittest.TestCase):
                 [uuid.UUID('5f64e538-9457-11e8-9eb6-529269fb1459')],
                 [('application', 'Wavefront'), ('http.method', 'GET')],
                 None, 'defaultSource'))
+
+        self.assertEqual(
+            '"getAllUsers" source="localhost:5050" '
+            'traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 '
+            'spanId=0313bafe-9457-11e8-9eb6-529269fb1459 '
+            'parent=2f64e538-9457-11e8-9eb6-529269fb1459 '
+            'followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 '
+            '"application"="Wavefront" '
+            '"http.method"="GET" 1493773500 343500\n',
+            tracing_span_to_line_data(
+                'getAllUsers', 1493773500, 343500, 'localhost:5050',
+                uuid.UUID('7b3bf470-9456-11e8-9eb6-529269fb1459'),
+                uuid.UUID('0313bafe-9457-11e8-9eb6-529269fb1459'),
+                [uuid.UUID('2f64e538-9457-11e8-9eb6-529269fb1459')],
+                [uuid.UUID('5f64e538-9457-11e8-9eb6-529269fb1459')],
+                [('application', 'Wavefront'),
+                 ('http.method', 'GET')], None, 'defaultSource'))
 
         # null followsFrom
         self.assertEqual(

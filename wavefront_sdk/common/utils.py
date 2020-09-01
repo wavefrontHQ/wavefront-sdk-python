@@ -219,14 +219,14 @@ def metric_to_line_data(name, value, timestamp, source, tags, default_source):
     str_builder = [sanitize(name), str(float(value))]
     if timestamp is not None:
         str_builder.append(str(int(timestamp)))
-    str_builder.append('source=' + sanitize(source))
+    str_builder.append('source=' + sanitize_value(source))
     if tags is not None:
         for key, val in tags.items():
             if is_blank(key):
                 raise ValueError('Metric point tag key cannot be blank')
             if is_blank(val):
                 raise ValueError('Metric point tag value cannot be blank')
-            str_builder.append(sanitize(key) + '=' + sanitize(val))
+            str_builder.append(sanitize(key) + '=' + sanitize_value(val))
     return ' '.join(str_builder) + '\n'
 
 
@@ -276,14 +276,15 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
             str_builder.append('#' + str(centroid_2))
             str_builder.append(str(centroid_1))
         str_builder.append(sanitize(name))
-        str_builder.append('source=' + sanitize(source))
+        str_builder.append('source=' + sanitize_value(source))
         if tags is not None:
             for key in tags:
                 if is_blank(key):
                     raise ValueError('Histogram tag key cannot be blank')
                 if is_blank(tags[key]):
                     raise ValueError('Histogram tag value cannot be blank')
-                str_builder.append(sanitize(key) + '=' + sanitize(tags[key]))
+                str_builder.append(
+                    sanitize(key) + '=' + sanitize_value(tags[key]))
         line_builder.append(' '.join(str_builder))
     return '\n'.join(line_builder) + '\n'
 
@@ -333,8 +334,8 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
     if is_blank(source):
         source = default_source
 
-    str_builder = [sanitize(name),
-                   'source=' + sanitize(source),
+    str_builder = [sanitize_value(name),
+                   'source=' + sanitize_value(source),
                    'traceId=' + str(trace_id),
                    'spanId=' + str(span_id)]
     if parents is not None:
@@ -352,7 +353,7 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
                 raise ValueError('Span tag key cannot be blank')
             if is_blank(val):
                 raise ValueError('Span tag val cannot be blank')
-            cur_tag = sanitize(key) + '=' + sanitize(val)
+            cur_tag = sanitize(key) + '=' + sanitize_value(val)
             if cur_tag not in tag_set:
                 str_builder.append(cur_tag)
                 tag_set.add(cur_tag)
