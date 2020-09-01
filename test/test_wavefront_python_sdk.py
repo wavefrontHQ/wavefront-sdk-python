@@ -9,7 +9,8 @@ import uuid
 from wavefront_sdk.common.utils import get_sem_ver_value
 from wavefront_sdk.common.utils import histogram_to_line_data
 from wavefront_sdk.common.utils import metric_to_line_data
-from wavefront_sdk.common.utils import sanitize
+from wavefront_sdk.common.utils import sanitize, sanitize_value, \
+                                        sanitize_without_quotes
 from wavefront_sdk.common.utils import tracing_span_to_line_data
 from wavefront_sdk.entities import histogram_granularity
 
@@ -31,16 +32,34 @@ class TestUtils(unittest.TestCase):
 
     def test_sanitize(self):
         """Test wavefront_sdk.common.utils.sanitize()."""
-        self.assertEqual('"hello"',
-                         sanitize('hello'))
-        self.assertEqual('"hello-world"',
-                         sanitize('hello world'))
-        self.assertEqual('"hello.world"',
-                         sanitize('hello.world'))
+        self.assertEqual('"hello"', sanitize('hello'))
+        self.assertEqual('"hello-world"', sanitize('hello world'))
+        self.assertEqual('"hello.world"', sanitize('hello.world'))
+        self.assertEqual('"hello-world-"', sanitize('hello"world"'))
+        self.assertEqual('"hello-world"', sanitize("hello'world"))
+        self.assertEqual('"hello-world"', sanitize('hello/world'))
+        self.assertEqual('"~component.heartbeat"',
+                         sanitize('~component.heartbeat'))
+        self.assertEqual('"-component.heartbeat"',
+                         sanitize('!component.heartbeat'))
+        self.assertEqual('"Δcomponent.heartbeat"',
+                         sanitize('Δcomponent.heartbeat'))
+        self.assertEqual('"∆component.heartbeat"',
+                         sanitize('∆component.heartbeat'))
+
+    def test_sanitize_without_quotes(self):
+        """Test wavefront_sdk.common.utils.sanitize_without_quotes()."""
+        self.assertEqual('hello-world', sanitize_without_quotes('hello world'))
+
+    def test_sanitize_value(self):
+        """Test wavefront_sdk.common.utils.sanitize_value()."""
+        self.assertEqual('"hello"', sanitize_value("hello"))
+        self.assertEqual('"hello world"', sanitize_value("hello world"))
+        self.assertEqual('"hello.world"', sanitize_value("hello.world"))
         self.assertEqual('"hello\\"world\\""',
-                         sanitize('hello"world"'))
-        self.assertEqual('"hello\'world"',
-                         sanitize("hello'world"))
+                         sanitize_value("hello\"world\""))
+        self.assertEqual("\"hello'world\"", sanitize_value("hello'world"))
+        self.assertEqual('"hello\\nworld"', sanitize_value("hello\nworld"))
 
     def test_metric_to_line_data(self):
         """Test wavefront_sdk.common.utils.metric_to_line_data()."""

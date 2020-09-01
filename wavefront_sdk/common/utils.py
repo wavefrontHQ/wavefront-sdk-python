@@ -84,15 +84,66 @@ def gzip_compress(data, compresslevel=9):
 
 
 def sanitize(string):
-    """Sanitize a string, replace whitespace with "-".
+    """Sanitize a string with quotes.
 
     @param string: Input string
     @return: Sanitized string
     """
-    whitespace_sanitized = re.sub(r'[\s]+', '-', string)
-    if '"' in whitespace_sanitized:
-        return '"' + re.sub(r'[\"]+', '\\\\\"', whitespace_sanitized) + '"'
-    return '"' + whitespace_sanitized + '"'
+    return sanitize_internal(string, True)
+
+
+def sanitize_without_quotes(string):
+    """Sanitize a string without quotes.
+
+    @param string: Input string
+    @return: Sanitized string
+    """
+    return sanitize_internal(string, False)
+
+
+def sanitize_value(string):
+    """Sanitize string of tags value and source.
+
+    @oaram string: Input String
+    @return: Sanitized String
+    """
+    res = string.strip()
+    res = res.replace("\"", "\\\"")
+    return "\"" + res.replace("\n", "\\n") + "\""
+
+
+def sanitize_internal(string, add_quotes):
+    """Sanitize string of metric name, key of tags.
+
+    @param string: Input string
+    @add_quotes: Add quotes or not
+    @return: Sanitized String
+    """
+    builder = ''
+    if add_quotes:
+        builder += '"'
+    for i, char in enumerate(string):
+        is_leagl = True
+        cur = ord(char)
+        if not (44 <= cur <= 46) and not (48 <= cur <= 57) \
+            and not (65 <= cur <= 90) and not \
+                (97 <= cur <= 122) and not cur == 95:
+            # legal characters are any single character
+            # between , (index 44) and . (index 46) or
+            # between 0 (index 48) and 9 (index 57) or
+            # between A (index 65) and Z (index 90) or
+            # between a (index 97) and z (index 122) or
+            # _ (index 95)
+            if not ((i == 0 and cur == 0x2206) or (i == 0 and cur == 0x0394) or
+                    (i == 0 and cur == 126)):
+                is_leagl = False
+            # first character can also be \u2206 (∆ - INCREMENT) or
+            # \u0394 (Δ - GREEK CAPITAL LETTER DELTA) or
+            # ~ tilda character for internal metrics
+        builder += char if is_leagl else '-'
+    if add_quotes:
+        builder += '"'
+    return builder
 
 
 def is_blank(string):
