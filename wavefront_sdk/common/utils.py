@@ -123,7 +123,7 @@ def sanitize_internal(string, add_quotes):
     if add_quotes:
         builder += '"'
     for i, char in enumerate(string):
-        is_leagl = True
+        is_legal = True
         cur = ord(char)
         if not (44 <= cur <= 46) and not (48 <= cur <= 57) \
             and not (65 <= cur <= 90) and not \
@@ -136,11 +136,11 @@ def sanitize_internal(string, add_quotes):
             # _ (index 95)
             if not ((i == 0 and cur == 0x2206) or (i == 0 and cur == 0x0394) or
                     (i == 0 and cur == 126)):
-                is_leagl = False
+                is_legal = False
             # first character can also be \u2206 (∆ - INCREMENT) or
             # \u0394 (Δ - GREEK CAPITAL LETTER DELTA) or
             # ~ tilda character for internal metrics
-        builder += char if is_leagl else '-'
+        builder += char if is_legal else '-'
     if add_quotes:
         builder += '"'
     return builder
