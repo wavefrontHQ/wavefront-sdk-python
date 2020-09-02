@@ -60,6 +60,9 @@ class TestUtils(unittest.TestCase):
                          sanitize_value("hello\"world\""))
         self.assertEqual("\"hello'world\"", sanitize_value("hello'world"))
         self.assertEqual('"hello\\nworld"', sanitize_value("hello\nworld"))
+        self.assertEqual('"localhost:8080"', sanitize_value('localhost:8080'))
+        self.assertEqual('"\\"127.0.0.1:8080\\""',
+                         sanitize_value('"127.0.0.1:8080"'))
 
     def test_metric_to_line_data(self):
         """Test wavefront_sdk.common.utils.metric_to_line_data()."""
