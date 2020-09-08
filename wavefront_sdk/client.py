@@ -69,7 +69,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         @param flush_interval_seconds: Interval flush time, 5 secs by default
         @type flush_interval_seconds: int
         """
-        super(WavefrontClient, self).__init__()
+        super().__init__()
         self.server = server
         self._token = token
         self._max_queue_size = max_queue_size
