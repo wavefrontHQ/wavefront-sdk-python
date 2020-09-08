@@ -91,6 +91,11 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                                         timeout=timeout))
         self._default_source = gethostname()
 
+        semver = utils.get_sem_ver(constants.WAVEFRONT_SDK_PYTHON)
+
+        def version():
+            return semver
+        self._sdk_metrics_registry.new_gauge('version', version)
         self._points_discarded = self._sdk_metrics_registry.new_counter(
             'points.discarded')
         self._points_dropped = self._sdk_metrics_registry.new_counter(
