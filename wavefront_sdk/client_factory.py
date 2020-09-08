@@ -4,7 +4,7 @@
 @author Yogesh Prasad Kurmi (ykurmi@vmware.com)
 """
 
-from uri import URI
+from urllib.parse import urlparse
 
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
@@ -41,7 +41,7 @@ class WavefrontClientFactory:
 
         Return None for token if URL belongs to proxy.
         """
-        base_url = URI(url)
+        base_url = urlparse(url)
         scheme = base_url.scheme
         if scheme == self.DIRECT_DATA_INGESTION_SCHEME:
             server = self.DIRECT_DATA_INGESTION_SCHEME\
