@@ -100,6 +100,11 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
 
+        semver = utils.get_sem_ver(constants.WAVEFRONT_SDK_PYTHON)
+
+        def version():
+            return semver
+        self._sdk_metrics_registry.new_gauge('version', version)
         self._sdk_metrics_registry.new_gauge(
             'points.queue.size', self._metrics_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(

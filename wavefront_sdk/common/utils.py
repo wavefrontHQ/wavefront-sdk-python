@@ -8,10 +8,15 @@ Utils module contains useful function for preparing and processing data.
 import gzip
 import io
 import json
+import logging
 import re
 import threading
 
+import pkg_resources
+
 from wavefront_sdk.common.constants import SPAN_LOG_KEY
+
+LOGGER = logging.getLogger('wavefront_sdk.utils')
 
 
 # pylint: disable=E0012,R0205
@@ -369,6 +374,44 @@ def event_to_json(name, start_time, end_time, source, tags,
         event['tags'] = tags
 
     return str(json.dumps(event))
+
+
+def get_sem_ver(name):
+    """Return semantic version of sdk used in Wavefront reportable format.
+
+    Ex: <major>.<2-digit-minor><2-digit-patch> (1.0603 => v1.6.3)
+
+    @param name: SDK Name
+    @type name: str
+    @return: Semantic version in wavefront format as String
+    """
+    try:
+        version = pkg_resources.require(name)[0].version
+        return get_sem_ver_value(version)
+    except pkg_resources.DistributionNotFound:
+        LOGGER.warning('Unable to get version info,'
+                       ' No distribution found for : %s', name)
+    return "0.0"
+
+
+def get_sem_ver_value(version):
+    """Return semantic version of sdk in Wavefront reportable format.
+
+    Ex: <major>.<2-digit-minor><2-digit-patch> (1.0603 => v1.6.3)
+
+    @param version: SDK Version
+    @type version: str
+    @return: Semantic version in wavefront format as String
+    """
+    for match in re.finditer(
+            "([0-9]\\d*)\\.(\\d+)\\.(\\d+)(?:-([a-zA-Z0-9]+))?", version):
+        major = match.group(1) + "."
+        minor = match.group(2) \
+            if len(match.group(2)) != 1 else "0" + match.group(2)
+        patch = match.group(3) \
+            if len(match.group(3)) != 1 else "0" + match.group(3)
+        return major + minor + patch
+    return "0.0"
 
 
 def event_to_line_data(name, start_time, end_time, source, tags,
