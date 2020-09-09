@@ -84,15 +84,66 @@ def gzip_compress(data, compresslevel=9):
 
 
 def sanitize(string):
-    """Sanitize a string, replace whitespace with "-".
+    """Sanitize a string with quotes.
 
     @param string: Input string
     @return: Sanitized string
     """
-    whitespace_sanitized = re.sub(r'[\s]+', '-', string)
-    if '"' in whitespace_sanitized:
-        return '"' + re.sub(r'[\"]+', '\\\\\"', whitespace_sanitized) + '"'
-    return '"' + whitespace_sanitized + '"'
+    return sanitize_internal(string, True)
+
+
+def sanitize_without_quotes(string):
+    """Sanitize a string without quotes.
+
+    @param string: Input string
+    @return: Sanitized string
+    """
+    return sanitize_internal(string, False)
+
+
+def sanitize_value(string):
+    """Sanitize string of tags value and source.
+
+    @oaram string: Input String
+    @return: Sanitized String
+    """
+    res = string.strip()
+    res = res.replace("\"", "\\\"")
+    return "\"" + res.replace("\n", "\\n") + "\""
+
+
+def sanitize_internal(string, add_quotes):
+    """Sanitize string of metric name, key of tags.
+
+    @param string: Input string
+    @add_quotes: Add quotes or not
+    @return: Sanitized String
+    """
+    builder = ''
+    if add_quotes:
+        builder += '"'
+    for i, char in enumerate(string):
+        is_legal = True
+        cur = ord(char)
+        if not (44 <= cur <= 46) and not (48 <= cur <= 57) \
+            and not (65 <= cur <= 90) and not \
+                (97 <= cur <= 122) and not cur == 95:
+            # legal characters are any single character
+            # between , (index 44) and . (index 46) or
+            # between 0 (index 48) and 9 (index 57) or
+            # between A (index 65) and Z (index 90) or
+            # between a (index 97) and z (index 122) or
+            # _ (index 95)
+            if not ((i == 0 and cur == 0x2206) or (i == 0 and cur == 0x0394) or
+                    (i == 0 and cur == 126)):
+                is_legal = False
+            # first character can also be \u2206 (∆ - INCREMENT) or
+            # \u0394 (Δ - GREEK CAPITAL LETTER DELTA) or
+            # ~ tilda character for internal metrics
+        builder += char if is_legal else '-'
+    if add_quotes:
+        builder += '"'
+    return builder
 
 
 def is_blank(string):
@@ -168,14 +219,14 @@ def metric_to_line_data(name, value, timestamp, source, tags, default_source):
     str_builder = [sanitize(name), str(float(value))]
     if timestamp is not None:
         str_builder.append(str(int(timestamp)))
-    str_builder.append('source=' + sanitize(source))
+    str_builder.append('source=' + sanitize_value(source))
     if tags is not None:
         for key, val in tags.items():
             if is_blank(key):
                 raise ValueError('Metric point tag key cannot be blank')
             if is_blank(val):
                 raise ValueError('Metric point tag value cannot be blank')
-            str_builder.append(sanitize(key) + '=' + sanitize(val))
+            str_builder.append(sanitize(key) + '=' + sanitize_value(val))
     return ' '.join(str_builder) + '\n'
 
 
@@ -225,14 +276,15 @@ def histogram_to_line_data(name, centroids, histogram_granularities, timestamp,
             str_builder.append('#' + str(centroid_2))
             str_builder.append(str(centroid_1))
         str_builder.append(sanitize(name))
-        str_builder.append('source=' + sanitize(source))
+        str_builder.append('source=' + sanitize_value(source))
         if tags is not None:
             for key in tags:
                 if is_blank(key):
                     raise ValueError('Histogram tag key cannot be blank')
                 if is_blank(tags[key]):
                     raise ValueError('Histogram tag value cannot be blank')
-                str_builder.append(sanitize(key) + '=' + sanitize(tags[key]))
+                str_builder.append(
+                    sanitize(key) + '=' + sanitize_value(tags[key]))
         line_builder.append(' '.join(str_builder))
     return '\n'.join(line_builder) + '\n'
 
@@ -282,8 +334,8 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
     if is_blank(source):
         source = default_source
 
-    str_builder = [sanitize(name),
-                   'source=' + sanitize(source),
+    str_builder = [sanitize_value(name),
+                   'source=' + sanitize_value(source),
                    'traceId=' + str(trace_id),
                    'spanId=' + str(span_id)]
     if parents is not None:
@@ -301,7 +353,7 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
                 raise ValueError('Span tag key cannot be blank')
             if is_blank(val):
                 raise ValueError('Span tag val cannot be blank')
-            cur_tag = sanitize(key) + '=' + sanitize(val)
+            cur_tag = sanitize(key) + '=' + sanitize_value(val)
             if cur_tag not in tag_set:
                 str_builder.append(cur_tag)
                 tag_set.add(cur_tag)
