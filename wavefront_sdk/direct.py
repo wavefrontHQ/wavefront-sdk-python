@@ -215,10 +215,9 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type data_format: str
         """
         # Sending events through direct ingestion does not support batching.
-        if data_format == self.WAVEFRONT_EVENT_FORMAT:
-            batch_size = 1
-        else:
-            batch_size = self._batch_size
+        batch_size = int(
+            data_format == self.WAVEFRONT_EVENT_FORMAT) or self._batch_size
+
         # Split data into chunks, each with the size of given batch_size
         for batch in utils.chunks(batch_line_data, batch_size):
             # report once per batch
