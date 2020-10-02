@@ -1,6 +1,6 @@
 open_source_license.txt
 
-Wavefront by VMware SDK for Python 1.5 GA
+Wavefront by VMware SDK for Python 1.7.4 GA
 
 ======================================================================
 
