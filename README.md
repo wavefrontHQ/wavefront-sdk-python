@@ -242,7 +242,7 @@ from wavefront_sdk.client_factory import WavefrontClientFactory
 # Create a sender with:
    # Required Parameter
    #   URL format to send data via proxy: "proxy://<your.proxy.load.balancer.com>:<somePort>"
-   #   URL format to send data via direct ingestion: "http://TOKEN@DOMAIN.wavefront.com"
+   #   URL format to send data via direct ingestion: "https://TOKEN@DOMAIN.wavefront.com"
    # Optional Parameter
    #   max queue size (in data points). Default: 50000
    #   batch size (in data points). Default: 10000
@@ -256,7 +256,19 @@ client_factory.add_client(
     flush_interval_seconds=5)
 wavefront_sender = client_factory.get_client()
 ```
-***Note***: Add multiple clients to client factory to send data to multiple Wavefront services.
+#### Add multiple clients to client factory to send data to multiple Wavefront services.
+```
+from wavefront_sdk.client_factory import WavefrontClientFactory
+
+client_factory = WavefrontClientFactory()
+client_factory.add("proxy://our.proxy.lb.com:2878")
+client_factory.add("https://someToken@DOMAIN.wavefront.com")
+
+# Send traces and spans to the tracing port. If you are directly using the sender SDK to send spans without using any other SDK, use the same port as the customTracingListenerPorts configured in the wavefront proxy. Assume you have installed and started the proxy on <proxy_hostname>.
+client_factory.add("http://<proxy_hostname>:30000")
+
+wavefront_sender = client_factory.get_client()
+```
 
 ## Send a Single Data Point to Wavefront
 
