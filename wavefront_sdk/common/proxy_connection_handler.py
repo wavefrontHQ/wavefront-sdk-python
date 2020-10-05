@@ -32,9 +32,9 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
         self.entity_prefix = '' if not entity_prefix else entity_prefix + ''
         self.timeout = timeout
         self.wf_metrics_registry = wavefront_sdk_metrics_registry
-        self._write_successes = self.wf_metrics_registry.new_counter(
+        self._write_successes = self.wf_metrics_registry.new_delta_counter(
             self.entity_prefix + 'write.success')
-        self._write_errors = self.wf_metrics_registry.new_counter(
+        self._write_errors = self.wf_metrics_registry.new_delta_counter(
             self.entity_prefix + 'write.errors')
         self._reconnecting_socket = None
 

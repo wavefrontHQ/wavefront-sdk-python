@@ -7,7 +7,8 @@ import logging
 import threading
 import time
 
-from wavefront_sdk.common.metrics import counter, gauge
+from wavefront_sdk.common.metrics import counter, gauge, deltacounter
+from wavefront_sdk.common import constants
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontSdkMetricsRegistry')
 
@@ -53,6 +54,13 @@ class WavefrontSdkMetricsRegistry(object):
                         self.wf_metric_sender.send_metric(
                             name, gauge_value, timestamp, self.source,
                             self.tags)
+                elif isinstance(val, deltacounter.WavefrontSdkDeltaCounter):
+                    delta_count = val.count()
+                    # below throws exception
+                    self.wf_metric_sender.send_metric(
+                        constants.DELTA_PREFIX + name + '.count', delta_count,
+                        timestamp, self.source, self.tags)
+                    val.dec(delta_count)
                 elif isinstance(val, counter.WavefrontSdkCounter):
                     self.wf_metric_sender.send_metric(
                         name + '.count', val.count(), timestamp,
@@ -82,6 +90,10 @@ class WavefrontSdkMetricsRegistry(object):
     def new_counter(self, name):
         """Get or create a counter from the registry."""
         return self._get_or_add(name, counter.WavefrontSdkCounter())
+
+    def new_delta_counter(self, name):
+        """Get or create a delta counter from the registry."""
+        return self._get_or_add(name, deltacounter.WavefrontSdkDeltaCounter())
 
     def new_gauge(self, name, supplier):
         """Get or create a gauge from the registry."""
