@@ -14,8 +14,6 @@ except ImportError:
 
 from wavefront_sdk.common.metrics.registry import WavefrontSdkMetricsRegistry
 from wavefront_sdk.direct import remaining_capacity_getter
-from wavefront_sdk.entities.event.sender import WavefrontEventSender
-
 
 class TestUtils(unittest.TestCase):
     """Test Functions of wavefront_sdk.common.utils."""

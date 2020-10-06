@@ -72,4 +72,5 @@ class WavefrontMetricSender(object):
         if not (name.startswith(self.DELTA_PREFIX) or
                 name.startswith(self.DELTA_PREFIX_2)):
             name = self.DELTA_PREFIX + name
-        self.send_metric(name, value, None, source, tags)
+        if value > 0:
+            self.send_metric(name, value, None, source, tags)

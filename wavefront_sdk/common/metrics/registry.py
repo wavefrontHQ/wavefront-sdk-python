@@ -57,8 +57,8 @@ class WavefrontSdkMetricsRegistry(object):
                 elif isinstance(val, deltacounter.WavefrontSdkDeltaCounter):
                     delta_count = val.count()
                     # below throws exception
-                    self.wf_metric_sender.send_metric(
-                        constants.DELTA_PREFIX + name + '.count', delta_count,
+                    self.wf_metric_sender.send_delta_counter(
+                        name + '.count', delta_count,
                         timestamp, self.source, self.tags)
                     val.dec(delta_count)
                 elif isinstance(val, counter.WavefrontSdkCounter):
