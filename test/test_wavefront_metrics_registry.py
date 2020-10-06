@@ -5,6 +5,8 @@
 
 import unittest
 
+from wavefront_sdk import entities
+
 try:
     import queue
 except ImportError:
@@ -47,8 +49,19 @@ class TestUtils(unittest.TestCase):
 
     def test_delta_counter(self):
         """Test WavefrontSdkDeltaCounter of WavefrontSdkMetricsRegistry."""
-        wavefrontsender = WavefrontEventSender()
-        registry = WavefrontSdkMetricsRegistry(wavefrontsender)
+
+        class MockClient(entities.WavefrontMetricSender):
+            def send_metric(self, name, value, timestamp, source, tags):
+                pass
+
+            def send_formatted_metric(self, point):
+                pass
+
+            def send_metric_now(self, metrics):
+                pass
+
+        wavefront_sender = MockClient()
+        registry = WavefrontSdkMetricsRegistry(wavefront_sender)
         delta_counter = registry.new_delta_counter('delta counter')
         self.assertEqual(delta_counter.count(), 0)
         delta_counter.inc()
@@ -65,7 +78,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(registry.new_delta_counter('deltacounter2').count(), 0)
 
         # Verify Delta Counter is reset to 0 after ending
-        delta_counter.inc(6) #TODO: temp delta counter here is 8, supposed to be 0
+        delta_counter.inc(6)
         registry._run()
         self.assertEqual(delta_counter.count(), 0)
 
