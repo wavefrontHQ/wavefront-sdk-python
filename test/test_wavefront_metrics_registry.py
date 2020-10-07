@@ -15,6 +15,7 @@ except ImportError:
 from wavefront_sdk.common.metrics.registry import WavefrontSdkMetricsRegistry
 from wavefront_sdk.direct import remaining_capacity_getter
 
+
 class TestUtils(unittest.TestCase):
     """Test Functions of wavefront_sdk.common.utils."""
 

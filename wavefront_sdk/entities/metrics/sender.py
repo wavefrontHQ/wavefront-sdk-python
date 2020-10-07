@@ -57,7 +57,7 @@ class WavefrontMetricSender(object):
         """
         raise NotImplementedError
 
-    def send_delta_counter(self, name, value, source, tags):
+    def send_delta_counter(self, name, value, source, tags, timestamp=None):
         """Send Delta Counter Data.
 
         @param name: Metric Name
@@ -68,9 +68,10 @@ class WavefrontMetricSender(object):
         @type source: str
         @param tags: Tags
         @param tags: dict
+        :param timestamp: Timestamp
         """
         if not (name.startswith(self.DELTA_PREFIX) or
                 name.startswith(self.DELTA_PREFIX_2)):
             name = self.DELTA_PREFIX + name
         if value > 0:
-            self.send_metric(name, value, None, source, tags)
+            self.send_metric(name, value, timestamp, source, tags)

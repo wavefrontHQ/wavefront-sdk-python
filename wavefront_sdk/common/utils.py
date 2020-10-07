@@ -124,9 +124,12 @@ def sanitize_internal(string, add_quotes):
         builder += '"'
     for i, char in enumerate(string):
         is_legal = True
+        is_tilda_prefixed = ord(string[0]) == 126
+        is_delta_prefixed = ord(string[0]) == 0x2206 or ord(string[0]) == 0x0394
+        is_delta_tilda_prefixed = is_delta_prefixed and ord(string[1]) == 126
         cur = ord(char)
         if not (44 <= cur <= 46) and not (48 <= cur <= 57) \
-            and not (65 <= cur <= 90) and not \
+                and not (65 <= cur <= 90) and not \
                 (97 <= cur <= 122) and not cur == 95:
             # legal characters are any single character
             # between , (index 44) and . (index 46) or
@@ -134,12 +137,14 @@ def sanitize_internal(string, add_quotes):
             # between A (index 65) and Z (index 90) or
             # between a (index 97) and z (index 122) or
             # _ (index 95)
-            if not ((i == 0 and cur == 0x2206) or (i == 0 and cur == 0x0394) or
-                    (i == 0 and cur == 126)):
+            if not ((i == 0 and (is_delta_prefixed or is_tilda_prefixed)) or
+                    (i == 1 and is_delta_tilda_prefixed)):
                 is_legal = False
             # first character can also be \u2206 (∆ - INCREMENT) or
             # \u0394 (Δ - GREEK CAPITAL LETTER DELTA) or
             # ~ tilda character for internal metrics
+            # second character can be ~ tilda character if first character
+            # is \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
         builder += char if is_legal else '-'
     if add_quotes:
         builder += '"'
