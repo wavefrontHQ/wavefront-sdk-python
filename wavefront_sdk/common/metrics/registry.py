@@ -7,7 +7,7 @@ import logging
 import threading
 import time
 
-from wavefront_sdk.common.metrics import counter, gauge, deltacounter
+from wavefront_sdk.common.metrics import counter, deltacounter, gauge
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontSdkMetricsRegistry')
 

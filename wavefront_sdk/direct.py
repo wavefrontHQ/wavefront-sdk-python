@@ -104,6 +104,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
         def version():
             return semver
+
         self._sdk_metrics_registry.new_gauge('version', version)
         self._sdk_metrics_registry.new_gauge(
             'points.queue.size', self._metrics_buffer.qsize)
@@ -116,8 +117,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'points.invalid')
         self._points_dropped = self._sdk_metrics_registry.new_delta_counter(
             'points.dropped')
-        self._points_report_errors = self._sdk_metrics_registry.new_delta_counter(
-            'points.report.errors')
+        self._points_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('points.report.errors')
 
         self._sdk_metrics_registry.new_gauge(
             'histograms.queue.size', self._histograms_buffer.qsize)
@@ -126,12 +127,13 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             remaining_capacity_getter(self._histograms_buffer))
         self._histograms_valid = self._sdk_metrics_registry.new_delta_counter(
             'histograms.valid')
-        self._histograms_invalid = self._sdk_metrics_registry.new_delta_counter(
-            'histograms.invalid')
-        self._histograms_dropped = self._sdk_metrics_registry.new_delta_counter(
-            'histograms.dropped')
+        self._histograms_invalid = self._sdk_metrics_registry\
+            .new_delta_counter('histograms.invalid')
+        self._histograms_dropped = self._sdk_metrics_registry\
+            .new_delta_counter('histograms.dropped')
         self._histograms_report_errors = (
-            self._sdk_metrics_registry.new_delta_counter('histograms.report.errors'))
+            self._sdk_metrics_registry.new_delta_counter(
+                'histograms.report.errors'))
 
         self._sdk_metrics_registry.new_gauge(
             'spans.queue.size', self._tracing_spans_buffer.qsize)
@@ -144,8 +146,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'spans.invalid')
         self._spans_dropped = self._sdk_metrics_registry.new_delta_counter(
             'spans.dropped')
-        self._spans_report_errors = self._sdk_metrics_registry.new_delta_counter(
-            'spans.report.errors')
+        self._spans_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('spans.report.errors')
 
         self._sdk_metrics_registry.new_gauge(
             'span_logs.queue.size', self._spans_log_buffer.qsize)
@@ -158,8 +160,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'span_logs.invalid')
         self._span_logs_dropped = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.dropped')
-        self._span_logs_report_errors = self._sdk_metrics_registry.new_delta_counter(
-            'span_logs.report.errors')
+        self._span_logs_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('span_logs.report.errors')
 
         self._sdk_metrics_registry.new_gauge(
             'events.queue.size', self._events_buffer.qsize)
@@ -172,8 +174,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'events.invalid')
         self._events_dropped = self._sdk_metrics_registry.new_delta_counter(
             'events.dropped')
-        self._events_report_errors = self._sdk_metrics_registry.new_delta_counter(
-            'events.report.errors')
+        self._events_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('events.report.errors')
 
     def _report(self, points, data_format, entity_prefix, report_errors):
         r"""One api call sending one given string data.

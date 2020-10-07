@@ -5,13 +5,11 @@
 
 import unittest
 
-from wavefront_sdk import entities
-
 try:
     import queue
 except ImportError:
     import Queue as queue  # noqa
-
+from wavefront_sdk import entities
 from wavefront_sdk.common.metrics.registry import WavefrontSdkMetricsRegistry
 from wavefront_sdk.direct import remaining_capacity_getter
 
@@ -68,13 +66,15 @@ class TestUtils(unittest.TestCase):
         delta_counter.inc(4)
         self.assertEqual(delta_counter.count(), 5)
 
-        # Delta counter decrements counter each time data is sent. New counters with same name wil have 0 count.
+        # Delta counter decrements counter each time data is sent.
+        # New counters with same name wil have 0 count.
         delta_counter.dec()
         self.assertEqual(delta_counter.count(), 4)
         delta_counter.dec(2)
         self.assertEqual(delta_counter.count(), 2)
         self.assertEqual(registry.new_counter('deltacounter').count(), 0)
-        self.assertEqual(registry.new_delta_counter('deltacounter2').count(), 0)
+        self.assertEqual(registry.new_delta_counter(
+            'deltacounter2').count(), 0)
 
         # Verify Delta Counter is reset to 0 after ending
         delta_counter.inc(6)

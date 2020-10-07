@@ -125,7 +125,8 @@ def sanitize_internal(string, add_quotes):
     for i, char in enumerate(string):
         is_legal = True
         is_tilda_prefixed = ord(string[0]) == 126
-        is_delta_prefixed = ord(string[0]) == 0x2206 or ord(string[0]) == 0x0394
+        is_delta_prefixed = ord(string[0]) == 0x2206 or ord(
+            string[0]) == 0x0394
         is_delta_tilda_prefixed = is_delta_prefixed and ord(string[1]) == 126
         cur = ord(char)
         if not (44 <= cur <= 46) and not (48 <= cur <= 57) \
@@ -144,7 +145,7 @@ def sanitize_internal(string, add_quotes):
             # \u0394 (Δ - GREEK CAPITAL LETTER DELTA) or
             # ~ tilda character for internal metrics
             # second character can be ~ tilda character if first character
-            # is \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
+            # is \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER)
         builder += char if is_legal else '-'
     if add_quotes:
         builder += '"'

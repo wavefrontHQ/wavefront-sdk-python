@@ -209,7 +209,6 @@ wavefront_sender = WavefrontProxyClient(
    distribution_port=2878,
    tracing_port=30000,
    event_port=2878
-   internal_flush=2,
 )
 ```
 
