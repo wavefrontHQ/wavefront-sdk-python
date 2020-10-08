@@ -21,6 +21,11 @@ class WavefrontSdkCounter(metrics.WavefrontSdkMetric):
         with self._lock:
             self._count += val
 
+    def dec(self, val=1):
+        """Decrease the value of the counter."""
+        with self._lock:
+            self._count -= val
+
     def count(self):
         """Get the value of the counter."""
         with self._lock:

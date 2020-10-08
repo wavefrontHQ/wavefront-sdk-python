@@ -46,6 +46,10 @@ class TestUtils(unittest.TestCase):
                          sanitize('Δcomponent.heartbeat'))
         self.assertEqual('"∆component.heartbeat"',
                          sanitize('∆component.heartbeat'))
+        self.assertEqual('"∆~component.heartbeat"',
+                         sanitize('∆~component.heartbeat'))
+        self.assertEqual('"~-component.heartbeat"',
+                         sanitize('~∆component.heartbeat'))
 
     def test_sanitize_without_quotes(self):
         """Test wavefront_sdk.common.utils.sanitize_without_quotes()."""
