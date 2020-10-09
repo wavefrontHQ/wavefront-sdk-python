@@ -56,3 +56,6 @@ SPAN_LOG_KEY = "_spanLogs"
 
 # Distribution name for sdk
 WAVEFRONT_SDK_PYTHON = 'wavefront-sdk-python'
+
+# Default http status code for sending points
+NO_HTTP_RESPONSE = -1
