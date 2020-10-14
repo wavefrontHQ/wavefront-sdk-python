@@ -231,15 +231,20 @@ from uuid import UUID
 
 # Wavefront metrics data format:
 # <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
-wavefront_sender.send_metric(
-    name="new york.power.usage", value=42422.0, timestamp=1533529977,
-    source="localhost", tags={"datacenter": "dc1"})
+name      = "new york.power.usage"
+value     = 42422.0
+timestamp = 1533529977
+source    = "localhost"
+tags      = { "datacenter" : "dc1" }
+wavefront_sender.send_metric(name, value, timestamp, source, tags)
 
 # Wavefront delta counter data format:
 # <metricName> <metricValue> source=<source> [pointTags]
-wavefront_sender.send_delta_counter(
-    name="delta.counter", value=1.0,
-    source="localhost", tags={"datacenter": "dc1"})
+name   = "delta.counter"
+value  = 1.0
+source = "localhost"
+tags   = {"datacenter": "dc1"}
+wavefront_sender.send_delta_counter(name, value, source, tags)
 ```
 ***Note***: If your metric name has a bad character, that character is replaced with a `-`.
 
@@ -255,12 +260,15 @@ from wavefront_sdk.entities.histogram import histogram_granularity
 # "!M 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
 # "!H 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
 # "!D 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
-wavefront_sender.send_distribution(
-    name="request.latency", centroids=[(30, 20), (5.1, 10)],
-    histogram_granularities={histogram_granularity.DAY,
-                             histogram_granularity.HOUR,
-                             histogram_granularity.MINUTE},
-    timestamp=1533529977, source="appServer1", tags={"region": "us-west"})
+name                    = "request.latency"
+centroids               = [(30, 20), (5.1, 10)]
+histogram_granularities = { histogram_granularity.DAY,
+                            histogram_granularity.HOUR,
+                            histogram_granularity.MINUTE }
+timestamp               = 1533529977
+source                  = "appServer1"
+tags                    = {"region": "us-west"}
+wavefront_sender.send_distribution(name, centroids, histogram_granularities, timestamp, source, tags)
 ```
 
 ### Single Span
@@ -278,14 +286,18 @@ from uuid import UUID
 #           parent=2f64e538-9457-11e8-9eb6-529269fb1459
 #           application=Wavefront http.method=GET
 #           1533529977 343500"
-wavefront_sender.send_span(
-    name="getAllUsers", start_millis=1533529977, duration_millis=343500,
-    source="localhost", trace_id=UUID("7b3bf470-9456-11e8-9eb6-529269fb1459"),
-    span_id=UUID("0313bafe-9457-11e8-9eb6-529269fb1459"),
-    parents=[UUID("2f64e538-9457-11e8-9eb6-529269fb1459")],
-    follows_from=None, tags=[("application", "Wavefront"),
-                             ("http.method", "GET")],
-    span_logs=None)
+name            = "getAllUsers"
+start_millis    = 1533529977
+duration_millis = 343500
+source          = "localhost"
+trace_id        = UUID("7b3bf470-9456-11e8-9eb6-529269fb1459")
+span_id         = UUID("0313bafe-9457-11e8-9eb6-529269fb1459")
+parents         = [UUID("2f64e538-9457-11e8-9eb6-529269fb1459")]
+follows_from    = None
+tags            =[("application", "Wavefront"), ("http.method", "GET")]
+span_logs       = None
+wavefront_sender.send_span(name, start_millis, duration_millis, source, trace_id,
+                           span_id, parents, follows_from, tags, span_logs)
 ```
 
 ### Single Event
@@ -309,10 +321,14 @@ from uuid import UUID
 from wavefront_sdk.common import metric_to_line_data
 
 # Generate string data in Wavefront metric format
-one_metric_data = metric_to_line_data(
-    name="new-york.power.usage", value=42422, timestamp=1493773500,
-    source="localhost", tags={"datacenter": "dc1"},
-    default_source="defaultSource")
+name           = "new-york.power.usage"
+value          = 42422
+timestamp      = 1493773500
+source         = "localhost"
+tags           = {"datacenter": "dc1"}
+default_source = "defaultSource"
+one_metric_data = metric_to_line_data(name, value, timestamp, source, tags,
+                                      default_source)
 
 # Result of one_metric_data:
   # '"new-york.power.usage" 42422.0 1493773500 source="localhost" "datacenter"="dc1"\n'
@@ -333,13 +349,18 @@ from wavefront_sdk.entities.histogram import histogram_granularity
 from wavefront_sdk.common import histogram_to_line_data
 
 # Generate string data in Wavefront histogram format
-one_histogram_data = histogram_to_line_data(
-    name="request.latency", centroids=[(30.0, 20), (5.1, 10)],
-    histogram_granularities={histogram_granularity.MINUTE,
-                             histogram_granularity.HOUR,
-                             histogram_granularity.DAY},
-    timestamp=1493773500, source="appServer1", tags={"region": "us-west"},
-    default_source ="defaultSource")
+name                    = "request.latency"
+centroids               = [(30.0, 20), (5.1, 10)]
+histogram_granularities = { histogram_granularity.MINUTE,
+                            histogram_granularity.HOUR,
+                            histogram_granularity.DAY}
+timestamp               = 1493773500
+source                  = "appServer1"
+tags                    = {"region": "us-west"}
+default_source = "defaultSource"
+one_histogram_data = histogram_to_line_data(name, centroids,
+                                            histogram_granularities, timestamp,
+                                            source, tags, default_source)
 
 # Result of one_histogram_data:
   # '!D 1493773500 #20 30.0 #10 5.1 "request.latency" source="appServer1" "region"="us-west"\n
@@ -361,14 +382,20 @@ from uuid import UUID
 from wavefront_sdk.common import tracing_span_to_line_data
 
 # Generate string data in Wavefront tracing span format
-one_tracing_span_data = tracing_span_to_line_data(
-    name="getAllUsers", start_millis=1552949776000, duration_millis=343,
-    source="localhost", trace_id=UUID("7b3bf470-9456-11e8-9eb6-529269fb1459"),
-    span_id=UUID("0313bafe-9457-11e8-9eb6-529269fb1459"),
-    parents=[UUID("2f64e538-9457-11e8-9eb6-529269fb1459")],
-    follows_from=[UUID("5f64e538-9457-11e8-9eb6-529269fb1459")],
-    tags=[("application", "Wavefront"), ("http.method", "GET")],
-    span_logs=None, default_source="defaultSource")
+name            = "getAllUsers"
+start_millis    = 1552949776000
+duration_millis = 343
+source          = "localhost"
+trace_id        = UUID("7b3bf470-9456-11e8-9eb6-529269fb1459")
+span_id         = UUID("0313bafe-9457-11e8-9eb6-529269fb1459")
+parents         = [UUID("2f64e538-9457-11e8-9eb6-529269fb1459")]
+follows_from    = [UUID("5f64e538-9457-11e8-9eb6-529269fb1459")]
+tags            = [("application", "Wavefront"), ("http.method", "GET")]
+span_logs       = None
+default_source  = "defaultSource"
+one_tracing_span_data = tracing_span_to_line_data(name, start_millis,
+    duration_millis, source, trace_id, span_id, parents, follows_from,
+    tags, span_logs, default_source)
 
 # Result of one_tracing_span_data:
   # '"getAllUsers" source="localhost" traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 spanId=0313bafe-
@@ -388,8 +415,8 @@ wavefront_sender.send_span_now(batch_span_data)
 from wavefront_sdk.common import event_to_line_data
 
 # Generate string data in Wavefront event format
-one_event_data = event_to_line_data(name="event name", start_time=1592200048, end_time=1592201048,
- source="localhost", tags=["env", "dev"], annotations={"severity": "info", "type": "backup", "details": "broker backup"})
+one_event_data = event_to_line_data("event name", 1592200048, 1592201048,
+ "localhost", ["env", "dev"], {"severity": "info", "type": "backup", "details": "broker backup"})
 
 # Result of one_event_data:
 # '@Event 1592200048 1592201048 "event name" severity="info" type="backup" details="broker backup"
