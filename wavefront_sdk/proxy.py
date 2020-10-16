@@ -91,50 +91,51 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
 
         def version():
             return semver
+
         self._sdk_metrics_registry.new_gauge('version', version)
-        self._points_discarded = self._sdk_metrics_registry.new_counter(
+        self._points_discarded = self._sdk_metrics_registry.new_delta_counter(
             'points.discarded')
-        self._points_dropped = self._sdk_metrics_registry.new_counter(
+        self._points_dropped = self._sdk_metrics_registry.new_delta_counter(
             'points.dropped')
-        self._points_valid = self._sdk_metrics_registry.new_counter(
+        self._points_valid = self._sdk_metrics_registry.new_delta_counter(
             'points.valid')
-        self._points_invalid = self._sdk_metrics_registry.new_counter(
+        self._points_invalid = self._sdk_metrics_registry.new_delta_counter(
             'points.invalid')
 
-        self._histograms_dropped = self._sdk_metrics_registry.new_counter(
-            'histograms.dropped')
-        self._histograms_discarded = self._sdk_metrics_registry.new_counter(
-            'histograms.discarded')
-        self._histograms_valid = self._sdk_metrics_registry.new_counter(
+        self._histograms_dropped = self._sdk_metrics_registry\
+            .new_delta_counter('histograms.dropped')
+        self._histograms_discarded = self._sdk_metrics_registry\
+            .new_delta_counter('histograms.discarded')
+        self._histograms_valid = self._sdk_metrics_registry.new_delta_counter(
             'histograms.valid')
-        self._histograms_invalid = self._sdk_metrics_registry.new_counter(
-            'histograms.invalid')
+        self._histograms_invalid = self._sdk_metrics_registry\
+            .new_delta_counter('histograms.invalid')
 
-        self._spans_dropped = self._sdk_metrics_registry.new_counter(
+        self._spans_dropped = self._sdk_metrics_registry.new_delta_counter(
             'spans.dropped')
-        self._spans_discarded = self._sdk_metrics_registry.new_counter(
+        self._spans_discarded = self._sdk_metrics_registry.new_delta_counter(
             'spans.discarded')
-        self._spans_valid = self._sdk_metrics_registry.new_counter(
+        self._spans_valid = self._sdk_metrics_registry.new_delta_counter(
             'spans.valid')
-        self._spans_invalid = self._sdk_metrics_registry.new_counter(
+        self._spans_invalid = self._sdk_metrics_registry.new_delta_counter(
             'spans.invalid')
 
-        self._span_logs_dropped = self._sdk_metrics_registry.new_counter(
+        self._span_logs_dropped = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.dropped')
-        self._span_logs_discarded = self._sdk_metrics_registry.new_counter(
-            'span_logs.discarded')
-        self._span_logs_valid = self._sdk_metrics_registry.new_counter(
+        self._span_logs_discarded = self._sdk_metrics_registry\
+            .new_delta_counter('span_logs.discarded')
+        self._span_logs_valid = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.valid')
-        self._span_logs_invalid = self._sdk_metrics_registry.new_counter(
+        self._span_logs_invalid = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.invalid')
 
-        self._events_discarded = self._sdk_metrics_registry.new_counter(
+        self._events_discarded = self._sdk_metrics_registry.new_delta_counter(
             'events.discarded')
-        self._events_dropped = self._sdk_metrics_registry.new_counter(
+        self._events_dropped = self._sdk_metrics_registry.new_delta_counter(
             'events.dropped')
-        self._events_valid = self._sdk_metrics_registry.new_counter(
+        self._events_valid = self._sdk_metrics_registry.new_delta_counter(
             'events.valid')
-        self._events_invalid = self._sdk_metrics_registry.new_counter(
+        self._events_invalid = self._sdk_metrics_registry.new_delta_counter(
             'events.invalid')
 
     def close(self):
@@ -377,7 +378,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
             except Exception as error:
                 self._spans_dropped.inc()
                 self._tracing_proxy_connection_handler.increment_failure_count(
-                    )
+                )
                 raise error
 
     def send_span_log_now(self, span_logs):
@@ -461,6 +462,6 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                     self._event_proxy_connection_handler.send_data(event)
                 except Exception as error:
                     self._events_dropped.inc()
-                    self._event_proxy_connection_handler\
+                    self._event_proxy_connection_handler \
                         .increment_failure_count()
                     raise error
