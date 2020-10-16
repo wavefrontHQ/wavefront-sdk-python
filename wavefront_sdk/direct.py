@@ -108,76 +108,78 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
         def version():
             return semver
+
         self._sdk_metrics_registry.new_gauge('version', version)
         self._sdk_metrics_registry.new_gauge(
             'points.queue.size', self._metrics_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'points.queue.remaining_capacity',
             remaining_capacity_getter(self._metrics_buffer))
-        self._points_valid = self._sdk_metrics_registry.new_counter(
+        self._points_valid = self._sdk_metrics_registry.new_delta_counter(
             'points.valid')
-        self._points_invalid = self._sdk_metrics_registry.new_counter(
+        self._points_invalid = self._sdk_metrics_registry.new_delta_counter(
             'points.invalid')
-        self._points_dropped = self._sdk_metrics_registry.new_counter(
+        self._points_dropped = self._sdk_metrics_registry.new_delta_counter(
             'points.dropped')
-        self._points_report_errors = self._sdk_metrics_registry.new_counter(
-            'points.report.errors')
+        self._points_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('points.report.errors')
 
         self._sdk_metrics_registry.new_gauge(
             'histograms.queue.size', self._histograms_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'histograms.queue.remaining_capacity',
             remaining_capacity_getter(self._histograms_buffer))
-        self._histograms_valid = self._sdk_metrics_registry.new_counter(
+        self._histograms_valid = self._sdk_metrics_registry.new_delta_counter(
             'histograms.valid')
-        self._histograms_invalid = self._sdk_metrics_registry.new_counter(
-            'histograms.invalid')
-        self._histograms_dropped = self._sdk_metrics_registry.new_counter(
-            'histograms.dropped')
+        self._histograms_invalid = self._sdk_metrics_registry\
+            .new_delta_counter('histograms.invalid')
+        self._histograms_dropped = self._sdk_metrics_registry\
+            .new_delta_counter('histograms.dropped')
         self._histograms_report_errors = (
-            self._sdk_metrics_registry.new_counter('histograms.report.errors'))
+            self._sdk_metrics_registry.new_delta_counter(
+                'histograms.report.errors'))
 
         self._sdk_metrics_registry.new_gauge(
             'spans.queue.size', self._tracing_spans_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'spans.queue.remaining_capacity',
             remaining_capacity_getter(self._tracing_spans_buffer))
-        self._spans_valid = self._sdk_metrics_registry.new_counter(
+        self._spans_valid = self._sdk_metrics_registry.new_delta_counter(
             'spans.valid')
-        self._spans_invalid = self._sdk_metrics_registry.new_counter(
+        self._spans_invalid = self._sdk_metrics_registry.new_delta_counter(
             'spans.invalid')
-        self._spans_dropped = self._sdk_metrics_registry.new_counter(
+        self._spans_dropped = self._sdk_metrics_registry.new_delta_counter(
             'spans.dropped')
-        self._spans_report_errors = self._sdk_metrics_registry.new_counter(
-            'spans.report.errors')
+        self._spans_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('spans.report.errors')
 
         self._sdk_metrics_registry.new_gauge(
             'span_logs.queue.size', self._spans_log_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'span_logs.queue.remaining_capacity',
             remaining_capacity_getter(self._spans_log_buffer))
-        self._span_logs_valid = self._sdk_metrics_registry.new_counter(
+        self._span_logs_valid = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.valid')
-        self._span_logs_invalid = self._sdk_metrics_registry.new_counter(
+        self._span_logs_invalid = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.invalid')
-        self._span_logs_dropped = self._sdk_metrics_registry.new_counter(
+        self._span_logs_dropped = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.dropped')
-        self._span_logs_report_errors = self._sdk_metrics_registry.new_counter(
-            'span_logs.report.errors')
+        self._span_logs_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('span_logs.report.errors')
 
         self._sdk_metrics_registry.new_gauge(
             'events.queue.size', self._events_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'events.queue.remaining_capacity',
             remaining_capacity_getter(self._events_buffer))
-        self._events_valid = self._sdk_metrics_registry.new_counter(
+        self._events_valid = self._sdk_metrics_registry.new_delta_counter(
             'events.valid')
-        self._events_invalid = self._sdk_metrics_registry.new_counter(
+        self._events_invalid = self._sdk_metrics_registry.new_delta_counter(
             'events.invalid')
-        self._events_dropped = self._sdk_metrics_registry.new_counter(
+        self._events_dropped = self._sdk_metrics_registry.new_delta_counter(
             'events.dropped')
-        self._events_report_errors = self._sdk_metrics_registry.new_counter(
-            'events.report.errors')
+        self._events_report_errors = self._sdk_metrics_registry\
+            .new_delta_counter('events.report.errors')
 
     def _report(self, points, data_format, entity_prefix, report_errors):
         r"""One api call sending one given string data.
@@ -187,6 +189,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @param data_format: Type of data to be sent
         @type data_format: str
         """
+        status_code = constants.NO_HTTP_RESPONSE
         try:
             if data_format == self.WAVEFRONT_EVENT_FORMAT:
                 response = requests.post(self.server + self.EVENT_END_POINT,
@@ -200,52 +203,122 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                                          params=params,
                                          headers=self._headers,
                                          data=compressed_data)
-
-            self._sdk_metrics_registry.new_counter(
-                '{}.report.{}'.format(entity_prefix,
-                                      response.status_code)).inc()
-            response.raise_for_status()
-        except Exception as error:
+            status_code = response.status_code
+            self._sdk_metrics_registry.new_delta_counter('{}.report.{}'.format(
+                entity_prefix, status_code)).inc()
+        except requests.exceptions.RequestException:
             report_errors.inc()
-            raise error
+        return status_code
 
     def _batch_report(self, batch_line_data, data_format, entity_prefix,
-                      report_errors):
+                      report_errors, data_buffer, dropped_point_counter):
         """One api call sending one given list of data.
 
         @param batch_line_data: List of data to be sent
         @type batch_line_data: list
         @param data_format: Type of data to be sent
         @type data_format: str
+        @param entity_prefix: Metric prefix of data type
+        @type entity_prefix: str
+        @param report_errors: Counter of errors
+        @type report_errors: WavefrontSdkCounter
+        @param data_buffer: Data buffer to be flush and sent
+        @type data_buffer: Queue
+        @param dropped_point_counter: Counter of dropped points
+        @type dropped_point_counter: WavefrontSdkCounter
         """
+        # Sending events through direct ingestion does not support batching.
+        batch_size = int(
+            data_format == self.WAVEFRONT_EVENT_FORMAT) or self._batch_size
+
         # Split data into chunks, each with the size of given batch_size
-        for batch in utils.chunks(batch_line_data, self._batch_size):
+        for batch in utils.chunks(batch_line_data, batch_size):
             # report once per batch
+            status_code = self._report('\n'.join(batch) + '\n', data_format,
+                                       entity_prefix, report_errors)
+            if 400 <= status_code <= 599 or status_code == -1:
+                if status_code == 401:
+                    logging.error(
+                        'Failed to report %s data points to wavefront '
+                        '(HTTP %d). Please verify that your API Token is '
+                        'correct! All %s data points are discarded. ',
+                        data_format, status_code, data_format)
+                    dropped_point_counter.inc(len(batch))
+                elif status_code == 403:
+                    if data_format == self.WAVEFRONT_METRIC_FORMAT:
+                        logging.error(
+                            'Failed to report %s data points to wavefront '
+                            '(HTTP %d). Please verify that Direct Data '
+                            'Ingestion is enabled for your account! '
+                            'All %s data points are discarded. ', data_format,
+                            status_code, data_format)
+                        dropped_point_counter.inc(len(batch))
+                    else:
+                        logging.error(
+                            'Failed to report %s data points to wavefront '
+                            '(HTTP %d). Please verify that Direct Data '
+                            'Ingestion and %s data points are enabled for '
+                            'your account! All %s data points are discarded. ',
+                            data_format, status_code, data_format, data_format)
+                        dropped_point_counter.inc(len(batch))
+                else:
+                    logging.error(
+                        'Failed to report %s data points to wavefront '
+                        '(HTTP %d). Data will be requeued and resent.',
+                        data_format, status_code)
+                    self._requeue(batch, data_format, data_buffer,
+                                  dropped_point_counter)
+
+    @staticmethod
+    def _requeue(points, data_format, data_buffer, dropped_point_counter):
+        """Add point data back to buffer queue.
+
+        @param points: Point data in line format
+        @type points: List[str]
+        @param data_format: Type of data to be sent
+        @type data_format: str
+        @param data_buffer: Data buffer to be flush and sent
+        @type data_buffer: Queue
+        @param dropped_point_counter: Counter of dropped points
+        @type dropped_point_counter: WavefrontSdkCounter
+        """
+        added_back_to_buffer_count = 0
+        for point in points:
             try:
-                self._report('\n'.join(batch) + '\n', data_format,
-                             entity_prefix, report_errors)
-            # pylint: disable=broad-except,fixme
-            # TODO: Please replace a generic Exception with a specific one.
-            except Exception as error:
+                data_buffer.put_nowait(point)
+            except queue.Full:
+                dropped_point_count = len(points) - added_back_to_buffer_count
+                dropped_point_counter.inc(dropped_point_count)
                 logging.error(
-                    'Failed to report %s data points to wavefront %s',
-                    data_format, error)
+                    'Buffer full, dropping %d %s data points.'
+                    'Consider increasing the batch size of '
+                    'your sender to increase throughput.', dropped_point_count,
+                    data_format)
+                break
+            added_back_to_buffer_count += 1
 
     def _internal_flush(self, data_buffer, data_format, entity_prefix,
-                        report_errors):
+                        report_errors, dropped_point_counter):
         """Get all data from one data buffer to a list, and report that list.
 
         @param data_buffer: Data buffer to be flush and sent
-        @type: Queue
+        @type data_buffer: Queue
         @param data_format: Type of data to be sent
-        @type: str
+        @type data_format: str
+        @param entity_prefix: Metric prefix of data type
+        @type entity_prefix: str
+        @param report_errors: Counter of errors
+        @type report_errors: WavefrontSdkCounter
+        @param dropped_point_counter: Counter of dropped points
+        @type dropped_point_counter: WavefrontSdkCounter
         """
         data = []
         size = data_buffer.qsize()
         while size > 0 and not data_buffer.empty():
             data.append(data_buffer.get())
             size -= 1
-        self._batch_report(data, data_format, entity_prefix, report_errors)
+        self._batch_report(data, data_format, entity_prefix, report_errors,
+                           data_buffer, dropped_point_counter)
 
     def _schedule_timer(self):
         # Flush every 5 secs by default
@@ -268,19 +341,21 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         """Flush all the data buffer immediately."""
         self._internal_flush(self._metrics_buffer,
                              self.WAVEFRONT_METRIC_FORMAT, 'points',
-                             self._points_report_errors)
+                             self._points_report_errors, self._points_dropped)
         self._internal_flush(self._histograms_buffer,
                              self.WAVEFRONT_HISTOGRAM_FORMAT, 'histograms',
-                             self._histograms_report_errors)
+                             self._histograms_report_errors,
+                             self._histograms_dropped)
         self._internal_flush(self._tracing_spans_buffer,
                              self.WAVEFRONT_TRACING_SPAN_FORMAT, 'spans',
-                             self._spans_report_errors)
+                             self._spans_report_errors, self._spans_dropped)
         self._internal_flush(self._spans_log_buffer,
                              self.WAVEFRONT_SPAN_LOG_FORMAT, 'span_logs',
-                             self._span_logs_report_errors)
-        self._internal_flush(self._events_buffer,
-                             self.WAVEFRONT_EVENT_FORMAT, 'events',
-                             self._events_report_errors)
+                             self._span_logs_report_errors,
+                             self._span_logs_dropped)
+        self._internal_flush(self._events_buffer, self.WAVEFRONT_EVENT_FORMAT,
+                             'events', self._events_report_errors,
+                             self._events_dropped)
 
     def close(self):
         """Flush all buffer before close the client."""
@@ -318,7 +393,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             self._points_invalid.inc()
             raise error
         try:
-            self._metrics_buffer.put(line_data)
+            self._metrics_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._points_dropped.inc()
             raise error
@@ -333,7 +408,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type metrics: list[str]
         """
         self._batch_report(metrics, self.WAVEFRONT_METRIC_FORMAT, 'points',
-                           self._points_report_errors)
+                           self._points_report_errors, self._metrics_buffer,
+                           self._points_dropped)
 
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
@@ -367,7 +443,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             self._histograms_invalid.inc()
             raise error
         try:
-            self._histograms_buffer.put(line_data)
+            self._histograms_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._histograms_dropped.inc()
             raise error
@@ -382,7 +458,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type distributions: list[str]
         """
         self._batch_report(distributions, self.WAVEFRONT_HISTOGRAM_FORMAT,
-                           'histograms', self._histograms_report_errors)
+                           'histograms', self._histograms_report_errors,
+                           self._histograms_buffer, self._histograms_dropped)
 
     # pylint: disable=too-many-arguments
 
@@ -429,7 +506,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             self._spans_invalid.inc()
             raise error
         try:
-            self._tracing_spans_buffer.put(line_data)
+            self._tracing_spans_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._spans_dropped.inc()
             raise error
@@ -442,7 +519,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                 self._span_logs_invalid.inc()
                 raise error
             try:
-                self._spans_log_buffer.put(line_data)
+                self._spans_log_buffer.put_nowait(line_data)
             except queue.Full as error:
                 self._span_logs_dropped.inc()
                 raise error
@@ -458,7 +535,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type spans: list[str]
         """
         self._batch_report(spans, self.WAVEFRONT_TRACING_SPAN_FORMAT, 'spans',
-                           self._spans_report_errors)
+                           self._spans_report_errors,
+                           self._tracing_spans_buffer, self._spans_dropped)
 
     def send_span_log_now(self, span_logs):
         """
@@ -471,7 +549,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type span_logs: list[str]
         """
         self._batch_report(span_logs, self.WAVEFRONT_SPAN_LOG_FORMAT,
-                           'span_logs', self._span_logs_report_errors)
+                           'span_logs', self._span_logs_report_errors,
+                           self._spans_log_buffer, self._span_logs_dropped)
 
     def send_event(self, name, start_time, end_time, source, tags,
                    annotations):
@@ -508,7 +587,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             self._events_invalid.inc()
             raise error
         try:
-            self._events_buffer.put(line_data)
+            self._events_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._events_dropped.inc()
             raise error
@@ -523,7 +602,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type events: list[str]
         """
         self._batch_report(events, self.WAVEFRONT_EVENT_FORMAT, 'events',
-                           self._events_report_errors)
+                           self._events_report_errors, self._events_buffer,
+                           self._events_dropped)
 
     def get_failure_count(self):
         """Get failure count for one connection."""

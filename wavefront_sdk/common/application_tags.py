@@ -2,6 +2,8 @@
 
 @author: Hao Song (songhao@vmware.com)
 """
+import os
+import re
 
 from .constants import APPLICATION_TAG_KEY
 from .constants import CLUSTER_TAG_KEY
@@ -35,7 +37,9 @@ class ApplicationTags(object):
         self._service = service
         self._cluster = cluster
         self._shard = shard
-        self._custom_tags = custom_tags
+        self._custom_tags = []
+        if custom_tags:
+            self._custom_tags.extend(custom_tags)
 
     @property
     def application(self):
@@ -71,3 +75,27 @@ class ApplicationTags(object):
         if self.custom_tags:
             tags.extend(self.custom_tags)
         return tags
+
+    def add_custom_tags_from_env(self, pattern):
+        """Set custom tags from environment variables that match the regex pattern.
+
+        @param pattern: Regex pattern
+        """
+        for key in os.environ:
+            if re.match(pattern, key, re.IGNORECASE):
+                value = os.environ[key]
+                if value:
+                    self._custom_tags.append((key, value))
+
+    def add_custom_tag_from_env(self, tag_key, var_key):
+        """Set a custom tag from the given environment variable.
+
+        @param tag_key: Key of the custom tag
+        @param var_name: Key of the environment variable
+        """
+        if var_key in os.environ:
+            value = os.environ[var_key]
+            if value:
+                self._custom_tags.append((tag_key, value))
+        else:
+            raise Exception("var_key is an invalid environment variable.")
