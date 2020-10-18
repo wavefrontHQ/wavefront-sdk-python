@@ -127,21 +127,23 @@ def send_histogram_multi_client(proxy_client):
     """Send a histogram using multi client."""
     proxy_client.send_distribution(
         'python' + str(sys.version_info[0]) + '.multi.client.request.latency',
-        [(30, 20), (5.1, 10)], {histogram_granularity.DAY,
-                                histogram_granularity.HOUR,
-                                histogram_granularity.MINUTE},
+        [(30, 20), (5.1, 10)],
+        {histogram_granularity.DAY, histogram_granularity.HOUR,
+            histogram_granularity.MINUTE},
         None, 'appServer1', {'region': 'us-west'})
 
 
 def send_tracing_span_multi_client(proxy_client):
     """Send a tracing span using multi client."""
     proxy_client.send_span(
-        'getAllUsersFromPythonMultiClient', int(time.time()), 34350, 'localhost',
+        'getAllUsersFromPythonMultiClient',
+        int(time.time()), 34350, 'localhost',
         uuid.UUID('7b3bf470-9456-11e8-9eb6-529269fb1459'),
         uuid.UUID('0313bafe-9457-11e8-9eb6-529269fb1459'),
         [uuid.UUID('2f64e538-9457-11e8-9eb6-529269fb1459')], None,
-        [('application', 'Wavefront'), ('service', 'testService'), ('cluster', 'testCluster'),
-         ('shard', 'testShard'), ('http.method', 'GET')], None)
+        [('application', 'Wavefront'), ('service', 'testService'),
+         ('cluster', 'testCluster'), ('shard', 'testShard'),
+         ('http.method', 'GET')], None)
 
 
 def send_event_via_multi_client(direct_ingestion_client):
