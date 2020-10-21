@@ -44,8 +44,8 @@ class WavefrontClientFactory:
         base_url = urlparse(url)
         scheme = base_url.scheme
         if scheme == self.DIRECT_DATA_INGESTION_SCHEME:
-            server = self.DIRECT_DATA_INGESTION_SCHEME\
-                     + '://' + base_url.hostname
+            server = '{}://{}'.format(self.DIRECT_DATA_INGESTION_SCHEME,
+                                      base_url.hostname)
             token = base_url.username
         elif scheme in (self.PROXY_SCHEME, self.HTTP_PROXY_SCHEME):
             server = '{}://{}:{}'.format(self.HTTP_PROXY_SCHEME,
