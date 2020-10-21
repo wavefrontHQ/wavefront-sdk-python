@@ -14,8 +14,8 @@ class WavefrontClient(unittest.TestCase):
 
     def test_get_server_info_from_endpoint(self):
         """Test get_server_info_from_endpoint of WavefrontClientFactory"""
-        direct_base_url = "https://a87826d5-889d-4b23-98f0-2f3558zd007a" \
-                          "@wfcluster.wavefront.com"
+        direct_base_url = ("https://a87826d5-889d-4b23-98f0-2f3558zd007a"
+                           "@wfcluster.wavefront.com")
         server, token = WavefrontClientFactory(
             ).get_server_info_from_endpoint(direct_base_url)
         self.assertEqual(server, "https://wfcluster.wavefront.com")
