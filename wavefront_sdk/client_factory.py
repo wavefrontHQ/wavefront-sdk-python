@@ -47,7 +47,7 @@ class WavefrontClientFactory:
             server = self.DIRECT_DATA_INGESTION_SCHEME\
                      + '://' + base_url.hostname
             token = base_url.username
-        elif scheme in [self.PROXY_SCHEME, self.HTTP_PROXY_SCHEME]:
+        elif scheme in (self.PROXY_SCHEME, self.HTTP_PROXY_SCHEME):
             server = '{}://{}:{}'.format(self.HTTP_PROXY_SCHEME,
                                          base_url.hostname, base_url.port)
             token = None
