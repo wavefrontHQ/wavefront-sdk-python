@@ -42,8 +42,8 @@ class WavefrontClient(unittest.TestCase):
 
         # get_client should return instance of WavefrontClient
         # if there is only one client
-        direct_base_url = "https://a87826d5-889d-4b23-98f0-2f3558zd007a" \
-                          "@wfcluster.wavefront.com"
+        direct_base_url = ("https://a87826d5-889d-4b23-98f0-2f3558zd007a"
+                           "@wfcluster.wavefront.com")
         multi_client_factory = WavefrontClientFactory()
         multi_client_factory.add_client(direct_base_url)
         self.assertTrue(isinstance(multi_client_factory.get_client(),
