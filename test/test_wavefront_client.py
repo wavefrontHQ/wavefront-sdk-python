@@ -28,8 +28,8 @@ class WavefrontClient(unittest.TestCase):
         self.assertEqual(token, None)
 
         http_proxy_base_url = "http://192.114.71.230:2878"
-        server, token = WavefrontClientFactory()\
-            .get_server_info_from_endpoint(http_proxy_base_url)
+        server, token = WavefrontClientFactory(
+            ).get_server_info_from_endpoint(http_proxy_base_url)
         self.assertEqual(server, "http://192.114.71.230:2878")
         self.assertEqual(token, None)
 
