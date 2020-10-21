@@ -48,9 +48,8 @@ class WavefrontClientFactory:
                      + '://' + base_url.hostname
             token = base_url.username
         elif scheme in [self.PROXY_SCHEME, self.HTTP_PROXY_SCHEME]:
-            server = self.HTTP_PROXY_SCHEME + '://'\
-                     + base_url.hostname\
-                     + ':' + str(base_url.port)
+            server = '{}://{}:{}'.format(self.HTTP_PROXY_SCHEME,
+                                         base_url.hostname, base_url.port)
             token = None
         else:
             raise RuntimeError("Unknown scheme specified while attempting to"
