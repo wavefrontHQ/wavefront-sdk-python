@@ -139,8 +139,10 @@ You can send metrics, histograms, or trace data from your application to the Wav
 * Use a [**Wavefront proxy**](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 
 You instantiate an object that corresponds to your choice:
-* Option 1: [Create a `WavefrontDirectClient`](#option-1-create-a-wavefrontdirectclient) to send data directly to a Wavefront service.
-* Option 2: [Create a `WavefrontProxyClient`](#option-2-create-a-wavefrontproxyclient) to send data to a Wavefront proxy.
+* Option 1 **(Deprecated)**: [Create a `WavefrontDirectClient`](#option-1-create-a-wavefrontdirectclient) to send data directly to a Wavefront service.
+* Option 2 **(Deprecated)**: [Create a `WavefrontProxyClient`](#option-2-create-a-wavefrontproxyclient) to send data to a Wavefront proxy.
+* Option 3: [Create a `WavefrontClient`](#option-3-create-a-wavefrontclient) to send data to a Wavefront service directly or via proxy.
+> **Deprecated implementations**: *`WavefrontDirectClient` and `WavefrontProxyClient` are deprecated from proxy version 7.0 onwards. We recommend all new applications to use the `WavefrontClient`.*
 
 ### Option 1: Create a WavefrontDirectClient
 When sending data via direct ingestion, you need to create a `WavefrontDirectClient`, and build it with the Wavefront URL and API token to send data directly to Wavefront.
@@ -188,7 +190,7 @@ wavefront_sender = WavefrontDirectClient(
 When sending data via the Wavefront proxy, you need to create a `WavefrontProxyClient`. Include the following information.
 
 * The name of the host that will run the Wavefront proxy.
-* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port. 
+* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port.
 * Optional settings for tuning communication with the proxy.
 
 > **Note**: See [Advanced Proxy Configuration and Installation](https://docs.wavefront.com/proxies_configuring.html) for details.
@@ -219,6 +221,52 @@ wavefront_sender = WavefrontProxyClient(
 | `distribution_port` | `histogramDistListenerPorts=` |
 | `tracing_port` | `traceListenerPorts=` |
 
+### Option 3: Create a WavefrontClient
+Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can send data directly to a Wavefront service or send data using a Wavefront Proxy.
+
+The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` instance, which can send data to multiple Wavefront services.
+### Prerequisites
+* Sending data via Wavefront proxy?
+  <br/>Before your application can use a `WavefrontClient` you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
+* Sending data via direct ingestion?
+  * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
+  * The HTTP URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `http://<domain>.wavefront.com`.<br/> You can also use HTTP client with Wavefront Proxy version 7.0 or newer. Example: `http://proxy.acme.corp:2878`.
+  * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
+
+### Initialize the WavefrontClient
+```python
+from wavefront_sdk.client_factory import WavefrontClientFactory
+
+# Create a sender with:
+   # Required Parameter
+   #   URL format to send data via proxy: "proxy://<your.proxy.load.balancer.com>:<somePort>"
+   #   URL format to send data via direct ingestion: "https://TOKEN@DOMAIN.wavefront.com"
+   # Optional Parameter
+   #   max queue size (in data points). Default: 50000
+   #   batch size (in data points). Default: 10000
+   #   flush interval  (in seconds). Default: 1 second
+
+client_factory = WavefrontClientFactory()
+client_factory.add_client(
+    url="<URL for proxy or direct ingestions>",
+    max_queue_size=50000,
+    batch_size=10000,
+    flush_interval_seconds=5)
+wavefront_sender = client_factory.get_client()
+```
+#### Add multiple clients to client factory to send data to multiple Wavefront services.
+```
+from wavefront_sdk.client_factory import WavefrontClientFactory
+
+client_factory = WavefrontClientFactory()
+client_factory.add("proxy://our.proxy.lb.com:2878")
+client_factory.add("https://someToken@DOMAIN.wavefront.com")
+
+# Send traces and spans to the tracing port. If you are directly using the sender SDK to send spans without using any other SDK, use the same port as the customTracingListenerPorts configured in the wavefront proxy. Assume you have installed and started the proxy on <proxy_hostname>.
+client_factory.add("http://<proxy_hostname>:30000")
+
+wavefront_sender = client_factory.get_client()
+```
 
 ## Send a Single Data Point to Wavefront
 
