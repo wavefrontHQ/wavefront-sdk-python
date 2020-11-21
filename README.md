@@ -332,6 +332,7 @@ wavefront_sender.send_span(
     span_id=UUID("0313bafe-9457-11e8-9eb6-529269fb1459"),
     parents=[UUID("2f64e538-9457-11e8-9eb6-529269fb1459")],
     follows_from=None, tags=[("application", "Wavefront"),
+                             ("service", "istio"),
                              ("http.method", "GET")],
     span_logs=None)
 ```
