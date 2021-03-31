@@ -248,6 +248,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         size = data_buffer.qsize()
         while size > 0 and not data_buffer.empty():
             data.append(data_buffer.get())
+            size -= 1
         self._batch_report(data, data_format, entity_prefix, report_errors)
 
     def _schedule_timer(self):
