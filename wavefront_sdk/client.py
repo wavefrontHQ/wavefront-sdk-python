@@ -28,8 +28,9 @@ class WavefrontClient(connection_handler.ConnectionHandler,
                       entities.WavefrontEventSender):
     """Wavefront data ingestion client.
 
-    Sends data directly/via proxy to Wavefront cluster..
+    Send data directly/via proxy to Wavefront cluster.
     """
+
     # pylint: disable=too-many-instance-attributes
 
     WAVEFRONT_METRIC_FORMAT = 'wavefront'
@@ -172,7 +173,8 @@ class WavefrontClient(connection_handler.ConnectionHandler,
                 'events.report.errors'))
 
     def _report(self, points, data_format, entity_prefix, report_errors):
-        """One api call sending one given string data.
+        # Raw string is used for the docstring as there's a backslash.
+        r"""One api call sending one given string data.
 
         @param points: List of data in string format, concat by '\n'
         @type points: str
