@@ -13,8 +13,8 @@ import requests
 
 try:
     import queue
-except ImportError:
-    import Queue as queue
+except ImportError:  # Python 2.x
+    import Queue as queue  # noqa
 
 from . import entities
 from .common import connection_handler, constants, utils
