@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Span Log.
 
 @author Hao Song (songhao@vmware.com)`

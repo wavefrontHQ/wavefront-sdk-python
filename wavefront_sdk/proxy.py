@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront Proxy Client.
 
 @author Hao Song (songhao@vmware.com).

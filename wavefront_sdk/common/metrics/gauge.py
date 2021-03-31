@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront SDK Gauge.
 
 @author Hao Song (songhao@vmware.com)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront Python SDK.
 
 This library provides support for sending metrics, histograms and opentracing

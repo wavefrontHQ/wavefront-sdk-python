@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Tracing Span Sender Interface for both Clients.
 
 @author Hao Song (songhao@vmware.com)`

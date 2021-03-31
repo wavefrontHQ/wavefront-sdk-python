@@ -77,8 +77,9 @@ class ApplicationTags(object):
         return tags
 
     def add_custom_tags_from_env(self, pattern):
-        """Set custom tags from environment variables that match the regex pattern.
+        """Set custom tags from environment variables.
 
+        (that match the regex pattern)
         @param pattern: Regex pattern
         """
         for key in os.environ:

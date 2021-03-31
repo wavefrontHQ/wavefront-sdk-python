@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Utils module contains useful function for preparing and processing data.
 

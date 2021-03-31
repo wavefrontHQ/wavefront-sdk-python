@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Constants for Histogram Granularity.
 
 @author Hao Song (songhao@vmware.com)

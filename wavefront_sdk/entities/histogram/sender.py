@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Interface of Histogram Sender for both clients.
 
 @author Hao Song (songhao@vmware.com)

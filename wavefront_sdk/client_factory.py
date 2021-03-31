@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront MultiClient to support Data Ingestion for Multiple Clients.
 
 @author Yogesh Prasad Kurmi (ykurmi@vmware.com)
@@ -10,7 +9,7 @@ from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
 
 
-# pylint: disable=W0232
+# pylint: disable=W0232  # Class has no __init__ method
 class WavefrontClientFactory:
     """Wavefront client factory.
 

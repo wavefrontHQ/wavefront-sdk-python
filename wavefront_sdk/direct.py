@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront Direct Ingestion Client.
 
 @author Hao Song (songhao@vmware.com)

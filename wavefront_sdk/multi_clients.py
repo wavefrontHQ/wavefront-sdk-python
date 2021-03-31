@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront Client to support sending data to multiple clients.
 
 @author Yogesh Prasad Kurmi (ykurmi@vmware.com)

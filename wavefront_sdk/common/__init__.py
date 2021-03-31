@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Provide utils functions.
 
 @author Hao Song (songhao@vmware.com)

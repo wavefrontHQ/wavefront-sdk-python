@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront SDK Counter.
 
 @author Hao Song (songhao@vmware.com)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront SDK Metrics Registry.
 
 @author Hao Song (songhao@vmware.com)
