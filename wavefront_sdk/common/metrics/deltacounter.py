@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront SDK Delta Counter.
 
 @author Joanna Ko (joannak@vmware.com)

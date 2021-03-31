@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Interface of Metric Sender for both clients.
 
 @author Hao Song (songhao@vmware.com)
