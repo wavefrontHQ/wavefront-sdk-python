@@ -259,11 +259,11 @@ wavefront_sender = client_factory.get_client()
 from wavefront_sdk.client_factory import WavefrontClientFactory
 
 client_factory = WavefrontClientFactory()
-client_factory.add("proxy://our.proxy.lb.com:2878")
-client_factory.add("https://someToken@DOMAIN.wavefront.com")
+client_factory.add_client("proxy://our.proxy.lb.com:2878")
+client_factory.add_client("https://someToken@DOMAIN.wavefront.com")
 
 # Send traces and spans to the tracing port. If you are directly using the sender SDK to send spans without using any other SDK, use the same port as the customTracingListenerPorts configured in the wavefront proxy. Assume you have installed and started the proxy on <proxy_hostname>.
-client_factory.add("http://<proxy_hostname>:30000")
+client_factory.add_client("http://<proxy_hostname>:30000")
 
 wavefront_sender = client_factory.get_client()
 ```
