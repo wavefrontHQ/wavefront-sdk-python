@@ -14,7 +14,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.8.0',
+    version='1.8.1',
     author='Wavefront by VMware',
     author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
