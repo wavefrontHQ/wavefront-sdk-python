@@ -92,7 +92,6 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._closed = False
         self._schedule_lock = threading.Lock()
         self._timer = None
-        self._schedule_timer()
 
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
@@ -108,6 +107,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         def version():
             return semver
 
+        # Initialize internal metrics
         self._sdk_metrics_registry.new_gauge('version', version)
         self._sdk_metrics_registry.new_gauge(
             'points.queue.size', self._metrics_buffer.qsize)
@@ -179,6 +179,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'events.dropped')
         self._events_report_errors = self._sdk_metrics_registry\
             .new_delta_counter('events.report.errors')
+        # start the scheduled timer after all internal metrics are initialized
+        self._schedule_timer()
 
     def _report(self, points, data_format, entity_prefix, report_errors):
         r"""One api call sending one given string data.
