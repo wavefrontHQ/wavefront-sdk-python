@@ -461,6 +461,15 @@ total_failures = wavefront_sender.get_failure_count()
 ```
 ## Close the Connection
 
+* If the Wavefront sender is from a `WavefrontClientFactory`, close the connection before shutting down the application.
+
+    ```python
+    # To shut down a sender from a WavefrontClientFactory
+    wavefront_sender = client_factory.get_client()
+
+    # Close the sender connection
+    wavefront_sender.close()
+    ```
 * If the Wavefront sender is a `WavefrontDirectClient`, flush all buffers and then close the connection before shutting down the application.
 
     ```python
