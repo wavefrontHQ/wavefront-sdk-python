@@ -43,10 +43,12 @@ class WavefrontClientFactory:
         base_url = urlparse(url)
         scheme = base_url.scheme
         if scheme == self.DIRECT_DATA_INGESTION_SCHEME:
-            server = f'{self.DIRECT_DATA_INGESTION_SCHEME}://{base_url.hostname}'
+            server = f'{self.DIRECT_DATA_INGESTION_SCHEME}://' \
+                     f'{base_url.hostname}'
             token = base_url.username
         elif scheme in (self.PROXY_SCHEME, self.HTTP_PROXY_SCHEME):
-            server = f'{self.HTTP_PROXY_SCHEME}://{base_url.hostname}:{base_url.port}'
+            server = f'{self.HTTP_PROXY_SCHEME}://' \
+                     f'{base_url.hostname}:{base_url.port}'
             token = None
         else:
             raise RuntimeError("Unknown scheme specified while attempting to"

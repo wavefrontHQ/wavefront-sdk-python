@@ -92,7 +92,9 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
-                prefix=f'{constants.SDK_METRIC_PREFIX}.core.sender.{ingestion_type}')
+                prefix=f'{constants.SDK_METRIC_PREFIX}'
+                       f'.core.sender.{ingestion_type}'
+            )
         else:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
