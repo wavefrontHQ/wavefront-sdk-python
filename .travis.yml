@@ -19,9 +19,7 @@ before_script:
   - python -m pydocstyle
 script:
   - python -m unittest discover
-  - if [[ "${TRAVIS_PULL_REQUEST}" != "false" ]]; then
-      test -n "$(git diff -G version=$TRAVIS_COMMIT_RANGE setup.py)";
-    fi
+
 deploy:
   - provider: pypi
     user: wavefront-cs
