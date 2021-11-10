@@ -58,8 +58,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
-                prefix='{}.core.sender.proxy'.format(
-                    constants.SDK_METRIC_PREFIX))
+                prefix=f'{constants.SDK_METRIC_PREFIX}.core.sender.proxy')
         else:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
