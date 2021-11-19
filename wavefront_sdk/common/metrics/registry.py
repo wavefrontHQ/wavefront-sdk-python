@@ -41,6 +41,8 @@ class WavefrontSdkMetricsRegistry(object):
     # pylint: disable=broad-except
     def _report(self, timeout_secs=None):
         timestamp = time.time()
+
+        # Copying the dict prevents concurrent modification while iterating
         for key, val in self.metrics.copy().items():
             if timeout_secs and time.time() - timestamp > timeout_secs:
                 break
