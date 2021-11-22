@@ -96,8 +96,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
-                prefix='{}.core.sender.direct'.format(
-                    constants.SDK_METRIC_PREFIX))
+                prefix=f'{constants.SDK_METRIC_PREFIX}.core.sender.direct')
         else:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
@@ -205,8 +204,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                                          headers=self._headers,
                                          data=compressed_data)
             status_code = response.status_code
-            self._sdk_metrics_registry.new_delta_counter('{}.report.{}'.format(
-                entity_prefix, status_code)).inc()
+            self._sdk_metrics_registry.new_delta_counter(
+                f'{entity_prefix}.report.{status_code}').inc()
         except requests.exceptions.RequestException:
             report_errors.inc()
         return status_code

@@ -155,17 +155,16 @@ class ThreadMinuteBin(object):
     def get_centroids(self):
         """Get list of centroids for dists of all threads in this minute."""
         centroids = []
-        for thread_id in self.per_thread_dist:
-            centroids.extend(
-                self.per_thread_dist[thread_id].centroids_to_list())
+        for _, digest in self.per_thread_dist.items():
+            centroids.extend(digest.centroids_to_list())
         return centroids
 
     def to_distribution(self):
         """Convert to Distribution."""
         distributions = []
-        for thread_id in self.per_thread_dist:
+        for _, digest in self.per_thread_dist.items():
             centroids = [(centroid['m'], int(centroid['c'])) for centroid in
-                         self.per_thread_dist[thread_id].centroids_to_list()]
+                         digest.centroids_to_list()]
             distributions.append(
                 Distribution(self.minute_millis, centroids))
         return distributions
