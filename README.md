@@ -494,5 +494,12 @@ total_failures = wavefront_sender.get_failure_count()
 
 ## How to Get Support and Contribute
 
+* When submitting changes, be sure to increment the version number in setup.py.
+  The version number is documented as such in setup.py.
+  We follow semantic versioning. For bug fixes, increment the patch version
+  (last number). For backward compatible changes to the API, update the
+  minor version (second number), and zero out the patch version. For breaking
+  changes to the API, increment the major version (first number) and zero out
+  the minor and patch versions.
 * Reach out to us on our public [Slack channel](https://www.wavefront.com/join-public-slack).
 * If you run into any issues, let us know by creating a GitHub issue.
