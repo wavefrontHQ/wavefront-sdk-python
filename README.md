@@ -125,7 +125,7 @@ Although this library is mostly used by the other Wavefront Python SDKs to send 
 
 ## Prerequisites
 
-* Python ~~2.7+~~ and Python 3.x are supported.
+* Python 3.6 and up are supported.
 * Install `wavefront-sdk-python`
     ```
     pip install wavefront-sdk-python
