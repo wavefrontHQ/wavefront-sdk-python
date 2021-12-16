@@ -14,9 +14,8 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.8.3',  # The version number. Update with each pull request.
+    version='1.8.4',  # The version number. Update with each pull request.
     author='Wavefront by VMware',
-    author_email='chitimba@wavefront.com',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
     description='Wavefront Python SDK',
@@ -28,10 +27,10 @@ setuptools.setup(
         ],
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         ],
     include_package_data=True,
     packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
