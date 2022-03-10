@@ -326,7 +326,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._points_invalid.inc()
             raise error
         try:
-            self._metrics_buffer.put(line_data)
+            self._metrics_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._points_dropped.inc()
             raise error
@@ -377,7 +377,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._histograms_invalid.inc()
             raise error
         try:
-            self._histograms_buffer.put(line_data)
+            self._histograms_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._histograms_dropped.inc()
             raise error
@@ -438,7 +438,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._spans_invalid.inc()
             raise error
         try:
-            self._tracing_spans_buffer.put(line_data)
+            self._tracing_spans_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._spans_dropped.inc()
             raise error
@@ -451,7 +451,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
                 self._span_logs_invalid.inc()
                 raise error
             try:
-                self._spans_log_buffer.put(line_data)
+                self._spans_log_buffer.put_nowait(line_data)
             except queue.Full as error:
                 self._span_logs_dropped.inc()
                 raise error
@@ -524,7 +524,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._events_invalid.inc()
             raise error
         try:
-            self._events_buffer.put(line_data)
+            self._events_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._events_dropped.inc()
             raise error
