@@ -78,7 +78,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._event_headers = {'Content-Type': 'application/json',
                                'Content-Encoding': 'gzip'}
         self._closed = False
-        self._schedule_lock = threading.Lock()
+        self._schedule_lock = threading.RLock()
         self._timer = None
         self._schedule_timer()
 

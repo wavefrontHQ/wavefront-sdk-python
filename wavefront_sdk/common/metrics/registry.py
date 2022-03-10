@@ -26,7 +26,7 @@ class WavefrontSdkMetricsRegistry(object):
         self.reporting_interval_secs = reporting_interval_secs
         self.metrics = {}
         self._closed = False
-        self._schedule_lock = threading.Lock()
+        self._schedule_lock = threading.RLock()
         self._timer = None
         if wf_metric_sender:
             self._schedule_timer()

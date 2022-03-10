@@ -90,7 +90,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                                'Content-Encoding': 'gzip',
                                'Authorization': 'Bearer ' + token}
         self._closed = False
-        self._schedule_lock = threading.Lock()
+        self._schedule_lock = threading.RLock()
         self._timer = None
 
         if enable_internal_metrics:
