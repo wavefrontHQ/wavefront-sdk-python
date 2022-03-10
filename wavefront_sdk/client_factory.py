@@ -4,7 +4,6 @@
 """
 
 import queue
-
 from urllib.parse import urlparse
 
 from wavefront_sdk.client import WavefrontClient
