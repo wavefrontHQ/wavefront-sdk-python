@@ -28,7 +28,7 @@ class AtomicCounter(object):
         @param initial: Initial value of the counter
         """
         self.value = initial
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
 
     def increment(self, num=1):
         """Increment atomic counter value.

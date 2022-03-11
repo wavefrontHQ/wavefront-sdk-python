@@ -54,7 +54,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                  max_queue_size=50000,
                  batch_size=10000,
                  flush_interval_seconds=5,
-                 enable_internal_metrics=True):
+                 enable_internal_metrics=True,
+                 queue_impl=queue.Queue):
         """Construct Direct Client.
 
         @param server: Server address, Example: https://INSTANCE.wavefront.com
@@ -78,11 +79,11 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._batch_size = batch_size
         self._flush_interval_seconds = flush_interval_seconds
         self._default_source = socket.gethostname() or 'unknown'
-        self._metrics_buffer = queue.Queue(max_queue_size)
-        self._histograms_buffer = queue.Queue(max_queue_size)
-        self._tracing_spans_buffer = queue.Queue(max_queue_size)
-        self._spans_log_buffer = queue.Queue(max_queue_size)
-        self._events_buffer = queue.Queue(max_queue_size)
+        self._metrics_buffer = queue_impl(max_queue_size)
+        self._histograms_buffer = queue_impl(max_queue_size)
+        self._tracing_spans_buffer = queue_impl(max_queue_size)
+        self._spans_log_buffer = queue_impl(max_queue_size)
+        self._events_buffer = queue_impl(max_queue_size)
         self._headers = {'Content-Type': 'application/octet-stream',
                          'Content-Encoding': 'gzip',
                          'Authorization': 'Bearer ' + token}
@@ -90,7 +91,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                                'Content-Encoding': 'gzip',
                                'Authorization': 'Bearer ' + token}
         self._closed = False
-        self._schedule_lock = threading.Lock()
+        self._schedule_lock = threading.RLock()
         self._timer = None
 
         if enable_internal_metrics:

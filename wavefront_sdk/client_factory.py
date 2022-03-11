@@ -3,6 +3,7 @@
 @author Yogesh Prasad Kurmi (ykurmi@vmware.com)
 """
 
+import queue
 from urllib.parse import urlparse
 
 from wavefront_sdk.client import WavefrontClient
@@ -25,15 +26,24 @@ class WavefrontClientFactory:
     def add_client(self, url, max_queue_size=50000,
                    batch_size=10000,
                    flush_interval_seconds=5,
-                   enable_internal_metrics=True):
+                   enable_internal_metrics=True,
+                   queue_impl=queue.Queue):
         """Create a unique client."""
         server, token = self.get_server_info_from_endpoint(url)
 
         if self.existing_client(server):
             raise RuntimeError("client with id " + url + " already exists.")
-        self.clients.append(WavefrontClient(server, token, max_queue_size,
-                                            batch_size, flush_interval_seconds,
-                                            enable_internal_metrics))
+
+        client = WavefrontClient(
+            server=server,
+            token=token,
+            max_queue_size=max_queue_size,
+            batch_size=batch_size,
+            flush_interval_seconds=flush_interval_seconds,
+            enable_internal_metrics=enable_internal_metrics,
+            queue_impl=queue_impl,
+        )
+        self.clients.append(client)
 
     def get_server_info_from_endpoint(self, url):
         """Get Server and API token from the end point.

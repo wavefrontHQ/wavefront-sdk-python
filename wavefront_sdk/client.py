@@ -43,7 +43,8 @@ class WavefrontClient(connection_handler.ConnectionHandler,
     EVENT_END_POINT = '/api/v2/event'
 
     def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
-                 flush_interval_seconds=5, enable_internal_metrics=True):
+                 flush_interval_seconds=5, enable_internal_metrics=True,
+                 queue_impl=queue.Queue):
         # pylint: disable=too-many-arguments,too-many-statements
         """Construct Direct Client.
 
@@ -68,17 +69,17 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._batch_size = batch_size
         self._flush_interval_seconds = flush_interval_seconds
         self._default_source = socket.gethostname() or 'unknown'
-        self._metrics_buffer = queue.Queue(max_queue_size)
-        self._histograms_buffer = queue.Queue(max_queue_size)
-        self._tracing_spans_buffer = queue.Queue(max_queue_size)
-        self._spans_log_buffer = queue.Queue(max_queue_size)
-        self._events_buffer = queue.Queue(max_queue_size)
+        self._metrics_buffer = queue_impl(max_queue_size)
+        self._histograms_buffer = queue_impl(max_queue_size)
+        self._tracing_spans_buffer = queue_impl(max_queue_size)
+        self._spans_log_buffer = queue_impl(max_queue_size)
+        self._events_buffer = queue_impl(max_queue_size)
         self._headers = {'Content-Type': 'application/octet-stream',
                          'Content-Encoding': 'gzip'}
         self._event_headers = {'Content-Type': 'application/json',
                                'Content-Encoding': 'gzip'}
         self._closed = False
-        self._schedule_lock = threading.Lock()
+        self._schedule_lock = threading.RLock()
         self._timer = None
         self._schedule_timer()
 
@@ -325,7 +326,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._points_invalid.inc()
             raise error
         try:
-            self._metrics_buffer.put(line_data)
+            self._metrics_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._points_dropped.inc()
             raise error
@@ -376,7 +377,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._histograms_invalid.inc()
             raise error
         try:
-            self._histograms_buffer.put(line_data)
+            self._histograms_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._histograms_dropped.inc()
             raise error
@@ -437,7 +438,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._spans_invalid.inc()
             raise error
         try:
-            self._tracing_spans_buffer.put(line_data)
+            self._tracing_spans_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._spans_dropped.inc()
             raise error
@@ -450,7 +451,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
                 self._span_logs_invalid.inc()
                 raise error
             try:
-                self._spans_log_buffer.put(line_data)
+                self._spans_log_buffer.put_nowait(line_data)
             except queue.Full as error:
                 self._span_logs_dropped.inc()
                 raise error
@@ -523,7 +524,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             self._events_invalid.inc()
             raise error
         try:
-            self._events_buffer.put(line_data)
+            self._events_buffer.put_nowait(line_data)
         except queue.Full as error:
             self._events_dropped.inc()
             raise error

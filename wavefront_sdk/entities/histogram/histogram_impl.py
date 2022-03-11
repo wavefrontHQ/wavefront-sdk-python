@@ -190,7 +190,7 @@ class WavefrontHistogramImpl(object):
         """
         self._clock_millis = clock_millis or self.current_clock_millis
         self._prior_minute_bins_list = []
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._current_minute_bin = ThreadMinuteBin(
             self._ACCURACY, self.current_minute_millis())
 
