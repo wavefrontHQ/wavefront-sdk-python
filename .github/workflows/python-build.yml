@@ -39,4 +39,8 @@ jobs:
     - name: Test 
       run: python -m unittest discover
     - name: Validate the version was updated in setup.py file.
-      run: test -n "$(git diff -G version= origin/master HEAD -- setup.py)"
+      if: github.event_name == "pull_request"
+      env:
+        COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+      run: |
+        test -n "$(git diff -G version= $COMMIT_RANGE -- setup.py)";
