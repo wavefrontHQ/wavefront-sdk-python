@@ -39,7 +39,7 @@ jobs:
     - name: Test 
       run: python -m unittest discover
     - name: Validate the version was updated in setup.py file.
-      if: github.event_name == "pull_request"
+      if: {{ github.event_name == 'pull_request' }}
       env:
         COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
       run: |
