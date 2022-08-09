@@ -445,7 +445,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         if span_logs:
             try:
                 line_data = utils.span_log_to_line_data(trace_id, span_id,
-                                                        span_logs)
+                                                        span_logs, line_data)
                 self._span_logs_valid.inc()
             except ValueError as error:
                 self._span_logs_invalid.inc()
