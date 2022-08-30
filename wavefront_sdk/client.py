@@ -41,6 +41,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
 
     REPORT_END_POINT = '/report'
     EVENT_END_POINT = '/api/v2/event'
+    HTTP_TIMEOUT = 60.0
 
     def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
                  flush_interval_seconds=5, enable_internal_metrics=True,
@@ -192,13 +193,15 @@ class WavefrontClient(connection_handler.ConnectionHandler,
                 response = requests.post(self.server + self.EVENT_END_POINT,
                                          params=None,
                                          headers=self._event_headers,
-                                         data=points)
+                                         data=points,
+                                         timeout=self.HTTP_TIMEOUT)
             else:
                 params = {'f': data_format}
                 compressed_data = utils.gzip_compress(points.encode('utf-8'))
                 response = requests.post(self.server + self.REPORT_END_POINT,
                                          params=params, headers=self._headers,
-                                         data=compressed_data)
+                                         data=compressed_data,
+                                         timeout=self.HTTP_TIMEOUT)
 
             self._sdk_metrics_registry.new_delta_counter(
                 f'{entity_prefix}.report.{response.status_code}').inc()

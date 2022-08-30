@@ -44,6 +44,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
 
     REPORT_END_POINT = '/report'
     EVENT_END_POINT = '/api/v2/event'
+    HTTP_TIMEOUT = 60.0
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-statements
@@ -196,14 +197,16 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                 response = requests.post(self.server + self.EVENT_END_POINT,
                                          params=None,
                                          headers=self._event_headers,
-                                         data=points)
+                                         data=points,
+                                         timeout=self.HTTP_TIMEOUT)
             else:
                 params = {'f': data_format}
                 compressed_data = utils.gzip_compress(points.encode('utf-8'))
                 response = requests.post(self.server + self.REPORT_END_POINT,
                                          params=params,
                                          headers=self._headers,
-                                         data=compressed_data)
+                                         data=compressed_data,
+                                         timeout=self.HTTP_TIMEOUT)
             status_code = response.status_code
             self._sdk_metrics_registry.new_delta_counter(
                 f'{entity_prefix}.report.{status_code}').inc()
