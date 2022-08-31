@@ -29,6 +29,8 @@ class TestUtils(unittest.TestCase):
         self._tracing = self._sender._tracing_proxy_connection_handler
 
     def test_send_span_with_span_logs(self):
+
+        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -42,6 +44,8 @@ class TestUtils(unittest.TestCase):
             [SpanLog(
                  1635123789456000,
                  {"FooLogKey": "FooLogValue"})])
+
+        # Verify that span line and span logs sent
         expected_line = (
             '"spanName" source="localhost" '
             'traceId=11111111-2222-3333-4444-555555555555 '
@@ -65,6 +69,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(2, self._tracing.send_data.call_count)
 
     def test_send_span_without_span_logs(self):
+
+        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -76,6 +82,8 @@ class TestUtils(unittest.TestCase):
             None,
             [('application', 'Wavefront'), ('service', 'test-spans')],
             [])
+
+        # Verify span line with no logs sent
         expected_line = (
             '"spanName" source="localhost" '
             'traceId=11111111-2222-3333-4444-555555555555 '

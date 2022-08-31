@@ -23,6 +23,8 @@ class TestUtils(unittest.TestCase):
         self._tracing_spans_buffer = self._sender._tracing_spans_buffer
 
     def test_send_span_with_span_logs(self):
+
+        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -36,7 +38,11 @@ class TestUtils(unittest.TestCase):
             [SpanLog(
                  1635123789456000,
                  {"FooLogKey": "FooLogValue"})])
+
+        # show long diffs
         self.maxDiff = None
+
+        # Verify span logs correctly emitted
         actual_line = self._spans_log_buffer.get()
         expected_line = (
             '{"traceId": "11111111-2222-3333-4444-555555555555", '
@@ -50,6 +56,8 @@ class TestUtils(unittest.TestCase):
             '\\"application\\"=\\"Wavefront\\" \\"service\\"=\\"test-spans\\" '
             '\\"_spanLogs\\"=\\"true\\" 1635123456789 12345\\n"}\n')
         self.assertEqual(expected_line, actual_line)
+
+        # Verify span correctly emitted
         actual_line = self._tracing_spans_buffer.get()
         expected_line = (
             '"spanName" source="localhost" '
@@ -61,6 +69,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(expected_line, actual_line)
 
     def test_send_span_without_span_logs(self):
+
+        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -72,8 +82,14 @@ class TestUtils(unittest.TestCase):
             None,
             [('application', 'Wavefront'), ('service', 'test-spans')],
             [])
+
+        # Show long diffs
         self.maxDiff = None
-        self.assertTrue(self._spans_log_buffer.empty())  # No span logs emitted
+
+        # Assert no span logs emitted
+        self.assertTrue(self._spans_log_buffer.empty())
+
+        # Verify span correctly emitted
         actual_line = self._tracing_spans_buffer.get()
         expected_line = (
             '"spanName" source="localhost" '
