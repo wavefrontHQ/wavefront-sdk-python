@@ -5,6 +5,11 @@
 
 import unittest
 import uuid
+from unittest.mock import ANY
+from unittest.mock import Mock
+from unittest.mock import patch
+
+import requests
 
 from wavefront_sdk.direct import WavefrontDirectClient
 from wavefront_sdk.entities.tracing.span_log import SpanLog
@@ -21,6 +26,8 @@ class TestUtils(unittest.TestCase):
             enable_internal_metrics=False)
         self._spans_log_buffer = self._sender._spans_log_buffer
         self._tracing_spans_buffer = self._sender._tracing_spans_buffer
+        self._response = Mock()
+        self._response.status_code = 200
 
     def test_send_span_with_span_logs(self):
 
@@ -99,6 +106,37 @@ class TestUtils(unittest.TestCase):
             '"application"="Wavefront" "service"="test-spans" '
             '1635123456789 12345\n')
         self.assertEqual(expected_line, actual_line)
+
+    def test_report_event(self):
+
+        # Call code under test while patching in a mock requests.post
+        with patch.object(
+                requests, 'post', return_value=self._response) as mock_post:
+            self._sender._report(
+                '', self._sender.WAVEFRONT_EVENT_FORMAT, '', Mock())
+
+        # Make sure requests.post called with right timeout parameter
+        mock_post.assert_called_once_with(
+            ANY,
+            params=None,
+            headers=ANY,
+            data=ANY,
+            timeout=self._sender.HTTP_TIMEOUT)
+
+    def test_report_non_event(self):
+
+        # Call code under test while patching in a mock requests.post
+        with patch.object(
+                requests, 'post', return_value=self._response) as mock_post:
+            self._sender._report('', 'metric', '', Mock())
+
+        # Make sure requests.post called with right timeout parameter
+        mock_post.assert_called_once_with(
+            ANY,
+            params=ANY,
+            headers=ANY,
+            data=ANY,
+            timeout=self._sender.HTTP_TIMEOUT)
 
 
 if __name__ == '__main__':
