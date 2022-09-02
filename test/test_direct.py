@@ -1,6 +1,6 @@
 """Unit Tests for Wavefront Python SDK.
 
-@author Hao Song (songhao@vmware.com)
+@author Travis Keep (travisk@vmware.com)
 """
 
 import unittest
@@ -31,7 +31,6 @@ class TestUtils(unittest.TestCase):
 
     def test_send_span_with_span_logs(self):
 
-        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -46,7 +45,6 @@ class TestUtils(unittest.TestCase):
                  1635123789456000,
                  {"FooLogKey": "FooLogValue"})])
 
-        # show long diffs
         self.maxDiff = None
 
         # Verify span logs correctly emitted
@@ -77,7 +75,6 @@ class TestUtils(unittest.TestCase):
 
     def test_send_span_without_span_logs(self):
 
-        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -90,7 +87,6 @@ class TestUtils(unittest.TestCase):
             [('application', 'Wavefront'), ('service', 'test-spans')],
             [])
 
-        # Show long diffs
         self.maxDiff = None
 
         # Assert no span logs emitted
@@ -109,13 +105,11 @@ class TestUtils(unittest.TestCase):
 
     def test_report_event(self):
 
-        # Call code under test while patching in a mock requests.post
         with patch.object(
                 requests, 'post', return_value=self._response) as mock_post:
             self._sender._report(
                 '', self._sender.WAVEFRONT_EVENT_FORMAT, '', Mock())
 
-        # Make sure requests.post called with right timeout parameter
         mock_post.assert_called_once_with(
             ANY,
             params=None,
@@ -125,12 +119,10 @@ class TestUtils(unittest.TestCase):
 
     def test_report_non_event(self):
 
-        # Call code under test while patching in a mock requests.post
         with patch.object(
                 requests, 'post', return_value=self._response) as mock_post:
             self._sender._report('', 'metric', '', Mock())
 
-        # Make sure requests.post called with right timeout parameter
         mock_post.assert_called_once_with(
             ANY,
             params=ANY,

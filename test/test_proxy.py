@@ -1,6 +1,6 @@
 """Unit Tests for Wavefront Python SDK.
 
-@author Hao Song (songhao@vmware.com)
+@author Travis Keep (travisk@vmware.com)
 """
 
 import unittest
@@ -30,7 +30,6 @@ class TestUtils(unittest.TestCase):
 
     def test_send_span_with_span_logs(self):
 
-        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -45,8 +44,7 @@ class TestUtils(unittest.TestCase):
                  1635123789456000,
                  {"FooLogKey": "FooLogValue"})])
 
-        # Verify that span line and span logs sent
-        expected_line = (
+        expected_span_line = (
             '"spanName" source="localhost" '
             'traceId=11111111-2222-3333-4444-555555555555 '
             'spanId=11111111-0000-0001-0002-123456789012 '
@@ -65,12 +63,11 @@ class TestUtils(unittest.TestCase):
             '\\"application\\"=\\"Wavefront\\" \\"service\\"=\\"test-spans\\" '
             '\\"_spanLogs\\"=\\"true\\" 1635123456789 12345\\n"}\n')
         self._tracing.send_data.assert_has_calls(
-            [call(expected_line), call(expected_span_log_line)])
+            [call(expected_span_line), call(expected_span_log_line)])
         self.assertEqual(2, self._tracing.send_data.call_count)
 
     def test_send_span_without_span_logs(self):
 
-        # Call code under test
         self._sender.send_span(
             'spanName',
             1635123456789,
@@ -83,15 +80,14 @@ class TestUtils(unittest.TestCase):
             [('application', 'Wavefront'), ('service', 'test-spans')],
             [])
 
-        # Verify span line with no logs sent
-        expected_line = (
+        expected_span_line = (
             '"spanName" source="localhost" '
             'traceId=11111111-2222-3333-4444-555555555555 '
             'spanId=11111111-0000-0001-0002-123456789012 '
             'parent=55555555-4444-3333-2222-111111111111 '
             '"application"="Wavefront" "service"="test-spans" '
             '1635123456789 12345\n')
-        self._tracing.send_data.assert_called_once_with(expected_line)
+        self._tracing.send_data.assert_called_once_with(expected_span_line)
 
 
 if __name__ == '__main__':
