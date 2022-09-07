@@ -231,12 +231,12 @@ from uuid import UUID
 
 # Wavefront metrics data format:
 # <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
-name      = "new york.power.usage"
-value     = 42422.0
-timestamp = 1533529977
-source    = "localhost"
-tags      = { "datacenter" : "dc1" }
-wavefront_sender.send_metric(name, value, timestamp, source, tags)
+wavefront_sender.send_metric(
+    name="new york.power.usage",
+    value=42422.0,
+    timestamp=1533529977,
+    source="localhost",
+    tags={ "datacenter" : "dc1" })
 
 # Wavefront delta counter data format:
 # <metricName> <metricValue> source=<source> [pointTags]
