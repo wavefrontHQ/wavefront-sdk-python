@@ -367,18 +367,20 @@ def tracing_span_to_line_data(name, start_millis, duration_millis, source,
     return ' '.join(str_builder) + '\n'
 
 
-def span_log_to_line_data(trace_id, span_id, span_logs, scrambler=None):
+def span_log_to_line_data(trace_id, span_id, span_logs, span, scrambler=None):
     """Wavefront Tracing Span Log JSON format.
 
     @param trace_id: Trace ID
     @param span_id: Span ID
     @param span_logs: Span Log
+    @param span: Span line
     @param scrambler: Additional UUID, optional
     @return: Span Log in JSON Format
     """
     span_log_json = {'traceId': str(trace_id),
                      'spanId': str(span_id),
-                     'logs': span_logs}
+                     'logs': span_logs,
+                     'span': str(span)}
     if scrambler:
         span_log_json['_scrambler'] = str(scrambler)
     return json.dumps(span_log_json, default=lambda o: o.__dict__) + '\n'

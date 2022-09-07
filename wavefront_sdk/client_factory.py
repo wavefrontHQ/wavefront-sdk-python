@@ -10,7 +10,6 @@ from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
 
 
-# pylint: disable=W0232  # Class has no __init__ method
 class WavefrontClientFactory:
     """Wavefront client factory.
 

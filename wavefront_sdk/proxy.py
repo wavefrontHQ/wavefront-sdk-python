@@ -340,8 +340,9 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                 self._default_source)
             self._spans_valid.inc()
             self._tracing_proxy_connection_handler.send_data(line_data)
-        except ValueError:
+        except ValueError as error:
             self._spans_invalid.inc()
+            raise error
         except Exception as error:
             self._spans_dropped.inc()
             self._tracing_proxy_connection_handler.increment_failure_count()
@@ -349,7 +350,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         if span_logs:
             try:
                 span_log_line_data = utils.span_log_to_line_data(
-                    trace_id, span_id, span_logs)
+                    trace_id, span_id, span_logs, line_data)
                 self._span_logs_valid.inc()
                 self._tracing_proxy_connection_handler.send_data(
                     span_log_line_data)
