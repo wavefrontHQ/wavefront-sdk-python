@@ -322,14 +322,13 @@ from uuid import UUID
 from wavefront_sdk.common import metric_to_line_data
 
 # Generate string data in Wavefront metric format
-name           = "new-york.power.usage"
-value          = 42422
-timestamp      = 1493773500
-source         = "localhost"
-tags           = {"datacenter": "dc1"}
-default_source = "defaultSource"
-one_metric_data = metric_to_line_data(name, value, timestamp, source, tags,
-                                      default_source)
+one_metric_data = metric_to_line_data(
+    name="new-york.power.usage",
+    value=42422,
+    timestamp=1493773500,
+    source="localhost",
+    tags={"datacenter": "dc1"},
+    default_source="defaultSource")
 
 # Result of one_metric_data:
   # '"new-york.power.usage" 42422.0 1493773500 source="localhost" "datacenter"="dc1"\n'
