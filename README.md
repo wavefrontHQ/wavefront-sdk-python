@@ -260,15 +260,16 @@ from wavefront_sdk.entities.histogram import histogram_granularity
 # "!M 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
 # "!H 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
 # "!D 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
-name                    = "request.latency"
-centroids               = [(30, 20), (5.1, 10)]
-histogram_granularities = { histogram_granularity.DAY,
-                            histogram_granularity.HOUR,
-                            histogram_granularity.MINUTE }
-timestamp               = 1533529977
-source                  = "appServer1"
-tags                    = {"region": "us-west"}
-wavefront_sender.send_distribution(name, centroids, histogram_granularities, timestamp, source, tags)
+wavefront_sender.send_distribution(
+    name="request.latency",
+    centroids=[(30, 20), (5.1, 10)],
+    histogram_granularities={
+        histogram_granularity.DAY,
+        histogram_granularity.HOUR,
+        histogram_granularity.MINUTE},
+    timestamp=1533529977,
+    source="appServer1",
+    tags={"region": "us-west"})
 ```
 
 ### Single Span
