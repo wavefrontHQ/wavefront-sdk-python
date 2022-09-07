@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """A connection handler for both proxy and direct client.
 
 @author: Hao Song (songhao@vmware.com)

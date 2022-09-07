@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Entities for SDK.
 
 @author Hao Song (songhao@vmware.com)

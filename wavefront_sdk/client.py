@@ -1,6 +1,6 @@
-"""Wavefront Direct Ingestion Client.
+"""Wavefront Client for Proxy and Direct Ingestion.
 
-@author Hao Song (songhao@vmware.com)
+@author Yogesh Prasad Kurmi (ykurmi@vmware.com)
 """
 
 from __future__ import absolute_import
@@ -9,14 +9,11 @@ import logging
 import socket
 import threading
 
-from deprecated import deprecated
-
 import requests
-
 
 try:
     import queue
-except ImportError:
+except ImportError:  # Python 2.x
     import Queue as queue  # noqa
 
 from . import entities
@@ -24,17 +21,17 @@ from .common import connection_handler, constants, utils
 from .common.metrics import registry
 
 
-# pylint: disable=too-many-instance-attributes
-@deprecated
-class WavefrontDirectClient(connection_handler.ConnectionHandler,
-                            entities.WavefrontMetricSender,
-                            entities.WavefrontHistogramSender,
-                            entities.WavefrontTracingSpanSender,
-                            entities.WavefrontEventSender):
-    """Wavefront direct ingestion client.
+class WavefrontClient(connection_handler.ConnectionHandler,
+                      entities.WavefrontMetricSender,
+                      entities.WavefrontHistogramSender,
+                      entities.WavefrontTracingSpanSender,
+                      entities.WavefrontEventSender):
+    """Wavefront data ingestion client.
 
-    Sends data directly to Wavefront cluster via the direct ingestion API.
+    Send data directly/via proxy to Wavefront cluster.
     """
+
+    # pylint: disable=too-many-instance-attributes
 
     WAVEFRONT_METRIC_FORMAT = 'wavefront'
     WAVEFRONT_HISTOGRAM_FORMAT = 'histogram'
@@ -46,22 +43,15 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
     EVENT_END_POINT = '/api/v2/event'
     HTTP_TIMEOUT = 60.0
 
-    # pylint: disable=too-many-arguments
-    # pylint: disable=too-many-statements
-
-    def __init__(self,
-                 server,
-                 token,
-                 max_queue_size=50000,
-                 batch_size=10000,
-                 flush_interval_seconds=5,
-                 enable_internal_metrics=True,
+    def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
+                 flush_interval_seconds=5, enable_internal_metrics=True,
                  queue_impl=queue.Queue):
+        # pylint: disable=too-many-arguments,too-many-statements
         """Construct Direct Client.
 
-        @param server: Server address, Example: https://INSTANCE.wavefront.com
+        @param server: Server address,
         @type server: str
-        @param token: Token with Direct Data Ingestion permission granted
+        @param token: Server token,
         @type token: str
         @param max_queue_size:
         @type max_queue_size: int
@@ -86,30 +76,30 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._spans_log_buffer = queue_impl(max_queue_size)
         self._events_buffer = queue_impl(max_queue_size)
         self._headers = {'Content-Type': 'application/octet-stream',
-                         'Content-Encoding': 'gzip',
-                         'Authorization': 'Bearer ' + token}
+                         'Content-Encoding': 'gzip'}
         self._event_headers = {'Content-Type': 'application/json',
-                               'Content-Encoding': 'gzip',
-                               'Authorization': 'Bearer ' + token}
+                               'Content-Encoding': 'gzip'}
         self._closed = False
         self._schedule_lock = threading.RLock()
         self._timer = None
+        self._schedule_timer()
+
+        if token:
+            self._headers['Authorization'] = 'Bearer ' + token
+            self._event_headers['Authorization'] = 'Bearer ' + token
+            ingestion_type = 'direct'
+        else:
+            ingestion_type = 'proxy'
 
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
-                prefix=f'{constants.SDK_METRIC_PREFIX}.core.sender.direct')
+                prefix=f'{constants.SDK_METRIC_PREFIX}'
+                       f'.core.sender.{ingestion_type}'
+            )
         else:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
-
-        semver = utils.get_sem_ver(constants.WAVEFRONT_SDK_PYTHON)
-
-        def version():
-            return semver
-
-        # Initialize internal metrics
-        self._sdk_metrics_registry.new_gauge('version', version)
         self._sdk_metrics_registry.new_gauge(
             'points.queue.size', self._metrics_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
@@ -121,26 +111,27 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'points.invalid')
         self._points_dropped = self._sdk_metrics_registry.new_delta_counter(
             'points.dropped')
-        self._points_report_errors = self._sdk_metrics_registry\
-            .new_delta_counter('points.report.errors')
-
+        self._points_report_errors = (
+            self._sdk_metrics_registry.new_delta_counter(
+                'points.report.errors'))
         self._sdk_metrics_registry.new_gauge(
-            'histograms.queue.size', self._histograms_buffer.qsize)
+            'histograms.queue.size',
+            self._histograms_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'histograms.queue.remaining_capacity',
             remaining_capacity_getter(self._histograms_buffer))
         self._histograms_valid = self._sdk_metrics_registry.new_delta_counter(
             'histograms.valid')
-        self._histograms_invalid = self._sdk_metrics_registry\
-            .new_delta_counter('histograms.invalid')
-        self._histograms_dropped = self._sdk_metrics_registry\
-            .new_delta_counter('histograms.dropped')
+        self._histograms_invalid = (
+            self._sdk_metrics_registry.new_delta_counter('histograms.invalid'))
+        self._histograms_dropped = (
+            self._sdk_metrics_registry.new_delta_counter('histograms.dropped'))
         self._histograms_report_errors = (
             self._sdk_metrics_registry.new_delta_counter(
                 'histograms.report.errors'))
-
         self._sdk_metrics_registry.new_gauge(
-            'spans.queue.size', self._tracing_spans_buffer.qsize)
+            'spans.queue.size',
+            self._tracing_spans_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'spans.queue.remaining_capacity',
             remaining_capacity_getter(self._tracing_spans_buffer))
@@ -150,11 +141,12 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'spans.invalid')
         self._spans_dropped = self._sdk_metrics_registry.new_delta_counter(
             'spans.dropped')
-        self._spans_report_errors = self._sdk_metrics_registry\
-            .new_delta_counter('spans.report.errors')
-
+        self._spans_report_errors = (
+            self._sdk_metrics_registry.new_delta_counter(
+                'spans.report.errors'))
         self._sdk_metrics_registry.new_gauge(
-            'span_logs.queue.size', self._spans_log_buffer.qsize)
+            'span_logs.queue.size',
+            self._spans_log_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'span_logs.queue.remaining_capacity',
             remaining_capacity_getter(self._spans_log_buffer))
@@ -164,11 +156,12 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'span_logs.invalid')
         self._span_logs_dropped = self._sdk_metrics_registry.new_delta_counter(
             'span_logs.dropped')
-        self._span_logs_report_errors = self._sdk_metrics_registry\
-            .new_delta_counter('span_logs.report.errors')
-
+        self._span_logs_report_errors = (
+            self._sdk_metrics_registry.new_delta_counter(
+                'span_logs.report.errors'))
         self._sdk_metrics_registry.new_gauge(
-            'events.queue.size', self._events_buffer.qsize)
+            'events.queue.size',
+            self._events_buffer.qsize)
         self._sdk_metrics_registry.new_gauge(
             'events.queue.remaining_capacity',
             remaining_capacity_getter(self._events_buffer))
@@ -178,22 +171,25 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             'events.invalid')
         self._events_dropped = self._sdk_metrics_registry.new_delta_counter(
             'events.dropped')
-        self._events_report_errors = self._sdk_metrics_registry\
-            .new_delta_counter('events.report.errors')
-        # start the scheduled timer after all internal metrics are initialized
-        self._schedule_timer()
+        self._events_report_errors = (
+            self._sdk_metrics_registry.new_delta_counter(
+                'events.report.errors'))
 
     def _report(self, points, data_format, entity_prefix, report_errors):
+        # Raw string is used for the docstring as there's a backslash.
         r"""One api call sending one given string data.
 
         @param points: List of data in string format, concat by '\n'
         @type points: str
         @param data_format: Type of data to be sent
         @type data_format: str
+        @param entity_prefix: Type of metric
+        @type: str
+        @param report_errors: metrics registry to report errors
+        @type: metrics registry
         """
-        status_code = constants.NO_HTTP_RESPONSE
         try:
-            if data_format == self.WAVEFRONT_EVENT_FORMAT:
+            if data_format == self.WAVEFRONT_EVENT_FORMAT and self._token:
                 response = requests.post(self.server + self.EVENT_END_POINT,
                                          params=None,
                                          headers=self._event_headers,
@@ -203,126 +199,62 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                 params = {'f': data_format}
                 compressed_data = utils.gzip_compress(points.encode('utf-8'))
                 response = requests.post(self.server + self.REPORT_END_POINT,
-                                         params=params,
-                                         headers=self._headers,
+                                         params=params, headers=self._headers,
                                          data=compressed_data,
                                          timeout=self.HTTP_TIMEOUT)
-            status_code = response.status_code
+
             self._sdk_metrics_registry.new_delta_counter(
-                f'{entity_prefix}.report.{status_code}').inc()
-        except requests.exceptions.RequestException:
+                f'{entity_prefix}.report.{response.status_code}').inc()
+            response.raise_for_status()
+        except Exception as error:
             report_errors.inc()
-        return status_code
+            raise error
 
     def _batch_report(self, batch_line_data, data_format, entity_prefix,
-                      report_errors, data_buffer, dropped_point_counter):
+                      report_errors):
         """One api call sending one given list of data.
 
         @param batch_line_data: List of data to be sent
         @type batch_line_data: list
         @param data_format: Type of data to be sent
         @type data_format: str
-        @param entity_prefix: Metric prefix of data type
-        @type entity_prefix: str
-        @param report_errors: Counter of errors
-        @type report_errors: WavefrontSdkCounter
-        @param data_buffer: Data buffer to be flush and sent
-        @type data_buffer: Queue
-        @param dropped_point_counter: Counter of dropped points
-        @type dropped_point_counter: WavefrontSdkCounter
+        @param entity_prefix: Type of metric
+        @type: str
+        @param report_errors: metrics registry to report errors
+        @type: metrics registry
         """
-        # Sending events through direct ingestion does not support batching.
-        batch_size = int(
-            data_format == self.WAVEFRONT_EVENT_FORMAT) or self._batch_size
-
         # Split data into chunks, each with the size of given batch_size
-        for batch in utils.chunks(batch_line_data, batch_size):
+        for batch in utils.chunks(batch_line_data, self._batch_size):
             # report once per batch
-            status_code = self._report('\n'.join(batch) + '\n', data_format,
-                                       entity_prefix, report_errors)
-            if 400 <= status_code <= 599 or status_code == -1:
-                if status_code == 401:
-                    logging.error(
-                        'Failed to report %s data points to wavefront '
-                        '(HTTP %d). Please verify that your API Token is '
-                        'correct! All %s data points are discarded. ',
-                        data_format, status_code, data_format)
-                    dropped_point_counter.inc(len(batch))
-                elif status_code == 403:
-                    if data_format == self.WAVEFRONT_METRIC_FORMAT:
-                        logging.error(
-                            'Failed to report %s data points to wavefront '
-                            '(HTTP %d). Please verify that Direct Data '
-                            'Ingestion is enabled for your account! '
-                            'All %s data points are discarded. ', data_format,
-                            status_code, data_format)
-                        dropped_point_counter.inc(len(batch))
-                    else:
-                        logging.error(
-                            'Failed to report %s data points to wavefront '
-                            '(HTTP %d). Please verify that Direct Data '
-                            'Ingestion and %s data points are enabled for '
-                            'your account! All %s data points are discarded. ',
-                            data_format, status_code, data_format, data_format)
-                        dropped_point_counter.inc(len(batch))
-                else:
-                    logging.error(
-                        'Failed to report %s data points to wavefront '
-                        '(HTTP %d). Data will be requeued and resent.',
-                        data_format, status_code)
-                    self._requeue(batch, data_format, data_buffer,
-                                  dropped_point_counter)
-
-    @staticmethod
-    def _requeue(points, data_format, data_buffer, dropped_point_counter):
-        """Add point data back to buffer queue.
-
-        @param points: Point data in line format
-        @type points: List[str]
-        @param data_format: Type of data to be sent
-        @type data_format: str
-        @param data_buffer: Data buffer to be flush and sent
-        @type data_buffer: Queue
-        @param dropped_point_counter: Counter of dropped points
-        @type dropped_point_counter: WavefrontSdkCounter
-        """
-        added_back_to_buffer_count = 0
-        for point in points:
             try:
-                data_buffer.put_nowait(point)
-            except queue.Full:
-                dropped_point_count = len(points) - added_back_to_buffer_count
-                dropped_point_counter.inc(dropped_point_count)
+                self._report('\n'.join(batch) + '\n', data_format,
+                             entity_prefix, report_errors)
+            # pylint: disable=broad-except,fixme
+            # TODO: Replace a generic Exception with a specific one.
+            except Exception as error:
                 logging.error(
-                    'Buffer full, dropping %d %s data points.'
-                    'Consider increasing the batch size of '
-                    'your sender to increase throughput.', dropped_point_count,
-                    data_format)
-                break
-            added_back_to_buffer_count += 1
+                    'Failed to report %s data points to wavefront %s',
+                    data_format, error)
 
     def _internal_flush(self, data_buffer, data_format, entity_prefix,
-                        report_errors, dropped_point_counter):
+                        report_errors):
         """Get all data from one data buffer to a list, and report that list.
 
         @param data_buffer: Data buffer to be flush and sent
-        @type data_buffer: Queue
+        @type: Queue
         @param data_format: Type of data to be sent
-        @type data_format: str
-        @param entity_prefix: Metric prefix of data type
-        @type entity_prefix: str
-        @param report_errors: Counter of errors
-        @type report_errors: WavefrontSdkCounter
-        @param dropped_point_counter: Counter of dropped points
-        @type dropped_point_counter: WavefrontSdkCounter
+        @type: str
+        @param entity_prefix: Type of metric
+        @type: str
+        @param report_errors: metrics registry to report errors
+        @type: metrics registry
         """
         data = []
         size = data_buffer.qsize()
         while size > 0 and not data_buffer.empty():
             data.append(data_buffer.get())
             size -= 1
-        self._batch_report(data, data_format, entity_prefix, report_errors,
-                           data_buffer, dropped_point_counter)
+        self._batch_report(data, data_format, entity_prefix, report_errors)
 
     def _schedule_timer(self):
         # Flush every 5 secs by default
@@ -345,21 +277,19 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         """Flush all the data buffer immediately."""
         self._internal_flush(self._metrics_buffer,
                              self.WAVEFRONT_METRIC_FORMAT, 'points',
-                             self._points_report_errors, self._points_dropped)
+                             self._points_report_errors)
         self._internal_flush(self._histograms_buffer,
                              self.WAVEFRONT_HISTOGRAM_FORMAT, 'histograms',
-                             self._histograms_report_errors,
-                             self._histograms_dropped)
+                             self._histograms_report_errors)
         self._internal_flush(self._tracing_spans_buffer,
                              self.WAVEFRONT_TRACING_SPAN_FORMAT, 'spans',
-                             self._spans_report_errors, self._spans_dropped)
+                             self._spans_report_errors)
         self._internal_flush(self._spans_log_buffer,
                              self.WAVEFRONT_SPAN_LOG_FORMAT, 'span_logs',
-                             self._span_logs_report_errors,
-                             self._span_logs_dropped)
-        self._internal_flush(self._events_buffer, self.WAVEFRONT_EVENT_FORMAT,
-                             'events', self._events_report_errors,
-                             self._events_dropped)
+                             self._span_logs_report_errors)
+        self._internal_flush(self._events_buffer,
+                             self.WAVEFRONT_EVENT_FORMAT, 'events',
+                             self._events_report_errors)
 
     def close(self):
         """Flush all buffer before close the client."""
@@ -371,7 +301,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         self._sdk_metrics_registry.close(timeout_secs=1)
 
     def send_metric(self, name, value, timestamp, source, tags):
-        """Send Metric Data via direct ingestion client.
+        # pylint: disable=too-many-arguments
+        """Send Metric Data via proxy/direct ingestion client.
 
         Wavefront Metrics Data format
         <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
@@ -390,8 +321,9 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type tags: dict
         """
         try:
-            line_data = utils.metric_to_line_data(
-                name, value, timestamp, source, tags, self._default_source)
+            line_data = utils.metric_to_line_data(name, value, timestamp,
+                                                  source, tags,
+                                                  self._default_source)
             self._points_valid.inc()
         except ValueError as error:
             self._points_invalid.inc()
@@ -412,12 +344,12 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type metrics: list[str]
         """
         self._batch_report(metrics, self.WAVEFRONT_METRIC_FORMAT, 'points',
-                           self._points_report_errors, self._metrics_buffer,
-                           self._points_dropped)
+                           self._points_report_errors)
 
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
-        """Send Distribution Data via direct ingestion client.
+        # pylint: disable=too-many-arguments
+        """Send Distribution Data via proxy/direct ingestion client.
 
         Wavefront Histogram Data format
         {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids]
@@ -439,9 +371,10 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type tags: dict
         """
         try:
-            line_data = utils.histogram_to_line_data(
-                name, centroids, histogram_granularities, timestamp,
-                source, tags, self._default_source)
+            line_data = utils.histogram_to_line_data(name, centroids,
+                                                     histogram_granularities,
+                                                     timestamp, source, tags,
+                                                     self._default_source)
             self._histograms_valid.inc()
         except ValueError as error:
             self._histograms_invalid.inc()
@@ -462,14 +395,12 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type distributions: list[str]
         """
         self._batch_report(distributions, self.WAVEFRONT_HISTOGRAM_FORMAT,
-                           'histograms', self._histograms_report_errors,
-                           self._histograms_buffer, self._histograms_dropped)
-
-    # pylint: disable=too-many-arguments
+                           'histograms', self._histograms_report_errors)
 
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
-        """Send span data via direct ingestion client.
+        # pylint: disable=too-many-arguments
+        """Send span data via proxy/direct ingestion client.
 
         Wavefront Tracing Span Data format
         <tracingSpanName> source=<source> [pointTags] <start_millis>
@@ -516,8 +447,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
             raise error
         if span_logs:
             try:
-                line_data = utils.span_log_to_line_data(
-                    trace_id, span_id, span_logs, line_data)
+                line_data = utils.span_log_to_line_data(trace_id, span_id,
+                                                        span_logs, line_data)
                 self._span_logs_valid.inc()
             except ValueError as error:
                 self._span_logs_invalid.inc()
@@ -539,8 +470,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type spans: list[str]
         """
         self._batch_report(spans, self.WAVEFRONT_TRACING_SPAN_FORMAT, 'spans',
-                           self._spans_report_errors,
-                           self._tracing_spans_buffer, self._spans_dropped)
+                           self._spans_report_errors)
 
     def send_span_log_now(self, span_logs):
         """
@@ -553,12 +483,12 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type span_logs: list[str]
         """
         self._batch_report(span_logs, self.WAVEFRONT_SPAN_LOG_FORMAT,
-                           'span_logs', self._span_logs_report_errors,
-                           self._spans_log_buffer, self._span_logs_dropped)
+                           'span_logs', self._span_logs_report_errors)
 
     def send_event(self, name, start_time, end_time, source, tags,
                    annotations):
-        """Send Event Data via direct ingestion client.
+        # pylint: disable=too-many-arguments
+        """Send Event Data via proxy/direct ingestion client.
 
         Wavefront Event Data format
         {"name": <Event Name>, "annotations": <Annotations>,
@@ -566,8 +496,8 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
           "endTime": <End Time>, "tags": <Tags>}
         Example: {"name": event_via_direct_ingestion, "annotations": {
         "severity": "severe", "type": "backup", "details": "broker backup"},
-         "hosts": ["localhost"], "startTime": 1590678089,
-         "endTime": 1590679089, "tags": ["env:", "test"]}
+         "hosts": "localhost", "startTime": 1590678089, "endTime": 1590679089,
+         "tags": ["env:", "test"]}
 
         @param name: Event Name
         @type name: str
@@ -583,9 +513,15 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type annotations: dict
         """
         try:
-            line_data = utils.event_to_json(
-                name, start_time, end_time, source, tags, annotations,
-                self._default_source)
+            if self._token:
+                line_data = utils.event_to_json(name, start_time, end_time,
+                                                source, tags, annotations,
+                                                self._default_source)
+            else:
+                line_data = utils.event_to_line_data(name, start_time,
+                                                     end_time, source, tags,
+                                                     annotations,
+                                                     self._default_source)
             self._events_valid.inc()
         except ValueError as error:
             self._events_invalid.inc()
@@ -606,8 +542,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
         @type events: list[str]
         """
         self._batch_report(events, self.WAVEFRONT_EVENT_FORMAT, 'events',
-                           self._events_report_errors, self._events_buffer,
-                           self._events_dropped)
+                           self._events_report_errors)
 
     def get_failure_count(self):
         """Get failure count for one connection."""

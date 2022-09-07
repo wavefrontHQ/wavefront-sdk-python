@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront Proxy Client.
 
 @author Hao Song (songhao@vmware.com).
@@ -9,15 +8,19 @@ from __future__ import absolute_import
 import logging
 from socket import gethostname
 
+from deprecated import deprecated
+
 from . import entities
 from .common import constants, utils
 from .common.metrics import registry
 from .common.proxy_connection_handler import ProxyConnectionHandler
 
+
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontDirectClient')
 
 
 # pylint: disable=too-many-instance-attributes
+@deprecated
 class WavefrontProxyClient(entities.WavefrontMetricSender,
                            entities.WavefrontHistogramSender,
                            entities.WavefrontTracingSpanSender):
@@ -55,8 +58,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         if enable_internal_metrics:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
-                prefix='{}.core.sender.proxy'.format(
-                    constants.SDK_METRIC_PREFIX))
+                prefix=f'{constants.SDK_METRIC_PREFIX}.core.sender.proxy')
         else:
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=None)
@@ -338,8 +340,9 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                 self._default_source)
             self._spans_valid.inc()
             self._tracing_proxy_connection_handler.send_data(line_data)
-        except ValueError:
+        except ValueError as error:
             self._spans_invalid.inc()
+            raise error
         except Exception as error:
             self._spans_dropped.inc()
             self._tracing_proxy_connection_handler.increment_failure_count()
@@ -347,7 +350,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
         if span_logs:
             try:
                 span_log_line_data = utils.span_log_to_line_data(
-                    trace_id, span_id, span_logs)
+                    trace_id, span_id, span_logs, line_data)
                 self._span_logs_valid.inc()
                 self._tracing_proxy_connection_handler.send_data(
                     span_log_line_data)

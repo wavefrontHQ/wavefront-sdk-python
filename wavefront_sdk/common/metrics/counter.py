@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront SDK Counter.
 
 @author Hao Song (songhao@vmware.com)
@@ -13,7 +12,7 @@ class WavefrontSdkCounter(metrics.WavefrontSdkMetric):
 
     def __init__(self):
         """Construct Wavefront SDK Counter."""
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._count = 0
 
     def inc(self, val=1):

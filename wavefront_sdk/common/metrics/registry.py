@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Wavefront SDK Metrics Registry.
 
 @author Hao Song (songhao@vmware.com)
@@ -27,7 +26,7 @@ class WavefrontSdkMetricsRegistry(object):
         self.reporting_interval_secs = reporting_interval_secs
         self.metrics = {}
         self._closed = False
-        self._schedule_lock = threading.Lock()
+        self._schedule_lock = threading.RLock()
         self._timer = None
         if wf_metric_sender:
             self._schedule_timer()
@@ -42,7 +41,9 @@ class WavefrontSdkMetricsRegistry(object):
     # pylint: disable=broad-except
     def _report(self, timeout_secs=None):
         timestamp = time.time()
-        for key, val in self.metrics.items():
+
+        # Copying the dict prevents concurrent modification while iterating
+        for key, val in self.metrics.copy().items():
             if timeout_secs and time.time() - timestamp > timeout_secs:
                 break
             name = self.prefix + key

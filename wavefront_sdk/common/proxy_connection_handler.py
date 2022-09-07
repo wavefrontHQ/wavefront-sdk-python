@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Connection Handler class for sending data to a Wavefront proxy.
 
 @author: Hao Song (songhao@vmware.com)
