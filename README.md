@@ -380,20 +380,18 @@ from uuid import UUID
 from wavefront_sdk.common import tracing_span_to_line_data
 
 # Generate string data in Wavefront tracing span format
-name            = "getAllUsers"
-start_millis    = 1552949776000
-duration_millis = 343
-source          = "localhost"
-trace_id        = UUID("7b3bf470-9456-11e8-9eb6-529269fb1459")
-span_id         = UUID("0313bafe-9457-11e8-9eb6-529269fb1459")
-parents         = [UUID("2f64e538-9457-11e8-9eb6-529269fb1459")]
-follows_from    = [UUID("5f64e538-9457-11e8-9eb6-529269fb1459")]
-tags            = [("application", "Wavefront"), ("http.method", "GET")]
-span_logs       = None
-default_source  = "defaultSource"
-one_tracing_span_data = tracing_span_to_line_data(name, start_millis,
-    duration_millis, source, trace_id, span_id, parents, follows_from,
-    tags, span_logs, default_source)
+one_tracing_span_data = tracing_span_to_line_data(
+    name="getAllUsers",
+    start_millis=1552949776000,
+    duration_millis=343,
+    source="localhost",
+    trace_id=UUID("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+    span_id=UUID("0313bafe-9457-11e8-9eb6-529269fb1459"),
+    parents=[UUID("2f64e538-9457-11e8-9eb6-529269fb1459")],
+    follows_from=[UUID("5f64e538-9457-11e8-9eb6-529269fb1459")],
+    tags=[("application", "Wavefront"), ("http.method", "GET")],
+    span_logs=None,
+    default_source="defaultSource")
 
 # Result of one_tracing_span_data:
   # '"getAllUsers" source="localhost" traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 spanId=0313bafe-
