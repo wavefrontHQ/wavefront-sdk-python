@@ -411,8 +411,16 @@ wavefront_sender.send_span_now(batch_span_data)
 from wavefront_sdk.common import event_to_line_data
 
 # Generate string data in Wavefront event format
-one_event_data = event_to_line_data("event name", 1592200048, 1592201048,
- "localhost", ["env", "dev"], {"severity": "info", "type": "backup", "details": "broker backup"})
+one_event_data = event_to_line_data(
+    name="event name",
+    start_time=1592200048,
+    end_time=1592201048,
+    source="localhost",
+    tags=["env", "dev"],
+    annotations={
+        "severity": "info",
+        "type": "backup",
+        "details": "broker backup"})
 
 # Result of one_event_data:
 # '@Event 1592200048 1592201048 "event name" severity="info" type="backup" details="broker backup"
