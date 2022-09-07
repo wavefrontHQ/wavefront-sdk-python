@@ -287,18 +287,17 @@ from uuid import UUID
 #           parent=2f64e538-9457-11e8-9eb6-529269fb1459
 #           application=Wavefront http.method=GET
 #           1533529977 343500"
-name            = "getAllUsers"
-start_millis    = 1533529977
-duration_millis = 343500
-source          = "localhost"
-trace_id        = UUID("7b3bf470-9456-11e8-9eb6-529269fb1459")
-span_id         = UUID("0313bafe-9457-11e8-9eb6-529269fb1459")
-parents         = [UUID("2f64e538-9457-11e8-9eb6-529269fb1459")]
-follows_from    = None
-tags            =[("application", "Wavefront"), ("http.method", "GET")]
-span_logs       = None
-wavefront_sender.send_span(name, start_millis, duration_millis, source, trace_id,
-                           span_id, parents, follows_from, tags, span_logs)
+wavefront_sender.send_span(
+    name="getAllUsers",
+    start_millis=1533529977,
+    duration_millis=343500,
+    source="localhost",
+    trace_id=UUID("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+    span_id=UUID("0313bafe-9457-11e8-9eb6-529269fb1459"),
+    parents=[UUID("2f64e538-9457-11e8-9eb6-529269fb1459")],
+    follows_from=None,
+    tags=[("application", "Wavefront"), ("http.method", "GET")],
+    span_logs=None)
 ```
 
 ### Single Event
