@@ -348,18 +348,17 @@ from wavefront_sdk.entities.histogram import histogram_granularity
 from wavefront_sdk.common import histogram_to_line_data
 
 # Generate string data in Wavefront histogram format
-name                    = "request.latency"
-centroids               = [(30.0, 20), (5.1, 10)]
-histogram_granularities = { histogram_granularity.MINUTE,
-                            histogram_granularity.HOUR,
-                            histogram_granularity.DAY}
-timestamp               = 1493773500
-source                  = "appServer1"
-tags                    = {"region": "us-west"}
-default_source = "defaultSource"
-one_histogram_data = histogram_to_line_data(name, centroids,
-                                            histogram_granularities, timestamp,
-                                            source, tags, default_source)
+one_histogram_data = histogram_to_line_data(
+    name="request.latency",
+    centroids=[(30.0, 20), (5.1, 10)],
+    histogram_granularities={
+        histogram_granularity.MINUTE,
+        histogram_granularity.HOUR,
+        histogram_granularity.DAY},
+    timestamp=1493773500,
+    source="appServer1",
+    tags={"region": "us-west"},
+    default_source="defaultSource")
 
 # Result of one_histogram_data:
   # '!D 1493773500 #20 30.0 #10 5.1 "request.latency" source="appServer1" "region"="us-west"\n
