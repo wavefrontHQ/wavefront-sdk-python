@@ -240,11 +240,11 @@ wavefront_sender.send_metric(
 
 # Wavefront delta counter data format:
 # <metricName> <metricValue> source=<source> [pointTags]
-name   = "delta.counter"
-value  = 1.0
-source = "localhost"
-tags   = {"datacenter": "dc1"}
-wavefront_sender.send_delta_counter(name, value, source, tags)
+wavefront_sender.send_delta_counter(
+    name="delta.counter",
+    value=1.0,
+    source="localhost",
+    tags={"datacenter": "dc1"})
 ```
 ***Note***: If your metric name has a bad character, that character is replaced with a `-`.
 
