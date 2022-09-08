@@ -43,5 +43,7 @@ runs:
       shell: bash
     - name: Check Version Updated in setup.py Before Merging
       # if: ${{ github.event_name == 'pull_request' }}
-      run: test -n "$(git diff -G version= origin/master HEAD -- setup.py)"
+      run: |
+        test -n "$(git diff -G version= origin/master HEAD -- setup.py)" || \
+          exit "Package version in setup.py must be incremented before merge."
       shell: bash
