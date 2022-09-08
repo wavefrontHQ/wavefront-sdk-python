@@ -16,12 +16,14 @@ jobs:
   setenv:
     uses: ./.github/workflows/env.yml
   execute:
-    name: Analyse Code and Run Tests
+    name: Check Code & Run Tests
     needs: setenv
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        # TODO: Enable Windows
+        # https://jira.eng.vmware.com/browse/MONIT-30833
+        os: [macos-latest, ubuntu-latest]  # , windows-latest]
         python_version: ['3.7', '3.8', '3.9', '3.10']
     runs-on: ${{ matrix.os }}
     steps:
