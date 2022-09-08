@@ -33,7 +33,7 @@ runs:
       run: python -m flake8
       shell: bash
     - name: Run PyLint Checks on ${{ inputs.input_pkg_name }}
-      run: python -m pylint ${{ inputs.input_pkg_name }}
+      run: python -m pylint -d duplicate-code ${{ inputs.input_pkg_name }}
       shell: bash
     - name: PyDocStyle
       run: python -m pydocstyle 
