@@ -41,7 +41,7 @@ runs:
     - name: Execute Unit Tests 
       run: python -m unittest discover
       shell: bash
-    - name: Validate Version Update in setup.py
-      if: ${{ github.event_name == 'pull_request' }}
+    - name: Check Version Updated in setup.py Before Merging
+      # if: ${{ github.event_name == 'pull_request' }}
       run: test -n "$(git diff -G version= origin/master HEAD -- setup.py)"
       shell: bash
