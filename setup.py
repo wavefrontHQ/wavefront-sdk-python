@@ -14,7 +14,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.8.8',  # The version number. Update with each pull request.
+    version='1.8.9',  # The version number. Update with each pull request.
     author='Wavefront by VMware',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
