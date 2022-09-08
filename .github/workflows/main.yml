@@ -1,0 +1,35 @@
+name: Linters & Tests
+
+on:
+  push:
+  pull_request:
+    types:
+      - opened
+      - reopened
+  workflow_call:
+    inputs:
+      env_yml:
+        default: ./.github/workflows/env.yml
+        type: string
+
+jobs:
+  setenv:
+    uses: ./.github/workflows/env.yml
+  execute:
+    name: Analyse Code and Run Tests
+    needs: setenv
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python_version: ['3.7', '3.8', '3.9', '3.10']
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/lint_n_test
+      with:
+        python_version: ${{ matrix.python_version }}
+        input_pkg_name: ${{ needs.setenv.outputs.package_name }}
+        extra_packages: ${{ needs.setenv.outputs.requirements }}
