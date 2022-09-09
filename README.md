@@ -513,7 +513,7 @@ total_failures = wavefront_sender.get_failure_count()
 4. Log into Github, click **Releases** on the right, and click **Draft a new release.**
 5. For **Choose a tag**, choose the version you found in step 3, and prefix it with `v` for example `v1.8.10`. You will need to enter the version where it says **Find or create new tag.**
 
-<img src="images/choose-version.png" alt="A diagram that shows how to choose version" style="width:400px;"/>
+<img src="images/choose-version.png" alt="A diagram that shows how to choose version"/>
 
 6. Provide a short but descriptive title for the release.
 7. Fill in the details of the release. Please copy the markdown from the previous release and follow the same format.
