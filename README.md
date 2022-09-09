@@ -1,6 +1,6 @@
 # wavefront-sdk-python
 
-[![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-python)
+[![Build Status](https://github.com/wavefrontHQ/wavefront-sdk-python/actions/workflows/main.yml/badge.svg)](https://github.com/wavefrontHQ/wavefront-sdk-python/actions)
 [![image](https://img.shields.io/pypi/v/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
 [![image](https://img.shields.io/pypi/l/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
 [![image](https://img.shields.io/pypi/pyversions/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
