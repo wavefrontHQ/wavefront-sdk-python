@@ -15,6 +15,7 @@
 * [Close the Connection](#close-the-connection)
 * [License](#License)
 * [How to Get Support and Contribute](#how-to-get-support-and-contribute)
+* [How to Release](#how-to-release)
 
 # Welcome to the Wavefront Python SDK
 
@@ -503,3 +504,18 @@ total_failures = wavefront_sender.get_failure_count()
   the minor and patch versions.
 * Reach out to us on our public [Slack channel](https://www.wavefront.com/join-public-slack).
 * If you run into any issues, let us know by creating a GitHub issue.
+
+## How to Release
+
+1. Make sure that all changes for the release are merged with the master branch.
+2. Open the `setup.py` file from the top level directory of the project.
+3. Search for `version=` in the file. There you will find the version number for example `1.8.10`.
+4. From the master branch, run `git tag -a -m 'v1.8.10' 'v1.8.10'` replacing v1.8.10 with the new version found in step 3. Remember to keep the `v` prefix. So if the version in step 3 is `1.8.12` you would use `v1.8.12` in the git tag command in this step.
+5. Push the tag up to Github `git push upstream v1.8.10`.
+6. Log into Github, click on **Releases** in the about section on the right, and click on **Draft a new release.**
+7. For **version**, choose the version you used in step 4.
+8. Provide a short but descriptive title for the release.
+9. Fill in the details of the release. Please copy the markdown from the previous release and follow the same format.
+10. Click on **Publish release.**. This will automatically start an action that will publish the the release to pypi.org.
+11. From the Github top navigation bar of this project, click on the **Actions** tab. On the first line of the list of workflows, you should see a workflow running which will publish your release to pypi.org
+12. When the workflow from step 11 has a green checkmark by it, go to [pypi.org](https://pypi.org/project/wavefront-sdk-python/) to verify that the latest version has been released.
