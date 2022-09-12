@@ -92,8 +92,10 @@ class WavefrontClient(connection_handler.ConnectionHandler,
             ingestion_type = 'proxy'
 
         if enable_internal_metrics:
+            version = utils.get_version(constants.WAVEFRONT_SDK_PYTHON)
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
+                tags={'version': version},
                 prefix=f'{constants.SDK_METRIC_PREFIX}'
                        f'.core.sender.{ingestion_type}'
             )

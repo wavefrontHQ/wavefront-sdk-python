@@ -435,6 +435,23 @@ def event_to_json(name, start_time, end_time, source, tags,
     return str(json.dumps(event))
 
 
+def get_version(name):
+    """Return semantic version of sdk used ex: 'v1.6.3'.
+
+    @param name: SDK Name
+    @type name: str
+    @return: The version of this library. ex: 'v1.6.3' If version can't be
+      found, returns 'unknown'
+    """
+    try:
+        version = pkg_resources.require(name)[0].version
+        return "v" + version
+    except pkg_resources.DistributionNotFound:
+        LOGGER.warning('Unable to get version info,'
+                       ' No distribution found for : %s', name)
+    return "unknown"
+
+
 def get_sem_ver(name):
     """Return semantic version of sdk used in Wavefront reportable format.
 
@@ -442,14 +459,11 @@ def get_sem_ver(name):
 
     @param name: SDK Name
     @type name: str
-    @return: Semantic version in wavefront format as String
+    @return: Semantic version in wavefront format as String. Ex: '1.0603'
     """
-    try:
-        version = pkg_resources.require(name)[0].version
-        return get_sem_ver_value(version)
-    except pkg_resources.DistributionNotFound:
-        LOGGER.warning('Unable to get version info,'
-                       ' No distribution found for : %s', name)
+    version = get_version(name)
+    if version.startswith('v'):
+        return get_sem_ver_value(version[1:])
     return "0.0"
 
 
