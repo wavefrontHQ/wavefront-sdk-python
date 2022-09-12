@@ -510,13 +510,13 @@ total_failures = wavefront_sender.get_failure_count()
 1. Merge all the changes that need to go into the release to the master branch.
 2. Open the `setup.py` file from the top level directory of the project.
 3. Search for `version=` in the file to find the version number for example `1.8.10`.
-4. Log into Github, click **Releases** on the right, and click **Draft a new release.**
-5. For **Choose a tag**, choose the version you found in step 3, and prefix it with `v` for example `v1.8.10`. You will need to enter the version where it says **Find or create new tag.**
+4. Log into Github, click **Releases** on the right, and click **Draft a new release**.
+5. For **Choose a tag**, choose the version you found in step 3, and prefix it with `v` for example `v1.8.10`. You need to enter the version where it says **Find or create new tag**.
 
 <img src="images/choose-version.png" alt="A diagram that shows how to choose version"/>
 
 6. Provide a short but descriptive title for the release.
 7. Fill in the details of the release. Please copy the markdown from the previous release and follow the same format.
 8. Click **Publish release.** to start publishing the release to pypi.org.
-9. From the Github top navigation bar of this project, click the **Actions** tab. On the first line of the list of workflows, you should see a workflow running that will publish your release to pypi.org
+9. From the Github top navigation bar of this project, click the **Actions** tab. On the first line of the list of workflows, you should see a workflow running that will publish your release to pypi.org.
 10. When the workflow from step 9 has a green checkmark next to it, go to [pypi.org](https://pypi.org/project/wavefront-sdk-python/) and verify that the latest version is published.
