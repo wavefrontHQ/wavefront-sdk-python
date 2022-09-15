@@ -42,7 +42,9 @@ class TestUtils(unittest.TestCase):
                 'no_token',
                 flush_interval_seconds=86400,
                 enable_internal_metrics=True)
-        self.assertTrue('version' in mock_registry.call_args[1]['tags'])
+        self.assertRegex(
+            mock_registry.call_args[1]['tags']['version'],
+            r'^(v\d+\.\d+\.\d+)|(unknown)$')
 
     def test_send_span_with_span_logs(self):
 
