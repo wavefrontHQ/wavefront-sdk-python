@@ -2,10 +2,9 @@ name: Linters & Tests
 
 on:
   push:
+    branches: [ master ]
   pull_request:
-    types:
-      - opened
-      - reopened
+    branches: [ master ]
   workflow_call:
     inputs:
       env_yml:

@@ -12,6 +12,7 @@ from unittest.mock import patch
 import requests
 
 from wavefront_sdk.client import WavefrontClient
+from wavefront_sdk.common.metrics import registry
 from wavefront_sdk.entities.tracing.span_log import SpanLog
 
 
@@ -28,6 +29,22 @@ class TestUtils(unittest.TestCase):
         self._tracing_spans_buffer = self._sender._tracing_spans_buffer
         self._response = Mock()
         self._response.status_code = 200
+
+    def test_send_version_with_internal_metrics(self):
+        no_registry = registry.WavefrontSdkMetricsRegistry(
+            wf_metric_sender=None)
+        with patch.object(
+                registry,
+                'WavefrontSdkMetricsRegistry',
+                return_value=no_registry) as mock_registry:
+            WavefrontClient(
+                'no_server',
+                'no_token',
+                flush_interval_seconds=86400,
+                enable_internal_metrics=True)
+        self.assertRegex(
+            mock_registry.call_args[1]['tags']['version'],
+            r'^(v\d+\.\d+\.\d+)|(unknown)$')
 
     def test_send_span_with_span_logs(self):
 
