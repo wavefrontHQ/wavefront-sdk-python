@@ -4,6 +4,7 @@
 [![image](https://img.shields.io/pypi/v/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
 [![image](https://img.shields.io/pypi/l/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
 [![image](https://img.shields.io/pypi/pyversions/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/wavefront-sdk-python)
 
 
 ## Table of Content
@@ -17,11 +18,11 @@
 * [How to Get Support and Contribute](#how-to-get-support-and-contribute)
 * [How to Release](#how-to-release)
 
-# Welcome to the Wavefront Python SDK
+# Welcome to the Aria Operations for Applications Python SDK
 
-Wavefront by VMware Python SDK lets you send raw data from your Python application to Wavefront using a `wavefront_sender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python. 
+VMware Aria Operations for Applications (formerly known as Wavefront) Python SDK lets you send raw data from your Python application to Aria Operations for Applications using a `wavefront_sender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python. 
 
-Although this library is mostly used by the other Wavefront Python SDKs to send data to Wavefront, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Wavefront.
+Although this library is mostly used by the other Aria Operations for Applications Python SDKs to send data to Aria Operations for Applications, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Aria Operations for Applications.
 
 **Before you start implementing, let us make sure you are using the correct SDK!**
 
@@ -29,10 +30,10 @@ Although this library is mostly used by the other Wavefront Python SDKs to send 
 
 > ***Note***:
 > </br>
->   * **This is the Wavefront by VMware SDK for Python (Wavefront Sender SDK for Python)!**
+>   * **This is the VMware Aria Operations for Applications SDK for Python (Sender SDK for Python)!**
 >   If this SDK is not what you were looking for, see the [table](#wavefront-sdks) below.
 
-#### Wavefront SDKs
+#### VMware Aria Operations for Applications SDKs
 <table id="SDKlevels" style="width: 100%">
 <tr>
   <th width="10%">SDK Type</th>

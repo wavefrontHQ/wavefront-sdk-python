@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""Wavefront Python SDK.
-
-<p>This is a Wavefront Python SDK</p>
-"""
+"""VMware Aria Operations for Applications Python SDK."""
 
 import os
 
@@ -14,23 +11,45 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.8.13',  # The version number. Update with each pull request.
-    author='Wavefront by VMware',
+    version='1.8.14',  # The version number. Update with each pull request.
+    author='VMware Aria Operations for Applications Team',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
-    description='Wavefront Python SDK',
+    description='VMware Aria Operations for Applications Python SDK',
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     keywords=[
+        'Aria',
+        'Aria Operations',
+        'Aria Operations for Applications',
+        '3D Observability',
+        'Distributed Tracing',
+        'Histograms',
+        'Logging',
+        'Metrics',
+        'Monitoring',
+        'Observability',
+        'Tracing',
+        'VMware Aria',
+        'VMware Aria Operations',
+        'VMware Aria Operations for Applications',
         'Wavefront',
         'Wavefront SDK'
         ],
     classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Information Technology',
+        'Intended Audience :: System Administrators',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Monitoring',
+        'Topic :: System :: Networking :: Monitoring'
         ],
     include_package_data=True,
     packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
