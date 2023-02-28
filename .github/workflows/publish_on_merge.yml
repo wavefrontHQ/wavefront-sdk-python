@@ -3,7 +3,7 @@ name: Upload Python Package Onto TestPyPI
 on:
   push:
     branches:
-      - master
+      - $default-branch
   workflow_call:
     inputs:
       env_yml:
@@ -21,7 +21,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: ./.github/actions/lint_n_test
+    - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
       with:
         input_pkg_name: ${{ needs.setenv.outputs.package_name }}
         extra_packages: ${{ format('{0} build', needs.setenv.outputs.requirements) }}
