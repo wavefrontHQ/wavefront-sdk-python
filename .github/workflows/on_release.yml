@@ -25,13 +25,11 @@ jobs:
         fetch-depth: 0
     - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
       env:
-        Package_Name:
-          ${{ inputs.package_name }} || ${{ needs.setenv.outputs.package_name }}
-        Requirements:
-          ${{ inputs.requirements }} || ${{ needs.setenv.outputs.requirements }}
+        p_name: ${{ inputs.package_name || needs.setenv.outputs.package_name }}
+        p_reqs: ${{ inputs.requirements || needs.setenv.outputs.requirements }}
       with:
-        input_pkg_name: $Package_Name
-        extra_packages: ${{ format('{0} build', $Requirements) }}
+        input_pkg_name: $p_name
+        extra_packages: ${{ format('{0} build', $p_reqs) }}
     - name: Build Package
       run: python -m build
     - name: Publish Package on PyPI
