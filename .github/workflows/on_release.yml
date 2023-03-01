@@ -12,7 +12,7 @@ on:
 
 jobs:
   setenv:
-    uses: ./.github/workflows/env.yml
+    uses: ${{ inputs.env_yml }}
   execute:
     name: Prepare and Publish Package
     needs: setenv
