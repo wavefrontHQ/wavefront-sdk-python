@@ -99,5 +99,5 @@ class ApplicationTags(object):
             if value:
                 self._custom_tags.append((tag_key, value))
         else:
-            pylint: disable=broad-exception-raised
+            # pylint: disable=broad-exception-raised
             raise Exception("var_key is an invalid environment variable.")
