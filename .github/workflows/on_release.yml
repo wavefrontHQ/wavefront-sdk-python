@@ -5,6 +5,12 @@ on:
     types:
     - published
   workflow_call:
+    inputs:
+      package_name:
+        required: true
+        type: string
+      requirements:
+        type: string
 
 jobs:
   setenv:
@@ -17,10 +23,15 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: wavefrontHQ/wavefront-sdk-python//.github/actions/lint_n_test@master
+    - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
+      env:
+        Package_Name:
+          ${{ inputs.package_name }} || ${{ needs.setenv.outputs.package_name }}
+        Requirements:
+          ${{ inputs.requirements }} || ${{ needs.setenv.outputs.requirements }}
       with:
-        input_pkg_name: ${{ needs.setenv.outputs.package_name }}
-        extra_packages: ${{ format('{0} build', needs.setenv.outputs.requirements) }}
+        input_pkg_name: $Package_Name
+        extra_packages: ${{ format('{0} build', $Requirements) }}
     - name: Build Package
       run: python -m build
     - name: Publish Package on PyPI
