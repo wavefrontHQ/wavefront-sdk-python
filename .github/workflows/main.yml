@@ -17,6 +17,7 @@ on:
 jobs:
   setenv:
     uses: ./.github/workflows/env.yml
+    if: github.event_name != 'workflow_call'
   execute:
     name: Check Code & Run Tests
     needs: setenv
