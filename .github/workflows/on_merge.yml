@@ -5,14 +5,10 @@ on:
     branches:
       - $default-branch
   workflow_call:
-    inputs:
-      env_yml:
-        default: ./.github/workflows/env.yml
-        type: string
 
 jobs:
   setenv:
-    uses: ${{ inputs.env_yml }}
+    uses: ./.github/workflows/env.yml
   execute:
     name: Prepare and Publish Package
     needs: setenv
