@@ -7,7 +7,7 @@ on:
   workflow_call:
     inputs:
       package_name:
-        required: true,
+        required: true
         type: string
       requirements:
         type: string

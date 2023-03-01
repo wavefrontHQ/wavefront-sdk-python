@@ -12,6 +12,7 @@ on:
         type: string
       requirements:
         type: string
+  workflow_dispatch:
 
 jobs:
   setenv:
