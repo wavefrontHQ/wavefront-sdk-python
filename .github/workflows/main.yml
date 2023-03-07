@@ -16,6 +16,7 @@ on:
 
 jobs:
   echoes:
+    runs-on: ubuntu-latest
     steps:
       - name: Get event_name by env var
         run: echo "Event name $GITHUB_EVENT_NAME"
