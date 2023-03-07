@@ -30,6 +30,10 @@ jobs:
         python_version: ['3.7', '3.8', '3.9', '3.10', '3.11']
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Get event_name by env var
+      run: echo "Event name $GITHUB_EVENT_NAME"
+    - name: Get event_name
+      run: echo "Event name ${{ github.event_name }}"
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
