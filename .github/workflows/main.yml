@@ -15,6 +15,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  echoes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get event_name
+        run: echo "Event name ${{ github.event_name }}"
   env0:
     uses: ./.github/workflows/env0.yml
     if: ${{ github.event_name != 'workflow_call' }}
