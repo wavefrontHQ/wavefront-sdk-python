@@ -16,8 +16,8 @@ on:
 
 jobs:
   env0:
-    uses: ./.github/workflows/env.yml
-    if: github.event_name != 'workflow_call'
+    uses: ./.github/workflows/env0.yml
+    if: ${{ github.event_name != 'workflow_call' }}
   execute:
     name: Check Code & Run Tests
     needs: env0
@@ -33,7 +33,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
+    - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@austinov/rebranding
       env:
         pkg_name: ${{ inputs.package_name || needs.env0.outputs.package_name }}
         pkg_reqs: ${{ inputs.requirements || needs.env0.outputs.requirements }}
