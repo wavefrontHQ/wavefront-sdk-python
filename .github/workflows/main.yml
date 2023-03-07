@@ -15,14 +15,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  echoes:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get event_name
-        run: echo "Event name ${{ github.event_name }}"
-  env0:
-    uses: ./.github/workflows/env0.yml
+  env0:  # the default environment config, when workflow isn't reused.
     if: ${{ github.event_name != 'workflow_call' }}
+    uses: ./.github/workflows/env0.yml
   execute:
     name: Check Code & Run Tests
     needs: env0

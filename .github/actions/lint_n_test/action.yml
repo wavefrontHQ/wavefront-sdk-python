@@ -46,5 +46,5 @@ runs:
       if: ${{ github.event_name == 'pull_request' }}
       run: |
         test -n "$(git diff -G version= origin/master HEAD -- setup.py)" || \
-          exit "Package version in setup.py must be incremented before merge."wavefrontHQ/wavefront-sdk-python/austinov/rebranding/.github/actions/lint_n_test/action.yml
+          exit "Package version in setup.py must be incremented before merge."
       shell: bash

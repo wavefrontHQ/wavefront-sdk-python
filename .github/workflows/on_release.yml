@@ -13,11 +13,12 @@ on:
         type: string
 
 jobs:
-  setenv:
-    uses: ./.github/workflows/env.yml
+  env0:
+    if: ${{ github.event_name != 'workflow_call' }}
+    uses: ./.github/workflows/env0.yml
   execute:
     name: Prepare and Publish Package
-    needs: setenv
+    needs: env0
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -25,11 +26,11 @@ jobs:
         fetch-depth: 0
     - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
       env:
-        p_name: ${{ inputs.package_name || needs.setenv.outputs.package_name }}
-        p_reqs: ${{ inputs.requirements || needs.setenv.outputs.requirements }}
+        pkg_name: ${{ inputs.package_name || needs.env0.outputs.package_name }}
+        pkg_reqs: ${{ inputs.requirements || needs.env0.outputs.requirements }}
       with:
-        input_pkg_name: $p_name
-        extra_packages: ${{ format('{0} build', $p_reqs) }}
+        input_pkg_name: $pkg_name
+        extra_packages: ${{ format('{0} build', $pkg_reqs) }}
     - name: Build Package
       run: python -m build
     - name: Publish Package on PyPI
