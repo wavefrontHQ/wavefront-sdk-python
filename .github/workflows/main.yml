@@ -20,6 +20,7 @@ jobs:
     if: ${{ github.event_name != 'workflow_call' }}
   execute:
     name: Check Code & Run Tests
+    shell: bash
     needs: env0
     strategy:
       fail-fast: false
