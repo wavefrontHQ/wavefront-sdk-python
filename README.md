@@ -20,9 +20,9 @@
 
 # Welcome to VMware Aria Operations™ for Applications Python SDK
 
-VMware Aria Operations for Applications (formerly known as Wavefront) Python SDK lets you send raw data from your Python application to Aria Operations for Applications using a `wavefront_sender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python. 
+VMware Aria Operations for Applications (formerly known as Wavefront) Python SDK lets you send raw data from your Python application to Operations for Applications using a wavefront_sender interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python.
 
-Although this library is mostly used by the other Aria Operations for Applications Python SDKs to send data to Aria Operations for Applications, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Aria Operations for Applications.
+Although this library is mostly used by the other Operations for Applications Python SDKs to send data to Operations for Applications, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Operations for Applications.
 
 **Before you start implementing, let us make sure you are using the correct SDK!**
 
@@ -510,10 +510,10 @@ total_failures = wavefront_sender.get_failure_count()
 
 1. Merge all the changes that need to go into the release to the master branch.
 2. Open the `setup.py` file from the top level directory of the project.
-3. Search for `version=` in the file to find the version number for example `1.8.15`.
-4. Create a pull request, get it reviewed and approved, merge it after approval.
+3. Search for version= in the file to find the version number, for example 1.8.15.
+4. Create a pull request, get it reviewed and approved, and merge it after approval.
 5. Check [test.pypi.org](https://test.pypi.org/project/wavefront-sdk-python) for a published package, make sure it's production ready.
-6. Log into Github, click **Releases** on the right, and click **Draft a new release**.
+6. Log in to GitHub, click Releases on the right, and click Draft a new release.
 7. For **Choose a tag**, choose the version you found in step 3, and prefix it with `v` for example `v1.8.15`. You need to enter the version where it says **Find or create new tag**.
 
 <img src="images/choose-version.png" alt="A diagram that shows how to choose version"/>
@@ -521,5 +521,5 @@ total_failures = wavefront_sender.get_failure_count()
 8. Provide a short but descriptive title for the release.
 9. Fill in the details of the release. Please copy the markdown from the previous release and follow the same format.
 10. Click **Publish release.** to start publishing the release to pypi.org.
-11. From the Github top navigation bar of this project, click the **Actions** tab. On the first line of the list of workflows, you should see a workflow running that will publish your release to pypi.org.
+11. From the GitHub top navigation bar of this project, click the **Actions** tab. On the first line of the list of workflows, you should see a workflow running that will publish your release to pypi.org.
 12. When the workflow from step 9 has a green checkmark next to it, go to [pypi.org](https://pypi.org/project/wavefront-sdk-python/) and verify that the latest version is published.
