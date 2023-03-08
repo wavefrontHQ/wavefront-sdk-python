@@ -24,6 +24,8 @@ VMware Aria Operations for Applications (formerly known as Wavefront) Python SDK
 
 Although this library is mostly used by the other Operations for Applications Python SDKs to send data to Operations for Applications, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Operations for Applications.
 
+Note: We're in the process of updating the product name to Operations for Applications, but in many places we still refer to it as Wavefront.
+
 **Before you start implementing, let us make sure you are using the correct SDK!**
 
 ![Python Sender SDK Decision Tree](docs/python_sender_sdk.png)
