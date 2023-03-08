@@ -6,25 +6,31 @@ on:
     - published
   workflow_call:
     inputs:
-      env_yml:
-        default: ./.github/workflows/env.yml
+      package_name:
+        required: true
+        type: string
+      requirements:
         type: string
 
 jobs:
-  setenv:
-    uses: ./.github/workflows/env.yml
+  env0:
+    if: ${{ github.event_name != 'workflow_call' }}
+    uses: ./.github/workflows/env0.yml
   execute:
     name: Prepare and Publish Package
-    needs: setenv
+    needs: env0
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: ./.github/actions/lint_n_test
+    - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
+      env:
+        pkg_name: ${{ inputs.package_name || needs.env0.outputs.package_name }}
+        pkg_reqs: ${{ inputs.requirements || needs.env0.outputs.requirements }}
       with:
-        input_pkg_name: ${{ needs.setenv.outputs.package_name }}
-        extra_packages: ${{ format('{0} build', needs.setenv.outputs.requirements) }}
+        input_pkg_name: $pkg_name
+        extra_packages: ${{ format('{0} build', $pkg_reqs) }}
     - name: Build Package
       run: python -m build
     - name: Publish Package on PyPI

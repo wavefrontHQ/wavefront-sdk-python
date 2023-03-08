@@ -1,10 +1,9 @@
-name: Linters & Tests
+name: Upload Python Package Onto TestPyPI
 
 on:
   push:
-    # branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+    branches:
+      - $default-branch
   workflow_call:
     inputs:
       package_name:
@@ -12,23 +11,15 @@ on:
         type: string
       requirements:
         type: string
-  workflow_dispatch:
 
 jobs:
-  env0:  # the default environment config, when workflow isn't reused.
+  env0:
     if: ${{ github.event_name != 'workflow_call' }}
     uses: ./.github/workflows/env0.yml
   execute:
-    name: Check Code & Run Tests
+    name: Prepare and Publish Package
     needs: env0
-    strategy:
-      fail-fast: false
-      matrix:
-        # TODO: Enable Windows
-        # https://jira.eng.vmware.com/browse/MONIT-30833
-        os: [macos-latest, ubuntu-latest]  # , windows-latest]
-        python_version: ['3.7', '3.8', '3.9', '3.10', '3.11']
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
@@ -38,6 +29,12 @@ jobs:
         pkg_name: ${{ inputs.package_name || needs.env0.outputs.package_name }}
         pkg_reqs: ${{ inputs.requirements || needs.env0.outputs.requirements }}
       with:
-        python_version: ${{ matrix.python_version }}
         input_pkg_name: $pkg_name
-        extra_packages: $pkg_reqs
+        extra_packages: ${{ format('{0} build', $pkg_reqs) }}
+    - name: Build Package
+      run: python -m build
+    - name: Publish Package to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
