@@ -5,9 +5,12 @@ on:
 
 jobs:
   envset:
+    defaults:
+      run:
+        shell: bash
     runs-on: ubuntu-latest
     steps:
       - run: echo PACKAGE_NAME="wavefront_sdk" >> $GITHUB_ENV
-        shell: bash
       - run: echo REQUIREMENTS="Deprecated requests tdigest" >> $GITHUB_ENV
-        shell: bash
+      - run: echo PACKAGE_NAME is set to ${{ env.PACKAGE_NAME }}
+      - run: echo REQUIREMENTS is set to ${{ env.REQUIREMENTS }}
