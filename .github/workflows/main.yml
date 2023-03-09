@@ -6,19 +6,19 @@ on:
   pull_request:
     branches: [ master ]
   workflow_call:
-    inputs:
-      package_name:
-        required: true
-        type: string
-      requirements:
-        type: string
   workflow_dispatch:
 
 jobs:
   env0:  # the default environment config, when workflow isn't reused.
     if: ${{ github.event_name != 'workflow_call' }}
     uses: ./.github/workflows/env0.yml
+  print_env:
+    echo ${{ env.PACKAGE_NAME }}
+    echo ${{ env.REQUIREMENTS }}
   execute:
+    defaults:
+      run:
+        shell: bash
     name: Check Code & Run Tests
     needs: env0
     strategy:
@@ -34,10 +34,7 @@ jobs:
       with:
         fetch-depth: 0
     - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
-      env:
-        pkg_name: ${{ inputs.package_name || needs.env0.outputs.package_name }}
-        pkg_reqs: ${{ inputs.requirements || needs.env0.outputs.requirements }}
       with:
         python_version: ${{ matrix.python_version }}
-        input_pkg_name: $pkg_name
-        extra_packages: $pkg_reqs
+        input_pkg_name: ${{ env.PACKAGE_NAME }}
+        extra_packages: ${{ env.REQUIREMENTS }}

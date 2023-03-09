@@ -2,15 +2,12 @@ name: Set Global Environment Variables
 
 on:
   workflow_call:
-    outputs:
-      package_name:
-        value: 'wavefront_sdk'
-      requirements:
-        value: 'Deprecated requests tdigest'
 
 jobs:
   envset:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "This job sets environment variables for others."
+      - run: echo PACKAGE_NAME="wavefront_sdk" >> $GITHUB_ENV
+        shell: bash
+      - run: echo REQUIREMENTS="Deprecated requests tdigest" >> $GITHUB_ENV
         shell: bash
