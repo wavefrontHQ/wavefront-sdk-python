@@ -15,7 +15,6 @@ runs:
   steps:
     - name: debug output
       run: echo ${{ env.PACKAGE_NAME }} ${{ env.REQUIREMENTS }}
-
     - name: Set up Python ${{ inputs.python_version }}
       uses: actions/setup-python@v4
       with:

@@ -13,8 +13,12 @@ jobs:
     if: ${{ github.event_name != 'workflow_call' }}
     uses: ./.github/workflows/env0.yml
   print_env:
-    echo ${{ env.PACKAGE_NAME }}
-    echo ${{ env.REQUIREMENTS }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ env.PACKAGE_NAME }}
+        shell: bash
+      - run: echo ${{ env.REQUIREMENTS }}
+        shell: bash
   execute:
     defaults:
       run:
