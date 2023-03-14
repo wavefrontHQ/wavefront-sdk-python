@@ -20,9 +20,6 @@ jobs:
     uses: ./.github/workflows/env0.yml
   execute:
     name: Check Code & Run Tests
-    defaults:
-      run:
-        shell: bash
     needs: env0
     env:
         PKG_NAME: ${{ inputs.package_name || needs.env0.outputs.package_name }}
@@ -39,7 +36,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
+    - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@austinov/shell_spec
       with:
         python_version: ${{ matrix.python_version }}
         input_pkg_name: ${{ env.PKG_NAME }}
