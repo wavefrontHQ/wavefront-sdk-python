@@ -12,5 +12,8 @@ jobs:
   envset:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "This job sets environment variables for others."
+      - run: |
+          echo "Setting outputs to:"
+          echo "  package_name: ${{ outputs.package_name.value }}"
+          echo "  requirements: ${{ outputs.requirements.value }}."
         shell: bash
