@@ -18,7 +18,7 @@
 * [How to Get Support and Contribute](#how-to-get-support-and-contribute)
 * [How to Release](#how-to-release)
 
-# Welcome to VMware Aria Operations™ for Applications Python SDK
+# VMware Aria Operations™ for Applications Python SDK
 
 VMware Aria Operations for Applications (formerly known as Wavefront) Python SDK lets you send raw data from your Python application to Operations for Applications using a wavefront_sender interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python.
 
