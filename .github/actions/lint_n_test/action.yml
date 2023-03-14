@@ -11,6 +11,9 @@ inputs:
     type: string
 
 runs:
+  defaults:
+    run:
+      shell: bash
   using: composite
   steps:
     - name: Set up Python ${{ inputs.python_version }}
