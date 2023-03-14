@@ -45,12 +45,12 @@ jobs:
       run: echo "${{ env.PKG_NAME }}"
     - name: Try echo with format inside double quotes
       run: echo "${{ format('PKG_NAME value is {0}, and PKG_REQS is {1}.', env.PKG_NAME, env.PKG_REQS) }}"
-    - name: Try echo with format and overriden $PKG_REQS
+    - name: Try echo with format and overriden ${{ env.PKG_REQS }}
       env:
-        PKG_REQS: '$PKG_REQS blahblah'
+        PKG_REQS: ${{ env.PKG_REQS }} blahblah
       run: echo "${{ format('PKG_NAME value is {0}, and PKG_REQS is {1}.', env.PKG_NAME, env.PKG_REQS) }}"
     - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
       with:
         python_version: ${{ matrix.python_version }}
         input_pkg_name: ${{ env.PKG_NAME }}
-        extra_packages: ${{ env.PKG_REQS }}
+        extra_packages: ${{ env.PKG_REQS }} blah blah
