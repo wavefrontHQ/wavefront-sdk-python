@@ -18,16 +18,19 @@ jobs:
     uses: ./.github/workflows/env0.yml
   execute:
     name: Prepare and Publish Package
+    defaults:
+      run:
+        shell: bash
     needs: env0
+    env:
+      PKG_NAME: ${{ inputs.package_name || needs.env0.outputs.package_name }}
+      PKG_REQS: ${{ inputs.requirements || needs.env0.outputs.requirements }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
-      env:
-        PKG_NAME: ${{ inputs.package_name || needs.env0.outputs.package_name }}
-        PKG_REQS: ${{ inputs.requirements || needs.env0.outputs.requirements }}
       with:
         input_pkg_name: ${{ env.PKG_NAME }}
         extra_packages: ${{ env.PKG_REQS }} build

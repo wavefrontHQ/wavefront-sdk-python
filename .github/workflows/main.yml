@@ -19,10 +19,10 @@ jobs:
     if: ${{ github.event_name != 'workflow_call' }}
     uses: ./.github/workflows/env0.yml
   execute:
+    name: Check Code & Run Tests
     defaults:
       run:
         shell: bash
-    name: Check Code & Run Tests
     needs: env0
     env:
         PKG_NAME: ${{ inputs.package_name || needs.env0.outputs.package_name }}
