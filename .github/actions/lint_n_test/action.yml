@@ -1,5 +1,9 @@
 name: Lint & Test
 
+defaults:
+  run:
+    shell: bash
+
 inputs:
   python_version:
     default: '3.x'
@@ -13,9 +17,6 @@ inputs:
 runs:
   using: composite
   steps:
-    defaults:
-      run:
-        shell: bash
     - name: Set up Python ${{ inputs.python_version }}
       uses: actions/setup-python@v4
       with:
