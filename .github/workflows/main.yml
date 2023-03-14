@@ -40,13 +40,15 @@ jobs:
       with:
         fetch-depth: 0
     - name: Try echo $pkg_name
-      run: echo $pkg_name
+      run: echo ${{ $pkg_name }}
     - name: Try echo env.pkg_name
-      run: echo env.pkg_name
-    - name: Try echo with format inside
+      run: echo ${{ env.pkg_name }}
+    - name: Try echo with format inside ''
       run: echo '${{ format("pkg_name value is {0}, and pkg_reqs is {1}.", env.pkg_name, env.pkg_reqs) }}'
+    - name: Try echo with format inside ""
+      run: echo "${{ format('pkg_name value is {0}, and pkg_reqs is {1}.', env.pkg_name, env.pkg_reqs) }}"
     - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
       with:
         python_version: ${{ matrix.python_version }}
-        input_pkg_name: env.pkg_name
-        extra_packages: env.pkg_reqs
+        input_pkg_name: ${{ env.pkg_name }}
+        extra_packages: ${{ env.pkg_reqs }}
