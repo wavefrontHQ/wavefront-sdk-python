@@ -25,8 +25,8 @@ jobs:
     name: Check Code & Run Tests
     needs: env0
     env:
-        pkg_name: ${{ inputs.package_name || needs.env0.outputs.package_name }}
-        pkg_reqs: ${{ inputs.requirements || needs.env0.outputs.requirements }}
+        PKG_NAME: ${{ inputs.package_name || needs.env0.outputs.package_name }}
+        PKG_REQS: ${{ inputs.requirements || needs.env0.outputs.requirements }}
     strategy:
       fail-fast: false
       matrix:
@@ -39,16 +39,16 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Try echo $pkg_name
-      run: echo ${{ $pkg_name }}
-    - name: Try echo env.pkg_name
-      run: echo ${{ env.pkg_name }}
-    - name: Try echo with format inside ''
-      run: echo '${{ format("pkg_name value is {0}, and pkg_reqs is {1}.", env.pkg_name, env.pkg_reqs) }}'
-    - name: Try echo with format inside ""
-      run: echo "${{ format('pkg_name value is {0}, and pkg_reqs is {1}.', env.pkg_name, env.pkg_reqs) }}"
+    - name: Try echo $PKG_NAME
+      run: echo "$PKG_NAME"
+    - name: Try echo env.PKG_NAME
+      run: echo "${{ env.PKG_NAME }}"
+    - name: Try echo with format inside single quotes
+      run: echo '${{ format("PKG_NAME value is {0}, and PKG_REQS is {1}.", env.PKG_NAME, env.PKG_REQS) }}'
+    - name: Try echo with format inside double quotes
+      run: echo "${{ format('PKG_NAME value is {0}, and PKG_REQS is {1}.', env.PKG_NAME, env.PKG_REQS) }}"
     - uses: wavefrontHQ/wavefront-sdk-python/.github/actions/lint_n_test@master
       with:
         python_version: ${{ matrix.python_version }}
-        input_pkg_name: ${{ env.pkg_name }}
-        extra_packages: ${{ env.pkg_reqs }}
+        input_pkg_name: ${{ env.PKG_NAME }}
+        extra_packages: ${{ env.PKG_REQS }}
