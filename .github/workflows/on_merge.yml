@@ -18,9 +18,6 @@ jobs:
     uses: ./.github/workflows/env0.yml
   execute:
     name: Prepare and Publish Package
-    defaults:
-      run:
-        shell: bash
     needs: env0
     env:
       PKG_NAME: ${{ inputs.package_name || needs.env0.outputs.package_name }}
@@ -36,6 +33,7 @@ jobs:
         extra_packages: ${{ env.PKG_REQS }} build
     - name: Build Package
       run: python -m build
+      shell: bash
     - name: Publish Package to TestPyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:

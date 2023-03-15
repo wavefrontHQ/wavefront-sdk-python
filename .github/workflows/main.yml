@@ -20,9 +20,6 @@ jobs:
     uses: ./.github/workflows/env0.yml
   execute:
     name: Check Code & Run Tests
-    defaults:
-      run:
-        shell: bash
     needs: env0
     env:
         PKG_NAME: ${{ inputs.package_name || needs.env0.outputs.package_name }}
