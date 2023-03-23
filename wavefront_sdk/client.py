@@ -75,18 +75,18 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._tracing_spans_buffer = queue_impl(max_queue_size)
         self._spans_log_buffer = queue_impl(max_queue_size)
         self._events_buffer = queue_impl(max_queue_size)
-        self._headers = {'Content-Type': 'application/octet-stream',
-                         'Content-Encoding': 'gzip'}
-        self._event_headers = {'Content-Type': 'application/json',
-                               'Content-Encoding': 'gzip'}
+        self._headers = {'Content-Type': 'application/octet-stream'}
+        self._event_headers = {'Content-Type': 'application/json'}
         self._closed = False
         self._schedule_lock = threading.RLock()
         self._timer = None
         self._schedule_timer()
+        self._session = requests.Session()
+        self._session.headers.update({'Content-Encoding': 'gzip'})
+        self._session.timeout = self.HTTP_TIMEOUT
 
         if token:
-            self._headers['Authorization'] = 'Bearer ' + token
-            self._event_headers['Authorization'] = 'Bearer ' + token
+            self._session.headers.update({'Authorization': 'Bearer ' + token})
             ingestion_type = 'direct'
         else:
             ingestion_type = 'proxy'
@@ -192,18 +192,18 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         """
         try:
             if data_format == self.WAVEFRONT_EVENT_FORMAT and self._token:
-                response = requests.post(self.server + self.EVENT_END_POINT,
-                                         params=None,
-                                         headers=self._event_headers,
-                                         data=points,
-                                         timeout=self.HTTP_TIMEOUT)
+                response = self._session.post(
+                    self.server + self.EVENT_END_POINT,
+                    headers=self._event_headers,
+                    data=points)
             else:
                 params = {'f': data_format}
                 compressed_data = utils.gzip_compress(points.encode('utf-8'))
-                response = requests.post(self.server + self.REPORT_END_POINT,
-                                         params=params, headers=self._headers,
-                                         data=compressed_data,
-                                         timeout=self.HTTP_TIMEOUT)
+                response = self._session.post(
+                    self.server + self.REPORT_END_POINT,
+                    headers=self._headers,
+                    data=compressed_data,
+                    params=params)
 
             self._sdk_metrics_registry.new_delta_counter(
                 f'{entity_prefix}.report.{response.status_code}').inc()

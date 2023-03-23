@@ -5,13 +5,10 @@
 
 import unittest
 import uuid
-from unittest.mock import ANY
-from unittest.mock import Mock
-from unittest.mock import patch
 
 import requests
 
-from wavefront_sdk.client import WavefrontClient
+import wavefront_sdk
 from wavefront_sdk.common.metrics import registry
 from wavefront_sdk.entities.tracing.span_log import SpanLog
 
@@ -20,26 +17,24 @@ class TestUtils(unittest.TestCase):
     """Test direct ingestion."""
 
     def setUp(self):
-        self._sender = WavefrontClient(
-            'no_server',
-            'no_token',
+        self._sender = wavefront_sdk.client.WavefrontClient(
+            'no_server', 'no_token',
             flush_interval_seconds=86400,  # turn off auto flushing
             enable_internal_metrics=False)
         self._spans_log_buffer = self._sender._spans_log_buffer
         self._tracing_spans_buffer = self._sender._tracing_spans_buffer
-        self._response = Mock()
+        self._response = unittest.mock.Mock()
         self._response.status_code = 200
 
     def test_send_version_with_internal_metrics(self):
         no_registry = registry.WavefrontSdkMetricsRegistry(
             wf_metric_sender=None)
-        with patch.object(
+        with unittest.mock.patch.object(
                 registry,
                 'WavefrontSdkMetricsRegistry',
                 return_value=no_registry) as mock_registry:
-            WavefrontClient(
-                'no_server',
-                'no_token',
+            wavefront_sdk.client.WavefrontClient(
+                'no_server', 'no_token',
                 flush_interval_seconds=86400,
                 enable_internal_metrics=True)
         self.assertRegex(
@@ -61,8 +56,6 @@ class TestUtils(unittest.TestCase):
             [SpanLog(
                  1635123789456000,
                  {"FooLogKey": "FooLogValue"})])
-
-        self.maxDiff = None
 
         # Verify span logs correctly emitted
         actual_line = self._spans_log_buffer.get()
@@ -104,8 +97,6 @@ class TestUtils(unittest.TestCase):
             [('application', 'Wavefront'), ('service', 'test-spans')],
             [])
 
-        self.maxDiff = None
-
         # Assert no span logs emitted
         self.assertTrue(self._spans_log_buffer.empty())
 
@@ -122,30 +113,27 @@ class TestUtils(unittest.TestCase):
 
     def test_report_event(self):
 
-        with patch.object(
-                requests, 'post', return_value=self._response) as mock_post:
-            self._sender._report(
-                '', self._sender.WAVEFRONT_EVENT_FORMAT, '', Mock())
-
-        mock_post.assert_called_once_with(
-            ANY,
-            params=None,
-            headers=ANY,
-            data=ANY,
-            timeout=self._sender.HTTP_TIMEOUT)
+        with unittest.mock.patch.object(
+                requests.Session, 'post',
+                return_value=self._response) as mock_post:
+            self._sender._report('',
+                                 self._sender.WAVEFRONT_EVENT_FORMAT,
+                                 '',
+                                 unittest.mock.Mock())
+            mock_post.assert_called_once_with(unittest.mock.ANY,
+                                              headers=unittest.mock.ANY,
+                                              data=unittest.mock.ANY)
 
     def test_report_non_event(self):
 
-        with patch.object(
-                requests, 'post', return_value=self._response) as mock_post:
-            self._sender._report('', 'metric', '', Mock())
-
-        mock_post.assert_called_once_with(
-            ANY,
-            params=ANY,
-            headers=ANY,
-            data=ANY,
-            timeout=self._sender.HTTP_TIMEOUT)
+        with unittest.mock.patch.object(
+                requests.Session, 'post',
+                return_value=self._response) as mock_post:
+            self._sender._report('', 'metric', '', unittest.mock.Mock())
+            mock_post.assert_called_once_with(unittest.mock.ANY,
+                                              params=unittest.mock.ANY,
+                                              headers=unittest.mock.ANY,
+                                              data=unittest.mock.ANY)
 
 
 if __name__ == '__main__':
