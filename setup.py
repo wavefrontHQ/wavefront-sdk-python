@@ -11,7 +11,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='1.8.15',  # Please update with each pull request.
+    version='1.9.0',  # Please update with each pull request.
     author='VMware Aria Operations for Applications Team',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
