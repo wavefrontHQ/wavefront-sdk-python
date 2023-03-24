@@ -55,7 +55,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*',
                                                'tests.*', 'tests')),
     install_requires=(
-        'requests>=2.18.4',
+        'requests>=2.27',
         'tdigest>=0.5.2',
         'Deprecated>=1.2.10'
         )
