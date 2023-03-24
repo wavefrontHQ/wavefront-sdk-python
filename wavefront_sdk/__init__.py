@@ -9,20 +9,15 @@ spans to Wavefront via proxy or direct ingestion.
 import pkg_resources
 
 from .client_factory import WavefrontClientFactory
-from .direct import WavefrontDirectClient
-from .proxy import WavefrontProxyClient
 
 
-__all__ = ['WavefrontDirectClient',
-           'WavefrontProxyClient',
-           'WavefrontClientFactory']
+__all__ = ['WavefrontClientFactory']
 
 __version__ = None
 
 try:
     __version__ = pkg_resources.get_distribution(
-        'wavefront-sdk-python'
-    ).version
+            'wavefront-sdk-python').version
 except pkg_resources.DistributionNotFound:
     # __version__ is only available when distribution is installed.
     pass
