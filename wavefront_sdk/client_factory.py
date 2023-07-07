@@ -19,7 +19,9 @@ class WavefrontClientFactory:
     PROXY_SCHEME = "proxy"
     HTTP_PROXY_SCHEME = "http"
     DIRECT_DATA_INGESTION_SCHEME = "https"
-    clients = []
+
+    def __init__(self):
+        self.clients = []
 
     # pylint: disable=too-many-arguments
     def add_client(self, url, max_queue_size=50000,
