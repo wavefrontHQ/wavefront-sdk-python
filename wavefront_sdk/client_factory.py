@@ -19,13 +19,14 @@ class WavefrontClientFactory:
     PROXY_SCHEME = "proxy"
     HTTP_PROXY_SCHEME = "http"
     DIRECT_DATA_INGESTION_SCHEME = "https"
-    clients = []
+
+    def __init__(self):
+        """Keep track of initialized clients on instance level."""
+        self.clients = []
 
     # pylint: disable=too-many-arguments
-    def add_client(self, url, max_queue_size=50000,
-                   batch_size=10000,
-                   flush_interval_seconds=5,
-                   enable_internal_metrics=True,
+    def add_client(self, url, max_queue_size=50000, batch_size=10000,
+                   flush_interval_seconds=5, enable_internal_metrics=True,
                    queue_impl=queue.Queue):
         """Create a unique client."""
         server, token = self.get_server_info_from_endpoint(url)
@@ -52,12 +53,12 @@ class WavefrontClientFactory:
         base_url = urlparse(url)
         scheme = base_url.scheme
         if scheme == self.DIRECT_DATA_INGESTION_SCHEME:
-            server = f'{self.DIRECT_DATA_INGESTION_SCHEME}://' \
-                     f'{base_url.hostname}'
+            server = (f'{self.DIRECT_DATA_INGESTION_SCHEME}://'
+                      f'{base_url.hostname}')
             token = base_url.username
         elif scheme in (self.PROXY_SCHEME, self.HTTP_PROXY_SCHEME):
-            server = f'{self.HTTP_PROXY_SCHEME}://' \
-                     f'{base_url.hostname}:{base_url.port}'
+            server = (f'{self.HTTP_PROXY_SCHEME}://'
+                      f'{base_url.hostname}:{base_url.port}')
             token = None
         else:
             raise RuntimeError("Unknown scheme specified while attempting to"
