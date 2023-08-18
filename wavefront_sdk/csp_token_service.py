@@ -1,10 +1,8 @@
 import base64
-import sys
 import time
 
 import requests
 
-from example import main as runExample
 
 class CSPServerToServerTokenService:
     def __init__(self, csp_base_url, csp_client_id, csp_client_secret):
@@ -32,7 +30,7 @@ class CSPServerToServerTokenService:
             self.csp_access_token = data.get("access_token")
             expires_in = data.get("expires_in")
             self.token_expiration_time = time.time() + expires_in
-            print("Token refreshed:", self.csp_access_token)
+            print(f"Token refreshed, which expires in {expires_in} seconds:", self.csp_access_token)
         else:
             print("Token refresh failed with status code:", response.status_code)
 
@@ -43,20 +41,4 @@ class CSPServerToServerTokenService:
         return self.csp_access_token
 
     def encode_csp_credentials(self):
-        return base64.b64encode((self.csp_client_id+":"+self.csp_client_secret).encode("utf-8")).decode("utf-8")
-
-def main():
-    # Example usage
-    csp_base_url = "https://console-stg.cloud.vmware.com/"
-    csp_client_id = sys.argv[1]
-    csp_client_secret = sys.argv[2]
-    token_service = CSPServerToServerTokenService(csp_base_url, csp_client_id, csp_client_secret)
-    csp_token = token_service.get_csp_token()
-    # print("CSPToken:", csp_token)
-    wavefront_url = f"https://{csp_token}@nimba.wavefront.com"
-
-    runExample(wavefront_url)
-
-
-if __name__ == '__main__':
-    main()
+        return base64.b64encode((self.csp_client_id + ":" + self.csp_client_secret).encode("utf-8")).decode("utf-8")

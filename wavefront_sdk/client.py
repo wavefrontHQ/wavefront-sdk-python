@@ -20,6 +20,8 @@ from . import entities
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
 
+from wavefront_sdk.csp_token_service import CSPServerToServerTokenService
+
 
 class WavefrontClient(connection_handler.ConnectionHandler,
                       entities.WavefrontMetricSender,
@@ -52,7 +54,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         @param server: Server address,
         @type server: str
         @param token: Server token,
-        @type token: str
+        @type token: Union[str, CSPServerToServerTokenService, None]
         @param max_queue_size:
         @type max_queue_size: int
         Max Queue Size, size of internal data buffer for each data type.
@@ -65,7 +67,14 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         """
         super().__init__()
         self.server = server
-        self._token = token
+
+        if type(token) == CSPServerToServerTokenService:
+            self._token_service = token
+            self._token = "UNSET"
+        else:
+            self._token_service = None
+            self._token = token
+
         self._max_queue_size = max_queue_size
         self._batch_size = batch_size
         self._flush_interval_seconds = flush_interval_seconds
@@ -85,7 +94,9 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._session.headers.update({'Content-Encoding': 'gzip'})
         self._session.timeout = self.HTTP_TIMEOUT
 
-        if token:
+        if token and self._token_service:
+            ingestion_type = 'csp'
+        elif token and not self._token_service:
             self._session.headers.update({'Authorization': 'Bearer ' + token})
             ingestion_type = 'direct'
         else:
@@ -191,6 +202,10 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         @type: metrics registry
         """
         try:
+            if self._token_service:
+                self._token = self._token_service.get_csp_token()
+                self._session.headers.update({'Authorization': 'Bearer ' + self._token})
+
             if data_format == self.WAVEFRONT_EVENT_FORMAT and self._token:
                 response = self._session.post(
                     self.server + self.EVENT_END_POINT,

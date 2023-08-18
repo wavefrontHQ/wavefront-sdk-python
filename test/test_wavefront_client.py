@@ -57,6 +57,42 @@ class WavefrontClient(unittest.TestCase):
                                    wavefront_sdk.multi_clients
                                    .WavefrontMultiClient))
 
+    def test_get_csp_client(self):
+        """Test get_client of WavefrontClientFactory for client with CSP configuration"""
+
+        # get_client should return None if there is no client
+        client = WavefrontClientFactory().get_client()
+        self.assertEqual(client, None)
+
+        # get_client should return instance of WavefrontClient
+        # if there is only one client
+        wavefront_url_for_csp = "https://csp-enabled-wfcluster.wavefront.com"
+        multi_client_factory = WavefrontClientFactory()
+        multi_client_factory.add_client(
+            wavefront_url_for_csp,
+            csp_client_id="test client id",
+            csp_client_secret="test client secret",
+        )
+        self.assertTrue(isinstance(multi_client_factory.get_client(),
+                                   wavefront_sdk.client.WavefrontClient))
+
+        # get_client should return instance of WavefrontClient
+        # if there is only one client
+        direct_base_url = ("https://a87826d5-889d-4b23-98f0-2f3558zd007a"
+                           "@wfcluster.wavefront.com")
+        multi_client_factory.add_client(direct_base_url)
+        self.assertTrue(isinstance(multi_client_factory.get_client(),
+                                   wavefront_sdk.multi_clients
+                                   .WavefrontMultiClient))
+
+        # get_client should return instance of WavefrontMultiClient
+        # if there is more than one client
+        proxy_base_url = "proxy://192.114.71.230:2878"
+        multi_client_factory.add_client(proxy_base_url)
+        self.assertTrue(isinstance(multi_client_factory.get_client(),
+                                   wavefront_sdk.multi_clients
+                                   .WavefrontMultiClient))
+
     def test_existing_client(self):
         """Test existing_client of WavefrontClientFactory"""
         server = "http://192.114.71.230:2878"

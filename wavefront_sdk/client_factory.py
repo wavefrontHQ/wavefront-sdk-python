@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
 
+from wavefront_sdk.csp_token_service import CSPServerToServerTokenService
 
 class WavefrontClientFactory:
     """Wavefront client factory.
@@ -19,6 +20,7 @@ class WavefrontClientFactory:
     PROXY_SCHEME = "proxy"
     HTTP_PROXY_SCHEME = "http"
     DIRECT_DATA_INGESTION_SCHEME = "https"
+    DEFAULT_CSP_BASE_URL = "https://console.cloud.vmware.com/"
 
     def __init__(self):
         """Keep track of initialized clients on instance level."""
@@ -27,16 +29,30 @@ class WavefrontClientFactory:
     # pylint: disable=too-many-arguments
     def add_client(self, url, max_queue_size=50000, batch_size=10000,
                    flush_interval_seconds=5, enable_internal_metrics=True,
-                   queue_impl=queue.Queue):
+                   queue_impl=queue.Queue,
+                   csp_base_url=DEFAULT_CSP_BASE_URL,
+                   csp_client_id=None,
+                   csp_client_secret=None):
         """Create a unique client."""
-        server, token = self.get_server_info_from_endpoint(url)
+        if csp_client_id is not None and csp_client_secret is not None:
+            # In the CSP case, the user should only pass in the URL,
+            # not token@url, but for consistency
+            # I think we should preserve this function call.
+            server, _ = self.get_server_info_from_endpoint(url)
+            token_or_token_service = CSPServerToServerTokenService(
+                csp_base_url,
+                csp_client_id,
+                csp_client_secret,
+            )
+        else:
+            server, token_or_token_service = self.get_server_info_from_endpoint(url)
 
         if self.existing_client(server):
             raise RuntimeError("client with id " + url + " already exists.")
 
         client = WavefrontClient(
             server=server,
-            token=token,
+            token=token_or_token_service,
             max_queue_size=max_queue_size,
             batch_size=batch_size,
             flush_interval_seconds=flush_interval_seconds,
