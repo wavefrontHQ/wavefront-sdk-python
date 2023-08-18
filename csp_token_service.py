@@ -1,7 +1,10 @@
 import base64
+import sys
+import time
 
 import requests
-import time
+
+from example import main as runExample
 
 class CSPServerToServerTokenService:
     def __init__(self, csp_base_url, csp_client_id, csp_client_secret):
@@ -26,7 +29,7 @@ class CSPServerToServerTokenService:
 
         if response.status_code == 200:
             data = response.json()
-            self.csp_access_token = data.get("csp_access_token")
+            self.csp_access_token = data.get("access_token")
             expires_in = data.get("expires_in")
             self.token_expiration_time = time.time() + expires_in
             print("Token refreshed:", self.csp_access_token)
@@ -44,12 +47,16 @@ class CSPServerToServerTokenService:
 
 def main():
     # Example usage
-    csp_base_url = "https://console.cloud.vmware.com/"
-    csp_client_id="SETME"
-    csp_client_secret="SETME"
+    csp_base_url = "https://console-stg.cloud.vmware.com/"
+    csp_client_id = sys.argv[1]
+    csp_client_secret = sys.argv[2]
     token_service = CSPServerToServerTokenService(csp_base_url, csp_client_id, csp_client_secret)
     csp_token = token_service.get_csp_token()
-    print("CSPToken:", csp_token)
+    # print("CSPToken:", csp_token)
+    wavefront_url = f"https://{csp_token}@nimba.wavefront.com"
+
+    runExample(wavefront_url)
+
 
 if __name__ == '__main__':
     main()

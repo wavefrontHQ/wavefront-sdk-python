@@ -79,9 +79,10 @@ def send_event(wavefront_client):
         )
 
 
-def main():
-    """Send sample metrics in a loop."""
-    wavefront_proxy_url = sys.argv[1]
+def main(wavefront_proxy_url=None):
+    """Send sample metrics in a loop.
+    :param wavefront_proxy_url:
+    """
 
     client_factory = WavefrontClientFactory()
     client_factory.add_client(wavefront_proxy_url)
@@ -104,4 +105,4 @@ if __name__ == '__main__':
     # Either "proxy://our.proxy.lb.com:2878"
     #     Or "https://someToken@DOMAIN.wavefront.com"
     #     should be passed as an input in sys.argv[1]
-    main()
+    main(sys.argv[1])
