@@ -76,7 +76,7 @@ class WavefrontClient(unittest.TestCase):
         self.assertTrue(multi_client_factory.existing_client(wavefront_cluster_base_url))
 
         # if there is only one client and using CSP Api Token
-        fake_csp_api_token = "fake-csp-app-secret"
+        fake_csp_api_token = "fake-csp-api-token"
         multi_client_factory = WavefrontClientFactory()
         multi_client_factory.add_client(
             wavefront_cluster_base_url,

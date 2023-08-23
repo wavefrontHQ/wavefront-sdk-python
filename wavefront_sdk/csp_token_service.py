@@ -1,13 +1,33 @@
+import logging
 import base64
 import threading
 import time
 
 import requests
 
+LOGGER = logging.getLogger('wavefront_sdk.CSPServerToServerTokenService')
 token_ready = False
 
+class TokenExchangeResponse:
+    id_token: str
+    token_type: str
+    expires_in: int
+    scope: str
+    access_token: str
+    refresh_token: str
+
+
 class CSPServerToServerTokenService:
+    """CSP Server to Server Token Service."""
+
     def __init__(self, csp_base_url, csp_app_id=None, csp_app_secret=None, csp_api_token=None):
+        """Construct CSPServerToServerTokenService.
+
+        @param csp_base_url: CSP console URL.
+        @param csp_app_id: CSP OAuth server to server app id.
+        @param csp_app_secret: CSP OAuth server to server app secret.
+        @param csp_api_token: CSP Api token.
+        """
         self.csp_base_url = csp_base_url
         self.csp_app_id = csp_app_id
         self.csp_app_secret = csp_app_secret
@@ -15,6 +35,25 @@ class CSPServerToServerTokenService:
         self.csp_access_token = None
         self.token_expiration_time = 0
         self.lock = threading.Lock()
+        self._auth_type = ""
+        self._set_auth_type()
+        self._response = TokenExchangeResponse()
+        self._closed = False
+        self._schedule_lock = threading.RLock()
+        self._timer = None
+
+    def _set_auth_type(self):
+        if self.csp_app_id and self.csp_app_secret:
+            self._auth_type = "csp_oauth_app"
+        elif self.csp_api_token:
+            self._auth_type = "csp_api_token"
+
+    def _schedule_timer(self):
+        if not self._closed:
+            self._timer = threading.Timer(self.reporting_interval_secs,
+                                          self._run)
+            self._timer.daemon = True
+            self._timer.start()
 
     def refresh_token_oauth(self):
         oauthPath = "/csp/gateway/am/api/auth/authorize"
@@ -28,15 +67,22 @@ class CSPServerToServerTokenService:
         }
 
         response = requests.post(self.csp_base_url + oauthPath, data, headers=headers)
+        LOGGER.debug("response: %s", response.json())
 
         if response.status_code == 200:
             data = response.json()
-            expires_in = data.get("expires_in")
-            self.token_expiration_time = time.time() + expires_in
-            print(f"Token refreshed, which expires in {expires_in} seconds:", self.csp_access_token)
-            return data.get("access_token")
+            self._response.id_token = data.get("id_token")
+            self._response.token_type = data.get("token_type")
+            self._response.expires_in = data.get("expires_in")
+            self._response.scope = data.get("scope")
+            self._response.access_token = data.get("access_token")
+            self._response.refresh_token = data.get("refresh_token")
+            self.token_expiration_time = time.time() + self._response.expires_in
+            LOGGER.info("Token refreshed, which expires in %d seconds.", self._response.expires_in)
+            return self._response.access_token
         else:
-            print("Token refresh failed with status code:", response.status_code)
+            LOGGER.error("Token refresh failed with status code: %d", response.status_code)
+            return None
 
     def refresh_token(self):
         def refresh_thread(expires_in):
@@ -95,7 +141,18 @@ class CSPServerToServerTokenService:
     def encode_csp_credentials(self):
         return base64.b64encode((self.csp_app_id + ":" + self.csp_app_secret).encode("utf-8")).decode("utf-8")
 
-    def get_time_offset(expires_in):
+    def get_time_offset(expires_in: int):
+        """Returns the calculated time offset.
+
+        Calculates the time offset for scheduling regular requests to a CSP
+        based on the expiration time of a CSP access token.
+        If the access token expiration time is less than 10 minutes,
+        schedule requests 30 seconds before it expires.
+        if the access token expiration time is 10 minutes or more,
+        schedule requests 3 minutes before it expires.
+
+        @param expires_in: The expiration time of the CSP access token in seconds.
+        """
         if expires_in < 600:
             return expires_in - 30
         return expires_in - 180
