@@ -7,11 +7,10 @@ import requests
 token_ready = False
 
 class CSPServerToServerTokenService:
-
-    def __init__(self, csp_base_url, csp_client_id, csp_client_secret, csp_api_token=None):
+    def __init__(self, csp_base_url, csp_app_id=None, csp_app_secret=None, csp_api_token=None):
         self.csp_base_url = csp_base_url
-        self.csp_client_id = csp_client_id
-        self.csp_client_secret = csp_client_secret
+        self.csp_app_id = csp_app_id
+        self.csp_app_secret = csp_app_secret
         self.csp_api_token = csp_api_token
         self.csp_access_token = None
         self.token_expiration_time = 0
@@ -94,7 +93,7 @@ class CSPServerToServerTokenService:
             return self.csp_access_token
 
     def encode_csp_credentials(self):
-        return base64.b64encode((self.csp_client_id + ":" + self.csp_client_secret).encode("utf-8")).decode("utf-8")
+        return base64.b64encode((self.csp_app_id + ":" + self.csp_app_secret).encode("utf-8")).decode("utf-8")
 
     def get_time_offset(expires_in):
         if expires_in < 600:

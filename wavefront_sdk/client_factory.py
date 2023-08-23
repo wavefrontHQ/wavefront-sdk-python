@@ -31,18 +31,25 @@ class WavefrontClientFactory:
                    flush_interval_seconds=5, enable_internal_metrics=True,
                    queue_impl=queue.Queue,
                    csp_base_url=DEFAULT_CSP_BASE_URL,
-                   csp_client_id=None,
-                   csp_client_secret=None):
+                   csp_app_id=None,
+                   csp_app_secret=None,
+                   csp_api_token=None):
         """Create a unique client."""
-        if csp_client_id is not None and csp_client_secret is not None:
-            # In the CSP case, the user should only pass in the URL,
-            # not token@url, but for consistency
-            # I think we should preserve this function call.
+        # In the CSP case, the user should only pass in the URL,
+        # not token@url, but for consistency
+        # I think we should preserve this function call.
+        if csp_app_id and csp_app_secret: # CSP OAuth App
             server, _ = self.get_server_info_from_endpoint(url)
             token_or_token_service = CSPServerToServerTokenService(
-                csp_base_url,
-                csp_client_id,
-                csp_client_secret,
+                csp_base_url=csp_base_url,
+                csp_app_id=csp_app_id,
+                csp_app_secret=csp_app_secret,
+            )
+        elif csp_api_token: # CSP Api Token
+            server, _ = self.get_server_info_from_endpoint(url)
+            token_or_token_service = CSPServerToServerTokenService(
+                csp_base_url=csp_base_url,
+                csp_api_token=csp_api_token,
             )
         else:
             server, token_or_token_service = self.get_server_info_from_endpoint(url)

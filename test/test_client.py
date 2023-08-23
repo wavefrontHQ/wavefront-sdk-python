@@ -5,6 +5,7 @@
 
 import unittest
 import uuid
+from unittest.mock import Mock
 
 import requests
 
@@ -23,7 +24,7 @@ class TestUtils(unittest.TestCase):
             enable_internal_metrics=False)
         self._spans_log_buffer = self._sender._spans_log_buffer
         self._tracing_spans_buffer = self._sender._tracing_spans_buffer
-        self._response = unittest.mock.Mock()
+        self._response = Mock()
         self._response.status_code = 200
 
     def test_send_version_with_internal_metrics(self):
@@ -119,7 +120,7 @@ class TestUtils(unittest.TestCase):
             self._sender._report('',
                                  self._sender.WAVEFRONT_EVENT_FORMAT,
                                  '',
-                                 unittest.mock.Mock())
+                                 Mock())
             mock_post.assert_called_once_with(unittest.mock.ANY,
                                               headers=unittest.mock.ANY,
                                               data=unittest.mock.ANY)
@@ -129,7 +130,7 @@ class TestUtils(unittest.TestCase):
         with unittest.mock.patch.object(
                 requests.Session, 'post',
                 return_value=self._response) as mock_post:
-            self._sender._report('', 'metric', '', unittest.mock.Mock())
+            self._sender._report('', 'metric', '', Mock())
             mock_post.assert_called_once_with(unittest.mock.ANY,
                                               params=unittest.mock.ANY,
                                               headers=unittest.mock.ANY,

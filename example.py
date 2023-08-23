@@ -60,7 +60,7 @@ def send_tracing_span(wavefront_client):
             ('http.method', 'GET')
         ],  # span tags (list[tuple])
         None  # span log
-    )
+        )
 
 
 def send_event(wavefront_client):
@@ -75,26 +75,29 @@ def send_event(wavefront_client):
             "severity": "info",
             "type": "backup",
             "details": "broker backup"
-        }  # event annotations (dict)
-    )
+            }  # event annotations (dict)
+        )
 
 
 def main(wavefront_proxy_url,
          csp_base_url=None,
-         csp_client_id=None,
-         csp_client_secret=None):
+         csp_app_id=None,
+         csp_app_secret=None,
+         csp_api_token=None):
     """Send sample metrics in a loop.
     :param wavefront_proxy_url:
     :param csp_base_url:
-    :param csp_client_id:
-    :param csp_client_secret:
+    :param csp_app_id:
+    :param csp_app_secret:
+    :param csp_api_token:
     """
 
     client_factory = WavefrontClientFactory()
     client_factory.add_client(wavefront_proxy_url,
                               csp_base_url=csp_base_url,
-                              csp_client_id=csp_client_id,
-                              csp_client_secret=csp_client_secret)
+                              csp_app_id=csp_app_id,
+                              csp_app_secret=csp_app_secret,
+                              csp_api_token=csp_api_token)
     wfront_client = client_factory.get_client()
 
     try:
@@ -113,10 +116,13 @@ def main(wavefront_proxy_url,
 if __name__ == '__main__':
     # Either "proxy://our.proxy.lb.com:2878"
     #     Or "https://someToken@DOMAIN.wavefront.com"
-    #     Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com" "CSP_CLIENT_ID" "CSP_CLIENT_SECRET"
+    #     Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com" "CSP_APP_ID" "CSP_APP_SECRET"
+    #     Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com" "CSP_API_TOKEN"
     #     should be passed as an input in sys.argv
 
     if len(sys.argv) == 5:
         main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    elif len(sys.argv) == 4:
+        main(sys.argv[1], sys.argv[2], csp_api_token=sys.argv[3])
     else:
         main(sys.argv[1])
