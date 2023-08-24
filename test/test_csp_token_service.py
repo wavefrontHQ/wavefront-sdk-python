@@ -7,6 +7,7 @@ import unittest
 from uuid import uuid4
 from unittest.mock import Mock, patch, ANY
 
+from requests.exceptions import HTTPError
 import requests
 
 from wavefront_sdk.csp_token_service import CSPTokenService, CSPServerToServerTokenService
@@ -41,16 +42,39 @@ class TestCspTokenService(unittest.TestCase):
 
     def test_csp_api_unsuccessful_response(self):
         """Test unsuccessful CSP api token response"""
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.json.return_value = {
+            "uri": "string",
+            "requestId": "string",
+            "message": "string",
+            "cspError": {
+                "moduleCode": "CSP_ONBOARD_TOOL_TEST",
+                "metadata": {
+                    "additionalProp1": {},
+                    "additionalProp2": {},
+                    "additionalProp3": {}
+                },
+                "errorMessageCode": "string",
+                "numericModuleCode": 0,
+                "errorCode": 0
+            },
+            "causes": [
+                "string"
+            ],
+            "statusCode": 0
+        }
         token_service = CSPTokenService(
             "https://cspbaseurl.vmware.com",
-            csp_api_token="fake-csp-api-token",
+            csp_api_token="fake-token",
         )
-        # expect call to mock
-        # returns status code 4xx error
-        # returns status code 5xx error
-        # expect call to get_token using csp-api-token
-        # returns None for access_token
-        self.assertIsNone(token_service.get_access_token())
+
+        with patch.object(requests, 'post', return_value=mock_response) as mock:
+            actual_access_token = token_service.get_access_token()
+
+        mock.assert_called_once_with(ANY, {"api_token": "fake-token"}, headers=ANY, timeout=ANY)
+        self.assertIsNone(actual_access_token)
+        self.assertRaises(HTTPError)
 
     # CSPServerToServerTokenService tests
     def test_oauth_app_successful_response(self):
@@ -79,17 +103,40 @@ class TestCspTokenService(unittest.TestCase):
 
     def test_oauth_app_unsuccessful_response(self):
         """Test unsuccessful CSP OAuth app response"""
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.json.return_value = {
+            "uri": "string",
+            "requestId": "string",
+            "message": "string",
+            "cspError": {
+                "moduleCode": "CSP_ONBOARD_TOOL_TEST",
+                "metadata": {
+                    "additionalProp1": {},
+                    "additionalProp2": {},
+                    "additionalProp3": {}
+                },
+                "errorMessageCode": "string",
+                "numericModuleCode": 0,
+                "errorCode": 0
+            },
+            "causes": [
+                "string"
+            ],
+            "statusCode": 0
+        }
         token_service = CSPServerToServerTokenService(
             "https://cspbaseurl.vmware.com",
             csp_app_id="fake-csp-app-id",
             csp_app_secret="fake-csp-app-secret",
         )
-        # expect call to mock
-        # returns status code 4xx error
-        # returns status code 5xx error
-        # expect call to get_token using csp-app-id and csp-app-secret
-        # returns None for access_token
-        self.assertIsNone(token_service.get_access_token())
+
+        with patch.object(requests, 'post', return_value=mock_response) as mock:
+            actual_access_token = token_service.get_access_token()
+
+        mock.assert_called_once_with(ANY, {"grant_type": "client_credentials"}, headers=ANY, timeout=ANY)
+        self.assertIsNone(actual_access_token)
+        self.assertRaises(HTTPError)
 
 
 if __name__ == '__main__':
