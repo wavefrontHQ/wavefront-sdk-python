@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
 
-from wavefront_sdk.csp_token_service import CSPServerToServerTokenService
+from wavefront_sdk.csp_token_service import CSPTokenService, CSPServerToServerTokenService
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClientFactory')
 
@@ -45,8 +45,9 @@ class WavefrontClientFactory:
         server, token_or_token_service = self.get_server_info_from_endpoint(url)
         if csp_app_id: # CSP OAuth App
             if not csp_app_secret:
-                raise RuntimeError("To use server to server oauth, both 'csp_app_id' and 'csp_app_secret' are required.")
-            LOGGER.info("CSP OAuth server to server app credentials for further authentication. For the server %s", server)
+                raise RuntimeError("Both 'csp_app_id' and 'csp_app_secret' are required.")
+            LOGGER.info("CSP OAuth server to server app credentials for further authentication. "
+                        + "For the server %s", server)
             token_or_token_service = CSPServerToServerTokenService(
                 csp_base_url=csp_base_url,
                 csp_app_id=csp_app_id,
@@ -54,7 +55,7 @@ class WavefrontClientFactory:
             )
         elif csp_api_token: # CSP Api Token
             LOGGER.info("CSP api token for further authentication. For the server %s", server)
-            token_or_token_service = CSPServerToServerTokenService(
+            token_or_token_service = CSPTokenService(
                 csp_base_url=csp_base_url,
                 csp_api_token=csp_api_token,
             )

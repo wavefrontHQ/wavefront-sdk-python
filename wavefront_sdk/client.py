@@ -16,11 +16,10 @@ try:
 except ImportError:  # Python 2.x
     import Queue as queue  # noqa
 
+from wavefront_sdk.csp_token_service import CSPTokenService, CSPServerToServerTokenService
 from . import entities
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
-
-from wavefront_sdk.csp_token_service import CSPServerToServerTokenService
 
 
 class WavefrontClient(connection_handler.ConnectionHandler,
@@ -68,7 +67,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         super().__init__()
         self.server = server
 
-        if type(token) == CSPServerToServerTokenService:
+        if isinstance(token, (CSPTokenService, CSPServerToServerTokenService)):
             self._token_service = token
             self._token = "UNSET"
         else:

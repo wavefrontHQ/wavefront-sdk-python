@@ -1,147 +1,138 @@
+"""Wavefront CSP Token Service to support CSP authentication.
+
+@author Jerry Belmonte (bjerry@vmware.com)
+"""
+
 import logging
-import base64
-import threading
+from base64 import b64encode
 import time
 
+from requests.exceptions import HTTPError
 import requests
 
 LOGGER = logging.getLogger('wavefront_sdk.CSPServerToServerTokenService')
-token_ready = False
 
-class TokenExchangeResponse:
-    id_token: str
-    token_type: str
-    expires_in: int
-    scope: str
+class CSPAuthorizeResponse:
+    """CSP Authorize Response."""
     access_token: str
+    expires_in: int
+    id_token: str
     refresh_token: str
+    scope: str
+    token_type: str
+
+    def set_auth_response(self, response):
+        """Sets the CSP auth response.
+
+        @param response: The json-encoded response.
+        """
+        self.access_token = response.get("access_token")
+        self.expires_in = response.get("expires_in")
+        self.id_token = response.get("id_token")
+        self.refresh_token = response.get("refresh_token")
+        self.scope = response.get("scope")
+        self.token_type = response.get("token_type")
+
+class CSPTokenService:
+    """Service that gets access tokens via CSP API token."""
+
+    # The end-point for exchanging organization scoped API-tokens only
+    oauth_path = "/csp/gateway/am/api/auth/api-tokens/authorize"
+
+    def __init__(self, csp_base_url, csp_api_token):
+        """Construct CSPTokenService.
+
+        @param csp_base_url: CSP console URL.
+        @param csp_api_token: CSP Api token.
+        """
+        self._csp_base_url = csp_base_url
+        self._csp_api_token = csp_api_token
+        self._csp_access_token = None
+        self._token_expiration_time = 0
+        self._csp_response = CSPAuthorizeResponse()
+
+    def _get_request_url(self):
+        if str(self._csp_base_url).endswith("/"):
+            return str(self._csp_base_url).removesuffix("/") + CSPTokenService.oauth_path
+        return self._csp_base_url + CSPTokenService.oauth_path
+
+    def get_access_token(self):
+        """Gets the access token."""
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        data = {"api_token": f"{self._csp_api_token}"}
+        try:
+            response = requests.post(self._get_request_url(), data, headers=headers, timeout=5)
+            if response.status_code == 200:
+                self._csp_response.set_auth_response(response.json())
+                self._csp_access_token = self._csp_response.access_token
+                self._token_expiration_time = time.time() + self._csp_response.expires_in
+                LOGGER.info("CSP authentication succeeded, access token expires in %d seconds.",
+                            self._csp_response.expires_in)
+                return self._csp_access_token
+            LOGGER.error("CSP authentication failed with status code: %d", response.status_code)
+            response.raise_for_status()
+        except HTTPError:
+            LOGGER.error("CSP authentication failed: http error")
+        except ConnectionError:
+            LOGGER.error("CSP authentication failed: connection error")
+        return None
 
 
 class CSPServerToServerTokenService:
-    """CSP Server to Server Token Service."""
+    """Server to server service that gets access tokens via CSP OAuth."""
 
-    def __init__(self, csp_base_url, csp_app_id=None, csp_app_secret=None, csp_api_token=None):
+    oauth_path = "/csp/gateway/am/api/auth/authorize"
+
+    def __init__(self, csp_base_url, csp_app_id, csp_app_secret):
         """Construct CSPServerToServerTokenService.
 
         @param csp_base_url: CSP console URL.
         @param csp_app_id: CSP OAuth server to server app id.
         @param csp_app_secret: CSP OAuth server to server app secret.
-        @param csp_api_token: CSP Api token.
         """
-        self.csp_base_url = csp_base_url
-        self.csp_app_id = csp_app_id
-        self.csp_app_secret = csp_app_secret
-        self.csp_api_token = csp_api_token
-        self.csp_access_token = None
-        self.token_expiration_time = 0
-        self.lock = threading.Lock()
-        self._auth_type = ""
-        self._set_auth_type()
-        self._response = TokenExchangeResponse()
-        self._closed = False
-        self._schedule_lock = threading.RLock()
-        self._timer = None
+        self._csp_base_url = csp_base_url
+        self._csp_app_id = csp_app_id
+        self._csp_app_secret = csp_app_secret
+        self._csp_access_token = None
+        self._token_expiration_time = 0
+        self._csp_response = CSPAuthorizeResponse()
 
-    def _set_auth_type(self):
-        if self.csp_app_id and self.csp_app_secret:
-            self._auth_type = "csp_oauth_app"
-        elif self.csp_api_token:
-            self._auth_type = "csp_api_token"
+    def _encode_csp_credentials(self):
+        csp_credentials = self._csp_app_id + ":" + self._csp_app_secret
+        return b64encode((csp_credentials).encode("utf-8")).decode("utf-8")
 
-    def _schedule_timer(self):
-        if not self._closed:
-            self._timer = threading.Timer(self.reporting_interval_secs,
-                                          self._run)
-            self._timer.daemon = True
-            self._timer.start()
+    def _get_auth_header_value(self):
+        return "Basic " + self._encode_csp_credentials()
 
-    def refresh_token_oauth(self):
-        oauthPath = "/csp/gateway/am/api/auth/authorize"
-        headers = {
-            "Authorization": f"Basic {self.encode_csp_credentials()}",
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
+    def _get_request_url(self):
+        if self._csp_base_url.endswith("/"):
+            return self._csp_base_url.removesuffix("/") + CSPServerToServerTokenService.oauth_path
+        return self._csp_base_url + CSPServerToServerTokenService.oauth_path
 
-        data = {
-            "grant_type": "client_credentials"
-        }
-
-        response = requests.post(self.csp_base_url + oauthPath, data, headers=headers)
-        LOGGER.debug("response: %s", response.json())
-
-        if response.status_code == 200:
-            data = response.json()
-            self._response.id_token = data.get("id_token")
-            self._response.token_type = data.get("token_type")
-            self._response.expires_in = data.get("expires_in")
-            self._response.scope = data.get("scope")
-            self._response.access_token = data.get("access_token")
-            self._response.refresh_token = data.get("refresh_token")
-            self.token_expiration_time = time.time() + self._response.expires_in
-            LOGGER.info("Token refreshed, which expires in %d seconds.", self._response.expires_in)
-            return self._response.access_token
-        else:
-            LOGGER.error("Token refresh failed with status code: %d", response.status_code)
-            return None
-
-    def refresh_token(self):
-        def refresh_thread(expires_in):
-            time.sleep(self.get_time_offset(expires_in))  # Wait for expires_in - 3 minutes
-            oauthPath = "/am/api/auth/api-tokens/authorize"
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
-
-            data = {
-                "api_token": f"{self.csp_api_token}"
-            }
-
-            response = requests.post(self.csp_base_url + oauthPath, data, headers=headers)
-
+    def get_access_token(self):
+        """Gets the access token."""
+        headers = {"Authorization": self._get_auth_header_value(),
+                   "Content-Type": "application/x-www-form-urlencoded"}
+        data = {"grant_type": "client_credentials"}
+        try:
+            response = requests.post(self._get_request_url(), data, headers=headers, timeout=5)
             if response.status_code == 200:
-                data = response.json()
-
-                if not self.has_direct_ingest_scope(data.get("scope")):
-                    print("The CSP response did not find any scope matching 'aoa:directDataIngestion' which is required for Wavefront direct ingestion.");
-
-                # Schedule token refresh in future before it expires.
-                thread_delay = data.get("expires_in")
-                print(f"A CSP token has been received. Will schedule the CSP token to be refreshed in: " + {thread_delay} + " seconds");
-
-                self.token_expiration_time = time.time() + thread_delay
-                thread = threading.Thread(target=refresh_thread, args=thread_delay)
-                thread.start()
-                print(f"Token refreshed, which expires in {thread_delay} seconds:", self.csp_access_token)
-                return data.get("access_token")
-
+                self._csp_response.set_auth_response(response.json())
+                self._csp_access_token = self._csp_response.access_token
+                self._token_expiration_time = time.time() + self._csp_response.expires_in
+                LOGGER.info("CSP authentication succeeded, access token expires in %d seconds.",
+                            self._csp_response.expires_in)
+                return self._csp_access_token
             else:
-                print("Token refresh failed with status code:", response.status_code)
-                if response.status_code >= 500 and response.status_code < 600:
-                    print("The Wavefront SDK will try to reauthenticate with CSP on the next request.")
-                    global token_ready
-                    token_ready = False
-        thread = threading.Thread(target=refresh_thread, args=0)
-        thread.start()
+                LOGGER.error("CSP authentication failed with status code: %d", response.status_code)
+                response.raise_for_status()
+        except HTTPError:
+            LOGGER.error("CSP authentication failed: http error")
+        except ConnectionError:
+            LOGGER.error("CSP authentication failed: connection error")
+        return None
 
-    def get_csp_token(self, auth_type="cspapitoken"):
-        with self.lock:
-            current_time = time.time()
-            # TODO: Replace global variable with synchronized lock?
-            global token_ready
-            if not token_ready:
-            # if not self.csp_access_token or current_time >= self.token_expiration_time:
-                if auth_type == "oauth":
-                    self.csp_access_token = self.refresh_token_oauth()
-                else:
-                    #TODO: Get this working
-                    self.csp_access_token = self.refresh_token()
-                token_ready = True
-            return self.csp_access_token
-
-    def encode_csp_credentials(self):
-        return base64.b64encode((self.csp_app_id + ":" + self.csp_app_secret).encode("utf-8")).decode("utf-8")
-
-    def get_time_offset(expires_in: int):
+    def get_time_offset(self, expires_in: int):
         """Returns the calculated time offset.
 
         Calculates the time offset for scheduling regular requests to a CSP
@@ -156,20 +147,3 @@ class CSPServerToServerTokenService:
         if expires_in < 600:
             return expires_in - 30
         return expires_in - 180
-
-    def has_direct_ingest_scope(scope_list):
-        if scope_list:
-            parsed_scopes = scope_list.split()
-            return any("aoa:directDataIngestion" in s or "aoa/*" in s or "aoa:*" in s for s in parsed_scopes)
-        return False
-
-# TODO: Remove below
-# csp api token auth type                                            expired scenario
-# - inputcreds(api_token) -> server                 | function call to refresh token to be made just before ttl expires, this would refresh ttl also -> cspapi(api_token) -> server
-#   accesstoken(ttl of api_token) <- server
-#   client(accesstoken) -> wavefrontserver
-#
-# oauth auth type                                             expired scenario
-# - inputcreds(appid+secret) -> server              | before expiry call -> inputcreds(appid+secret) -> server
-#   accesstoken(ttl) <- server                      |
-#   client(accesstoken) -> wavefrontserver          |

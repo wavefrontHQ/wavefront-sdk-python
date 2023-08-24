@@ -8,3 +8,5 @@ lib/
 lib64/
 env/
 venv/
+.idea/
+.vscode/
