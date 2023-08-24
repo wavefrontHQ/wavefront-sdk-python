@@ -52,7 +52,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
 
         @param server: Server address,
         @type server: str
-        @param token: Server token,
+        @param token: Server token or CSP Token Service,
         @type token: Union[str, CSPServerToServerTokenService, None]
         @param max_queue_size:
         @type max_queue_size: int
@@ -202,7 +202,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         """
         try:
             if self._token_service:
-                self._token = self._token_service.get_csp_token()
+                self._token = self._token_service.get_access_token()
                 self._session.headers.update({'Authorization': 'Bearer ' + self._token})
 
             if data_format == self.WAVEFRONT_EVENT_FORMAT and self._token:
