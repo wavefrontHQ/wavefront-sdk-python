@@ -94,7 +94,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._session.timeout = self.HTTP_TIMEOUT
 
         if token and self._token_service:
-            ingestion_type = 'csp'
+            ingestion_type = 'direct'
         elif token and not self._token_service:
             self._session.headers.update({'Authorization': 'Bearer ' + token})
             ingestion_type = 'direct'
@@ -202,7 +202,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         """
         try:
             if self._token_service:
-                self._token = self._token_service.get_access_token()
+                self._token = self._token_service.get_csp_access_token()
                 self._session.headers.update({'Authorization': 'Bearer ' + self._token})
 
             if data_format == self.WAVEFRONT_EVENT_FORMAT and self._token:

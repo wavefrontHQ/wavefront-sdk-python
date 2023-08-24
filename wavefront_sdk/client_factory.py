@@ -24,7 +24,7 @@ class WavefrontClientFactory:
     PROXY_SCHEME = "proxy"
     HTTP_PROXY_SCHEME = "http"
     DIRECT_DATA_INGESTION_SCHEME = "https"
-    DEFAULT_CSP_BASE_URL = "https://console.cloud.vmware.com/"
+    DEFAULT_CSP_BASE_URL = "https://console.cloud.vmware.com"
 
     def __init__(self):
         """Keep track of initialized clients on instance level."""
@@ -37,6 +37,7 @@ class WavefrontClientFactory:
                    csp_base_url=DEFAULT_CSP_BASE_URL,
                    csp_app_id=None,
                    csp_app_secret=None,
+                   csp_org_id=None,
                    csp_api_token=None):
         """Create a unique client."""
         # In the CSP case, the user should only pass in the URL,
@@ -52,6 +53,7 @@ class WavefrontClientFactory:
                 csp_base_url=csp_base_url,
                 csp_app_id=csp_app_id,
                 csp_app_secret=csp_app_secret,
+                csp_org_id=csp_org_id,
             )
         elif csp_api_token: # CSP Api Token
             LOGGER.info("CSP api token for further authentication. For the server %s", server)
