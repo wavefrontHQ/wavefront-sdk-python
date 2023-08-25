@@ -45,9 +45,11 @@ class CSPAuthorizeResponse:
         return self.expires_in - 180
 
     def has_direct_inject_scope(self):
-        allowed_scopes = ["ALL_PERMISSIONS", "aoa:directDataIngestion", "aoa:*", "aoa/*"]
-        r = re.compile('ALL_PERMISSIONS|aoa:directDataIngestion|aoa:*|aoa/*')
-        return any(r.match(scope) for scope in allowed_scopes)
+        valid_scopes = ["ALL_PERMISSIONS", "aoa:directDataIngestion", "aoa:*", "aoa/*"]
+        for scope in self.scope.split():
+            if any(scope.endswith(val) for val in valid_scopes):
+                return True
+        return False
 
 
 class CSPTokenService:
