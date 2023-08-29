@@ -16,9 +16,6 @@ LOGGER = logging.getLogger('wavefront_sdk.auth.csp.TokenService')
 CSP_API_TOKEN_SERVICE_TYPE = 'TOKEN'
 CSP_OAUTH_TOKEN_SERVICE_TYPE = 'OAUTH'
 CSP_REQUEST_TIMEOUT_SEC = 30
-CSP_SCOPE_ERROR_MESSAGE = ("The CSP response did not find any scope matching: 'aoa:*' or 'aoa/*'"
-                           + " or 'aoa:directDataIngestion' or 'ALL_PERMISSIONS', which is "
-                           + "required for Wavefront direct ingestion.")
 
 
 class TokenService(ABC):
@@ -125,6 +122,11 @@ class CSPTokenService(TokenService):
     """CSP Token Service Implementation."""
 
     def __init__(self, csp_type: str, csp_service):
+        """Construct CSP Token Service.
+
+        @param csp_type: The csp token service type.
+        @param csp_service: The csp service object.
+        """
         self._csp_type = csp_type
         self._csp_service = csp_service
         self._csp_access_token = None
@@ -144,8 +146,6 @@ class CSPTokenService(TokenService):
             if code == 200:
                 self._csp_response = AuthorizeResponse()
                 self._csp_response.set_auth_response(response.json())
-                if not self._csp_response.has_direct_inject_scope():
-                    LOGGER.error(CSP_SCOPE_ERROR_MESSAGE)
                 self._csp_access_token = self._csp_response.access_token
                 self._token_expiration_time = time() + self._csp_response.get_time_offset()
                 LOGGER.info("CSP authentication succeeded, access token expires in %d seconds.",

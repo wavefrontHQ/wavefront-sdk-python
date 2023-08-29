@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
 from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
+from wavefront_sdk.auth.csp.token_service import CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClientFactory')
@@ -49,14 +50,14 @@ class WavefrontClientFactory:
             }
             services = TokenServiceProvider()
             if csp_app_id and csp_app_secret:
-                token_type = 'OAUTH'
+                token_type = CSP_OAUTH_TOKEN_SERVICE_TYPE
                 token_or_token_service = services.get(token_type, **config)
                 LOGGER.info("CSP OAuth server to server app credentials for further authentication."
                             + " For the server %s", csp_base_url)
             elif csp_app_id and not csp_app_secret:
                 raise RuntimeError("Both 'csp_app_id' and 'csp_app_secret' are required.")
             elif csp_api_token:
-                token_type = 'TOKEN'
+                token_type = CSP_API_TOKEN_SERVICE_TYPE
                 token_or_token_service = services.get(token_type, **config)
                 LOGGER.info("CSP api token for further authentication."
                             + " For the server %s", csp_base_url)

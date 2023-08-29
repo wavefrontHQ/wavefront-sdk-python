@@ -45,21 +45,3 @@ class AuthorizeResponse:
         if self.expires_in < 600:
             return self.expires_in - 30
         return self.expires_in - 180
-
-    def get_scopes(self):
-        """Get the scopes for the token.
-
-        @return: List of scopes.
-        """
-        return self.scope.split()
-
-    def has_direct_inject_scope(self):
-        """Check if the scope is valid.
-
-        @return: True if scope is valid for direct injestion.
-        """
-        valid_scopes = ['aoa:directDataIngestion', 'aoa:*', 'aoa/*', 'ALL_PERMISSIONS']
-        for scope in self.get_scopes():
-            if any(scope.endswith(valid) for valid in valid_scopes):
-                return True
-        return False

@@ -19,7 +19,10 @@ except ImportError:  # Python 2.x
 from . import entities
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
-from .auth.csp.token_service import CSPTokenService
+from .auth.csp.token_service import CSPTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+
+
+LOGGER = logging.getLogger('wavefront_sdk.WavefrontClient')
 
 
 class WavefrontClient(connection_handler.ConnectionHandler,
@@ -44,6 +47,11 @@ class WavefrontClient(connection_handler.ConnectionHandler,
     EVENT_END_POINT = '/api/v2/event'
     HTTP_TIMEOUT = 60.0
 
+    AUTH_TYPE_PROXY = 'proxy'
+    AUTH_TYPE_WF_API_TOKEN = 'wavefront_api_token'
+    AUTH_TYPE_CSP_API_TOKEN = 'csp_api_token'
+    AUTH_TYPE_CSP_OAUTH = 'csp_oauth'
+
     def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
                  flush_interval_seconds=5, enable_internal_metrics=True,
                  queue_impl=queue.Queue):
@@ -53,7 +61,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         @param server: Server address,
         @type server: str
         @param token: Server token or CSP Token Service,
-        @type token: Union[str, CSPTokenService, None]
+        @type token: Any
         @param max_queue_size:
         @type max_queue_size: int
         Max Queue Size, size of internal data buffer for each data type.
@@ -72,6 +80,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         if isinstance(token, CSPTokenService):
             self._token_service = token
             self._token = "UNSET"
+            LOGGER.debug("CSP Authentication enabled: %s", self._token_service.get_type())
 
         self._max_queue_size = max_queue_size
         self._batch_size = batch_size
@@ -92,18 +101,24 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._session.headers.update({'Content-Encoding': 'gzip'})
         self._session.timeout = self.HTTP_TIMEOUT
 
+        ingestion_type = 'proxy'
+        auth_type = WavefrontClient.AUTH_TYPE_PROXY
         if token:
-            if not self._token_service:
-                self._session.headers.update({'Authorization': 'Bearer ' + token})
             ingestion_type = 'direct'
-        else:
-            ingestion_type = 'proxy'
+            if self._token_service and self._token_service.get_type() == CSP_API_TOKEN_SERVICE_TYPE:
+                auth_type = WavefrontClient.AUTH_TYPE_CSP_API_TOKEN
+            elif self._token_service and self._token_service.get_type() == CSP_OAUTH_TOKEN_SERVICE_TYPE:
+                auth_type = WavefrontClient.AUTH_TYPE_CSP_OAUTH
+            else:
+                auth_type = WavefrontClient.AUTH_TYPE_WF_API_TOKEN
+                self._session.headers.update({'Authorization': 'Bearer ' + token})
 
         if enable_internal_metrics:
             version = utils.get_version(constants.WAVEFRONT_SDK_PYTHON)
+            LOGGER.debug("Auth type point tag: %s", auth_type)
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
-                tags={'version': version},
+                tags={'version': version, 'authType': auth_type},
                 prefix=f'{constants.SDK_METRIC_PREFIX}'
                        f'.core.sender.{ingestion_type}'
             )

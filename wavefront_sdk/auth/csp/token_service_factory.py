@@ -20,6 +20,7 @@ CSP_ORG_ID = 'csp_org_id'
 
 class TokenServiceFactory:
     """Token Service Factory."""
+
     def __init__(self):
         self._builders = {}
 
@@ -46,7 +47,7 @@ class TokenServiceFactory:
         """Create a new token service.
 
         @param service_id: Value used to identify the token service type.
-        @param **kwargs: Keyword arguments for the token service builder.
+        @param kwargs: Keyword arguments for the token service builder.
         @return: New instance of the token service.
         """
         token_service_builder = self.get_builder(service_id)
