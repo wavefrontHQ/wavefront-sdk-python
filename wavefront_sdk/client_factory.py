@@ -42,20 +42,26 @@ class WavefrontClientFactory:
         # I think we should preserve this function call.
         server, token_or_token_service = self.get_server_info_from_endpoint(url)
         if csp_app_id or csp_api_token:
-            config = {'csp_app_id': csp_app_id, 'csp_app_secret': csp_app_secret, 'csp_org_id': csp_org_id,
-                      'csp_api_token': csp_api_token, 'base_url': csp_base_url}
+            config = {
+                'csp_app_id': csp_app_id,
+                'csp_app_secret': csp_app_secret,
+                'csp_org_id': csp_org_id,
+                'csp_api_token': csp_api_token,
+                'base_url': csp_base_url
+            }
             services = TokenServiceProvider()
             if csp_app_id and csp_app_secret:
                 token_type = 'OAUTH'
                 token_or_token_service = services.get(token_type, **config)
-                LOGGER.info("CSP OAuth server to server app credentials for further authentication. "
-                            + "For the server %s", csp_base_url)
+                LOGGER.info("CSP OAuth server to server app credentials for further authentication."
+                            + " For the server %s", csp_base_url)
             elif csp_app_id and not csp_app_secret:
                 raise RuntimeError("Both 'csp_app_id' and 'csp_app_secret' are required.")
             elif csp_api_token:
                 token_type = 'TOKEN'
                 token_or_token_service = services.get(token_type, **config)
-                LOGGER.info("CSP api token for further authentication. For the server %s", csp_base_url)
+                LOGGER.info("CSP api token for further authentication."
+                            + " For the server %s", csp_base_url)
 
         if self.existing_client(server):
             raise RuntimeError("client with id " + url + " already exists.")

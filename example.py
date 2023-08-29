@@ -2,12 +2,16 @@
 """Wavefront SDK Usage Example."""
 
 import platform
+import logging
 import sys
 import time
 import uuid
 
 from wavefront_sdk.client_factory import WavefrontClientFactory
 from wavefront_sdk.entities.histogram import histogram_granularity
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, datefmt='%r',
+                    format='%(asctime)-12s %(levelname)-6s [%(threadName)s] (%(name)s) "%(message)s"')
 
 
 def send_metrics(wavefront_client):

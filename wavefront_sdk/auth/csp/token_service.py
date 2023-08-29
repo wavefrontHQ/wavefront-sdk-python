@@ -19,21 +19,37 @@ CSP_REQUEST_TIMEOUT_SEC = 30
 
 class TokenService(ABC):
     """Service that gets access tokens."""
+
     @abstractmethod
     def get_token(self) -> str:
-        pass
+        """Get the token service access token.
+
+        @return: The access token.
+        """
 
     @abstractmethod
     def get_type(self) -> str:
-        pass
+        """Get the token service type.
+
+        @return: The service type.
+        """
 
 
 @dataclass(frozen=True)
 class APIServerURL:
+    """API Server URL.
+
+    @param base_url: The base URL for the server.
+    @param auth_path: The authentication end-point.
+    """
     base_url: str
     auth_path: str
 
     def get_server_url(self):
+        """Gets the full authentication server URL.
+
+        @return: The authentication server URL.
+        """
         if self.base_url.endswith('/'):
             return self.base_url.removesuffix('/') + self.auth_path
         return self.base_url + self.auth_path
@@ -41,37 +57,67 @@ class APIServerURL:
 
 @dataclass(frozen=True)
 class CSPAPIToken(APIServerURL):
+    """CSP Api Token.
+
+    @param token: The value of the API token.
+    """
     token: str
 
     def get_data(self):
+        """Get the HTTP request body.
+
+        @return: The data for the request body.
+        """
         return {'api_token': self.token}
 
     def get_headers(self):
+        """Get the HTTP request headers.
+
+        @return: The parameters for request headers.
+        """
         return {'Content-Type': 'application/x-www-form-urlencoded'}
 
 
 @dataclass(frozen=True)
 class CSPClientCredentials(APIServerURL):
+    """CSP Client Credentials.
+
+    @param client_id: The CSP OAuth app id.
+    @param client_secret: The CSP OAuth app secret.
+    @param org_id: Unique identifier (GUID) of the organization.
+    """
     client_id: str
     client_secret: str
     org_id: str = ''
 
     def get_data(self):
+        """Get the HTTP request body.
+
+        @return: The data for the request body.
+        """
         data = {'grant_type': 'client_credentials'}
         if self.org_id:
             data['orgId'] = self.org_id
         return data
 
     def encode_csp_credentials(self):
+        """Encodes the CSP client credentials.
+
+        @return: Base64 encoded client credentials.
+        """
         csp_credentials = self.client_id + ":" + self.client_secret
         return b64encode(csp_credentials.encode("utf-8")).decode("utf-8")
 
     def get_headers(self):
+        """Get the HTTP request headers.
+
+        @return: The parameters for request headers.
+        """
         return {'Authorization': f'Basic {self.encode_csp_credentials()}',
                 'Content-Type': 'application/x-www-form-urlencoded'}
 
 
-class CSPTokenService(TokenService):
+class CSPUserTokenService(TokenService):
     """Service that gets access tokens via CSP API token."""
     def __init__(self, csp_api_token: CSPAPIToken):
         """Construct CSPTokenService.
@@ -88,7 +134,6 @@ class CSPTokenService(TokenService):
         return self._csp_type
 
     def get_token(self):
-        """Gets the access token."""
         try:
             response = post(self._csp_api_token.get_server_url(),
                             data=self._csp_api_token.get_data(),
@@ -98,8 +143,8 @@ class CSPTokenService(TokenService):
             if response.status_code == 200:
                 self._csp_response.set_auth_response(data)
                 if not self._csp_response.has_direct_inject_scope():
-                    LOGGER.error("The CSP response did not find any scope matching "
-                                 + "('aoa:directDataIngestion' or 'aoa:*' or 'aoa/*' or 'ALL_PERMISSIONS')"
+                    LOGGER.error("The CSP response did not find any scope matching: 'aoa:*' or "
+                                 + "'aoa/*' or 'aoa:directDataIngestion' or 'ALL_PERMISSIONS'"
                                  + ", which is required for Wavefront direct ingestion.")
                 self._csp_access_token = self._csp_response.access_token
                 self._token_expiration_time = time() + self._csp_response.get_time_offset()
@@ -118,12 +163,16 @@ class CSPTokenService(TokenService):
         return None
 
     def get_csp_access_token(self):
+        """Get the CSP access token.
+
+        @return: The access token.
+        """
         if not self._csp_access_token or time() >= self._token_expiration_time:
             return self.get_token()
         return self._csp_access_token
 
 
-class CSPServerToServerTokenService:
+class CSPServerToServerTokenService(TokenService):
     """Server to server service that gets access tokens via CSP OAuth."""
     def __init__(self, csp_client_credentials: CSPClientCredentials):
         """Construct CSPServerToServerTokenService.
@@ -140,7 +189,6 @@ class CSPServerToServerTokenService:
         return self._csp_type
 
     def get_token(self):
-        """Gets the access token."""
         try:
             response = post(self._csp_client_credentials.get_server_url(),
                             data=self._csp_client_credentials.get_data(),
@@ -150,8 +198,8 @@ class CSPServerToServerTokenService:
             if response.status_code == 200:
                 self._csp_response.set_auth_response(data)
                 if not self._csp_response.has_direct_inject_scope():
-                    LOGGER.error("The CSP response did not find any scope matching "
-                                 + "('aoa:directDataIngestion' or 'aoa:*' or 'aoa/*' or 'ALL_PERMISSIONS')"
+                    LOGGER.error("The CSP response did not find any scope matching: 'aoa:*' or "
+                                 + "'aoa/*' or 'aoa:directDataIngestion' or 'ALL_PERMISSIONS'"
                                  + ", which is required for Wavefront direct ingestion.")
                 self._csp_access_token = self._csp_response.access_token
                 self._token_expiration_time = time() + self._csp_response.get_time_offset()
@@ -171,6 +219,10 @@ class CSPServerToServerTokenService:
         return None
 
     def get_csp_access_token(self):
+        """Get the CSP access token.
+
+        @return: The access token.
+        """
         if not self._csp_access_token or time() >= self._token_expiration_time:
             return self.get_token()
         return self._csp_access_token
