@@ -9,7 +9,7 @@ from .csp_token_service import CSPTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_
 
 DEFAULT_CSP_BASE_URL = 'https://console.cloud.vmware.com'
 CSP_API_TOKEN_AUTH_PATH = '/csp/gateway/am/api/auth/api-tokens/authorize'
-CSP_CLIENT_CREDENTIALS_AUTH_PATH = '/csp/gateway/am/api/auth'
+CSP_CLIENT_CREDENTIALS_AUTH_PATH = '/csp/gateway/am/api/auth/authorize'
 CSP_BASE_URL_KEY = 'base_url'
 CSP_AUTH_PATH_KEY = 'auth_path'
 CSP_API_TOKEN = 'csp_api_token'
