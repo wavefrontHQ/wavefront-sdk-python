@@ -3,7 +3,7 @@
 @author Jerry Belmonte (bjerry@vmware.com)
 """
 
-from .token_service import CSPAPIToken, CSPClientCredentials
+from .token_service import CSPAPIToken, CSPClientCredentials, CSPTokenService, CSPServerToServerTokenService
 
 
 class TokenServiceFactory:
@@ -36,9 +36,10 @@ class CSPUserTokenServiceBuilder:
             self._current_service[name] = value
 
     def build(self):
-        return CSPAPIToken(token=self._current_service['csp_api_token'],
-                           base_url=self._current_service['base_url'],
-                           auth_path=self._current_service['auth_path'])
+        csp_api_token = CSPAPIToken(token=self._current_service['csp_api_token'],
+                                    base_url=self._current_service['base_url'],
+                                    auth_path=self._current_service['auth_path'])
+        return CSPTokenService(csp_api_token)
 
 
 class CSPServerToServerTokenServiceBuilder:
@@ -55,11 +56,12 @@ class CSPServerToServerTokenServiceBuilder:
             self._current_service[name] = value
 
     def build(self):
-        return CSPClientCredentials(client_id=self._current_service['csp_app_id'],
-                                    client_secret=self._current_service['csp_app_secret'],
-                                    org_id=self._current_service['csp_org_id'],
-                                    base_url=self._current_service['base_url'],
-                                    auth_path=self._current_service['auth_path'])
+        csp_client_credentials = CSPClientCredentials(client_id=self._current_service['csp_app_id'],
+                                                      client_secret=self._current_service['csp_app_secret'],
+                                                      org_id=self._current_service['csp_org_id'],
+                                                      base_url=self._current_service['base_url'],
+                                                      auth_path=self._current_service['auth_path'])
+        return CSPServerToServerTokenService(csp_client_credentials)
 
 
 class TokenServiceProvider(TokenServiceFactory):

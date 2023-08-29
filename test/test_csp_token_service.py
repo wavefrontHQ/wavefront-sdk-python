@@ -10,11 +10,14 @@ from unittest.mock import Mock, patch, ANY
 from requests.exceptions import HTTPError
 import requests
 
-from wavefront_sdk.csp_token_service import CSPTokenService, CSPServerToServerTokenService
+from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
 
 
 class TestCspTokenService(unittest.TestCase):
     """Tests for wavefront_sdk.csp_token_service."""
+
+    def setUp(self):
+        self._services = TokenServiceProvider()
 
     # CSPTokenService tests
     def test_csp_api_successful_response(self):
@@ -31,10 +34,12 @@ class TestCspTokenService(unittest.TestCase):
             "token_type": "bearer"
         }
 
-        token_service = CSPTokenService("https://cspbaseurl.vmware.com/",
-                                        csp_api_token="fake-token")
+        token_service = self._services.get('TOKEN', **{
+            'base_url': 'https://cspbaseurl.vmware.com/',
+            'csp_api_token': 'fake-token'
+        })
         with patch.object(requests, 'post', return_value=mock_response) as mock:
-            actual_access_token = token_service.get_access_token()
+            actual_access_token = token_service.get_csp_access_token()
 
         mock.assert_called_once_with(ANY, {"api_token": "fake-token"}, headers=ANY, timeout=ANY)
         self.assertIsNotNone(actual_access_token)
@@ -64,10 +69,11 @@ class TestCspTokenService(unittest.TestCase):
             ],
             "statusCode": 0
         }
-        token_service = CSPTokenService(
-            "https://cspbaseurl.vmware.com",
-            csp_api_token="fake-token",
-        )
+
+        token_service = self._services.get('TOKEN', **{
+            'base_url': 'https://cspbaseurl.vmware.com/',
+            'csp_api_token': 'fake-token'
+        })
 
         with patch.object(requests, 'post', return_value=mock_response) as mock:
             actual_access_token = token_service.get_access_token()
@@ -91,11 +97,14 @@ class TestCspTokenService(unittest.TestCase):
             "token_type": "bearer"
         }
 
-        token_service = CSPServerToServerTokenService("https://cspbaseurl.vmware.com",
-                                                      csp_app_id="fake-id",
-                                                      csp_app_secret="fake-secret")
+        token_service = self._services.get('OAUTH', **{
+            'base_url': 'https://cspbaseurl.vmware.com',
+            'csp_app_id': 'fake-id',
+            'csp_app_secret': 'fake-secret'
+        })
+
         with patch.object(requests, 'post', return_value=mock_response) as mock:
-            actual_access_token = token_service.get_access_token()
+            actual_access_token = token_service.get_csp_access_token()
 
         mock.assert_called_once_with(ANY, {"grant_type": "client_credentials"}, headers=ANY, timeout=ANY)
         self.assertIsNotNone(actual_access_token)
@@ -125,14 +134,15 @@ class TestCspTokenService(unittest.TestCase):
             ],
             "statusCode": 0
         }
-        token_service = CSPServerToServerTokenService(
-            "https://cspbaseurl.vmware.com",
-            csp_app_id="fake-csp-app-id",
-            csp_app_secret="fake-csp-app-secret",
-        )
+
+        token_service = self._services.get('OAUTH', **{
+            'base_url': 'https://cspbaseurl.vmware.com',
+            'csp_app_id': 'fake-id',
+            'csp_app_secret': 'fake-secret'
+        })
 
         with patch.object(requests, 'post', return_value=mock_response) as mock:
-            actual_access_token = token_service.get_access_token()
+            actual_access_token = token_service.get_csp_access_token()
 
         mock.assert_called_once_with(ANY, {"grant_type": "client_credentials"}, headers=ANY, timeout=ANY)
         self.assertIsNone(actual_access_token)
