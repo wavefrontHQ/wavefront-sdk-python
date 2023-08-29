@@ -8,13 +8,17 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from base64 import b64encode
 from time import time
-from requests import post
-from requests.exceptions import HTTPError, Timeout
+from requests import post, HTTPError, ConnectionError, Timeout
 from .authorize_response import AuthorizeResponse
 
 
 LOGGER = logging.getLogger('wavefront_sdk.auth.csp.TokenService')
+CSP_API_TOKEN_SERVICE_TYPE = 'TOKEN'
+CSP_OAUTH_TOKEN_SERVICE_TYPE = 'OAUTH'
 CSP_REQUEST_TIMEOUT_SEC = 30
+CSP_SCOPE_ERROR_MESSAGE = ("The CSP response did not find any scope matching: 'aoa:*' or 'aoa/*'"
+                           + " or 'aoa:directDataIngestion' or 'ALL_PERMISSIONS', which is "
+                           + "required for Wavefront direct ingestion.")
 
 
 class TokenService(ABC):
@@ -117,105 +121,49 @@ class CSPClientCredentials(APIServerURL):
                 'Content-Type': 'application/x-www-form-urlencoded'}
 
 
-class CSPUserTokenService(TokenService):
-    """Service that gets access tokens via CSP API token."""
-    def __init__(self, csp_api_token: CSPAPIToken):
-        """Construct CSPTokenService.
+class CSPTokenService(TokenService):
+    """CSP Token Service Implementation."""
 
-        @param csp_api_token: CSP API Token.
-        """
-        self._csp_api_token = csp_api_token
-        self._csp_type = 'TOKEN'
+    def __init__(self, csp_type: str, csp_service):
+        self._csp_type = csp_type
+        self._csp_service = csp_service
         self._csp_access_token = None
         self._token_expiration_time = 0
-        self._csp_response = AuthorizeResponse()
+        self._csp_response = None
 
     def get_type(self):
         return self._csp_type
 
     def get_token(self):
         try:
-            response = post(self._csp_api_token.get_server_url(),
-                            data=self._csp_api_token.get_data(),
-                            headers=self._csp_api_token.get_headers(),
+            response = post(self._csp_service.get_server_url(),
+                            data=self._csp_service.get_data(),
+                            headers=self._csp_service.get_headers(),
                             timeout=CSP_REQUEST_TIMEOUT_SEC)
-            data = response.json()
-            if response.status_code == 200:
-                self._csp_response.set_auth_response(data)
+            code = response.status_code
+            if code == 200:
+                self._csp_response = AuthorizeResponse()
+                self._csp_response.set_auth_response(response.json())
                 if not self._csp_response.has_direct_inject_scope():
-                    LOGGER.error("The CSP response did not find any scope matching: 'aoa:*' or "
-                                 + "'aoa/*' or 'aoa:directDataIngestion' or 'ALL_PERMISSIONS'"
-                                 + ", which is required for Wavefront direct ingestion.")
+                    LOGGER.error(CSP_SCOPE_ERROR_MESSAGE)
                 self._csp_access_token = self._csp_response.access_token
                 self._token_expiration_time = time() + self._csp_response.get_time_offset()
                 LOGGER.info("CSP authentication succeeded, access token expires in %d seconds.",
                             self._csp_response.expires_in)
                 return self._csp_access_token
-            LOGGER.error("CSP authentication failed with status code: %d", response.status_code)
-            response.raise_for_status()
-        except HTTPError:
-            LOGGER.error("CSP authentication failed: http error")
-        except ConnectionError:
-            LOGGER.error("CSP authentication failed: connection error")
-        except Timeout:
-            LOGGER.error("CSP authentication failed: request url %s timed out",
-                         self._csp_api_token.get_server_url())
-        return None
-
-    def get_csp_access_token(self):
-        """Get the CSP access token.
-
-        @return: The access token.
-        """
-        if not self._csp_access_token or time() >= self._token_expiration_time:
-            return self.get_token()
-        return self._csp_access_token
-
-
-class CSPServerToServerTokenService(TokenService):
-    """Server to server service that gets access tokens via CSP OAuth."""
-    def __init__(self, csp_client_credentials: CSPClientCredentials):
-        """Construct CSPServerToServerTokenService.
-
-        @param csp_client_credentials: CSP Client Credentials.
-        """
-        self._csp_client_credentials = csp_client_credentials
-        self._csp_type = 'OAUTH'
-        self._csp_access_token = None
-        self._token_expiration_time = 0
-        self._csp_response = AuthorizeResponse()
-
-    def get_type(self):
-        return self._csp_type
-
-    def get_token(self):
-        try:
-            response = post(self._csp_client_credentials.get_server_url(),
-                            data=self._csp_client_credentials.get_data(),
-                            headers=self._csp_client_credentials.get_headers(),
-                            timeout=CSP_REQUEST_TIMEOUT_SEC)
-            data = response.json()
-            if response.status_code == 200:
-                self._csp_response.set_auth_response(data)
-                if not self._csp_response.has_direct_inject_scope():
-                    LOGGER.error("The CSP response did not find any scope matching: 'aoa:*' or "
-                                 + "'aoa/*' or 'aoa:directDataIngestion' or 'ALL_PERMISSIONS'"
-                                 + ", which is required for Wavefront direct ingestion.")
-                self._csp_access_token = self._csp_response.access_token
-                self._token_expiration_time = time() + self._csp_response.get_time_offset()
-                LOGGER.info("CSP authentication succeeded, access token expires in %d seconds.",
-                            self._csp_response.expires_in)
-                return self._csp_access_token
-            else:
-                LOGGER.error("CSP authentication failed with status code: %d", response.status_code)
+            elif not response.ok:
+                data = response.json()
+                LOGGER.error("CSP authentication failed with status code: %d %s", code, data.get("message"))
                 response.raise_for_status()
-        except HTTPError:
-            LOGGER.error("CSP authentication failed: http error")
-        except ConnectionError:
-            LOGGER.error("CSP authentication failed: connection error")
-        except Timeout:
-            LOGGER.error("CSP authentication failed: request url %s timed out",
-                         self._csp_client_credentials.get_server_url())
+
+        except HTTPError as error:
+            LOGGER.error("CSP HTTP Error: %s", error)
+        except ConnectionError as error:
+            LOGGER.error("CSP Connection Error: %s", error)
+        except Timeout as error:
+            LOGGER.error("CSP Timeout Error: %s", error)
+        except Exception as error:
+            LOGGER.error("CSP authentication failed: %s", error)
         return None
 
     def get_csp_access_token(self):

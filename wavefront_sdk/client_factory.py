@@ -24,7 +24,6 @@ class WavefrontClientFactory:
     PROXY_SCHEME = "proxy"
     HTTP_PROXY_SCHEME = "http"
     DIRECT_DATA_INGESTION_SCHEME = "https"
-    DEFAULT_CSP_BASE_URL = "https://console.cloud.vmware.com"
 
     def __init__(self):
         """Keep track of initialized clients on instance level."""
@@ -33,9 +32,8 @@ class WavefrontClientFactory:
     # pylint: disable=too-many-arguments
     def add_client(self, url, max_queue_size=50000, batch_size=10000,
                    flush_interval_seconds=5, enable_internal_metrics=True,
-                   queue_impl=queue.Queue, csp_base_url=DEFAULT_CSP_BASE_URL,
-                   csp_app_id=None, csp_app_secret=None, csp_org_id=None,
-                   csp_api_token=None):
+                   queue_impl=queue.Queue, csp_base_url=None, csp_api_token=None,
+                   csp_app_id=None, csp_app_secret=None, csp_org_id=None):
         """Create a unique client."""
         # In the CSP case, the user should only pass in the URL,
         # not token@url, but for consistency

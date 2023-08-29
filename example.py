@@ -106,10 +106,10 @@ def main():
     try:
         while True:
             send_metrics(wfront_client)
-            send_histogram(wfront_client)
-            send_tracing_span(wfront_client)
-            send_delta_counter(wfront_client)
-            send_event(wfront_client)
+            # send_histogram(wfront_client)
+            # send_tracing_span(wfront_client)
+            # send_delta_counter(wfront_client)
+            # send_event(wfront_client)
 
             time.sleep(15)
     finally:

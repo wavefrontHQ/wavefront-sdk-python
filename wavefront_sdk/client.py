@@ -19,7 +19,7 @@ except ImportError:  # Python 2.x
 from . import entities
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
-from .auth.csp.token_service import TokenService
+from .auth.csp.token_service import CSPTokenService
 
 
 class WavefrontClient(connection_handler.ConnectionHandler,
@@ -53,7 +53,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         @param server: Server address,
         @type server: str
         @param token: Server token or CSP Token Service,
-        @type token: Union[str, TokenService, None]
+        @type token: Union[str, CSPTokenService, None]
         @param max_queue_size:
         @type max_queue_size: int
         Max Queue Size, size of internal data buffer for each data type.
@@ -69,7 +69,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._token = token
         self._token_service = None
 
-        if isinstance(token, TokenService):
+        if isinstance(token, CSPTokenService):
             self._token_service = token
             self._token = "UNSET"
 
