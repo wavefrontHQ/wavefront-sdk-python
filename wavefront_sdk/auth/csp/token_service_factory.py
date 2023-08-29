@@ -4,7 +4,7 @@
 """
 
 from .csp_request import CSPAPIToken, CSPClientCredentials
-from .csp_token_service import CSPTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from .csp_token_service import CSPAccessTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
 DEFAULT_CSP_BASE_URL = 'https://console.cloud.vmware.com'
@@ -92,7 +92,7 @@ class CSPUserTokenServiceBuilder:
             base_url=self._current_service[CSP_BASE_URL_KEY],
             auth_path=self._current_service[CSP_AUTH_PATH_KEY]
         )
-        return CSPTokenService(CSP_API_TOKEN_SERVICE_TYPE, csp_api_token)
+        return CSPAccessTokenService(CSP_API_TOKEN_SERVICE_TYPE, csp_api_token)
 
 
 class CSPServerToServerTokenServiceBuilder:
@@ -133,7 +133,7 @@ class CSPServerToServerTokenServiceBuilder:
             base_url=self._current_service[CSP_BASE_URL_KEY],
             auth_path=self._current_service[CSP_AUTH_PATH_KEY]
         )
-        return CSPTokenService(CSP_OAUTH_TOKEN_SERVICE_TYPE, csp_client_credentials)
+        return CSPAccessTokenService(CSP_OAUTH_TOKEN_SERVICE_TYPE, csp_client_credentials)
 
 
 class TokenServiceProvider(TokenServiceFactory):

@@ -19,7 +19,7 @@ except ImportError:  # Python 2.x
 from . import entities
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
-from .auth.csp.csp_token_service import CSPTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from .auth.csp.csp_token_service import CSPAccessTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClient')
@@ -77,7 +77,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._token = token
         self._token_service = None
 
-        if isinstance(token, CSPTokenService):
+        if isinstance(token, CSPAccessTokenService):
             self._token_service = token
             self._token = "UNSET"
             LOGGER.debug("CSP Authentication enabled: %s", self._token_service.get_type())
@@ -115,7 +115,6 @@ class WavefrontClient(connection_handler.ConnectionHandler,
 
         if enable_internal_metrics:
             version = utils.get_version(constants.WAVEFRONT_SDK_PYTHON)
-            LOGGER.debug("Auth type point tag: %s", auth_type)
             self._sdk_metrics_registry = registry.WavefrontSdkMetricsRegistry(
                 wf_metric_sender=self,
                 tags={'version': version, 'authType': auth_type},

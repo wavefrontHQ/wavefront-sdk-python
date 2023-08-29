@@ -11,11 +11,7 @@ class AuthorizeResponse:
     """Authorize Response."""
 
     access_token: str = field(default='', repr=False)
-    scope: str = ''
     expires_in: int = 0
-    id_token: str = field(default='', repr=False)
-    refresh_token: str = field(default='', repr=False)
-    token_type: str = ''
 
     def set_auth_response(self, response):
         """Sets the CSP auth response.
@@ -24,7 +20,6 @@ class AuthorizeResponse:
         """
         self.access_token = response.get("access_token")
         self.expires_in = response.get("expires_in")
-        self.scope = response.get("scope")
 
     def get_time_offset(self):
         """Calculates the time offset.
