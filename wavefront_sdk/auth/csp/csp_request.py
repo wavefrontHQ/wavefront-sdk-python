@@ -59,7 +59,7 @@ class CSPClientCredentials(AuthServerURL):
         @return: The data for the request body.
         """
         data = {'grant_type': 'client_credentials'}
-        if self.org_id:
+        if len(self.org_id) > 1:
             data['orgId'] = self.org_id
         return data
 
