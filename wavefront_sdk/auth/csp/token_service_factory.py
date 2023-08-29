@@ -3,8 +3,8 @@
 @author Jerry Belmonte (bjerry@vmware.com)
 """
 
-from .token_service import CSPAPIToken, CSPClientCredentials, CSPTokenService
-from .token_service import CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from .csp_request import CSPAPIToken, CSPClientCredentials
+from .csp_token_service import CSPTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
 DEFAULT_CSP_BASE_URL = 'https://console.cloud.vmware.com'

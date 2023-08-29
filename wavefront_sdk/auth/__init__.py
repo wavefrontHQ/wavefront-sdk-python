@@ -4,11 +4,13 @@
 """
 
 from .csp.authorize_response import AuthorizeResponse
+from .csp.csp_request import CSPAPIToken, CSPClientCredentials
+from .csp.csp_token_service import CSPTokenService
 from .csp.token_service_factory import TokenServiceProvider
-from .csp.token_service import TokenService, CSPTokenService
 
 
 __all__ = ['AuthorizeResponse',
-           'TokenService',
-           'TokenServiceProvider',
-           'CSPTokenService']
+           'CSPAPIToken',
+           'CSPClientCredentials',
+           'CSPTokenService',
+           'TokenServiceProvider']

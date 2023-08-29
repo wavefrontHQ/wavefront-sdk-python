@@ -8,14 +8,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class AuthorizeResponse:
-    """Authorize Response.
+    """Authorize Response."""
 
-    @param access_token: The access token.
-    @param scope: The scope of access needed for the token.
-    @param expires_in: Access token expiration in seconds.
-    @param id_token: The ID Token is a signed JWT token returned from the authorization server.
-    @param token_type: The type of the token.
-    """
     access_token: str = field(default='', repr=False)
     scope: str = ''
     expires_in: int = 0

@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
 from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
-from wavefront_sdk.auth.csp.token_service import CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from wavefront_sdk.auth.csp.csp_token_service import CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClientFactory')

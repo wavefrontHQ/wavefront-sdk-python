@@ -19,7 +19,7 @@ except ImportError:  # Python 2.x
 from . import entities
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
-from .auth.csp.token_service import CSPTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from .auth.csp.csp_token_service import CSPTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClient')
