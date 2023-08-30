@@ -20,7 +20,7 @@ class AuthServerURL:
         @return: The authentication server URL.
         """
         if self.base_url.endswith('/'):
-            return self.base_url.removesuffix('/') + self.auth_path
+            return self.base_url[:-1] + self.auth_path
         return self.base_url + self.auth_path
 
 

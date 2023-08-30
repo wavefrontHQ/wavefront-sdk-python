@@ -54,7 +54,7 @@ class CSPAccessTokenService(TokenService):
                             " expires in %d seconds.",
                             self._csp_response.expires_in)
                 return self._csp_access_token
-            elif not response.ok:
+            if not response.ok:
                 data = response.json()
                 LOGGER.error("CSP auth token refresh failed with status code:"
                              " %d %s", code, data.get("message"))
@@ -66,8 +66,6 @@ class CSPAccessTokenService(TokenService):
             LOGGER.error("CSP Connection Error: %s", error)
         except Timeout as error:
             LOGGER.error("CSP Timeout Error: %s", error)
-        except Exception as error:
-            LOGGER.error("CSP auth token refresh failed: %s", error)
         return None
 
     def get_csp_access_token(self):
