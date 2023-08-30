@@ -7,11 +7,11 @@ import logging
 import queue
 from urllib.parse import urlparse
 
+from wavefront_sdk.auth.csp.csp_token_service import \
+    CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
-from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
-from wavefront_sdk.auth.csp.csp_token_service import CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
-
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClientFactory')
 
@@ -33,13 +33,15 @@ class WavefrontClientFactory:
     # pylint: disable=too-many-arguments
     def add_client(self, url, max_queue_size=50000, batch_size=10000,
                    flush_interval_seconds=5, enable_internal_metrics=True,
-                   queue_impl=queue.Queue, csp_base_url=None, csp_api_token=None,
-                   csp_app_id=None, csp_app_secret=None, csp_org_id=None):
+                   queue_impl=queue.Queue, csp_base_url=None,
+                   csp_api_token=None, csp_app_id=None, csp_app_secret=None,
+                   csp_org_id=None):
         """Create a unique client."""
         # In the CSP case, the user should only pass in the URL,
         # not token@url, but for consistency
         # I think we should preserve this function call.
-        server, token_or_token_service = self.get_server_info_from_endpoint(url)
+        server, token_or_token_service = \
+            self.get_server_info_from_endpoint(url)
         if csp_app_id or csp_api_token:
             config = {
                 'csp_app_id': csp_app_id,
@@ -52,10 +54,12 @@ class WavefrontClientFactory:
             if csp_app_id and csp_app_secret:
                 token_type = CSP_OAUTH_TOKEN_SERVICE_TYPE
                 token_or_token_service = services.get(token_type, **config)
-                LOGGER.info("CSP OAuth server to server app credentials for further authentication."
-                            + " For the server %s", csp_base_url)
+                LOGGER.info("CSP OAuth server to server app credentials for "
+                            "further authentication. For the server %s",
+                            csp_base_url)
             elif csp_app_id and not csp_app_secret:
-                raise RuntimeError("Both 'csp_app_id' and 'csp_app_secret' are required.")
+                raise RuntimeError("Both 'csp_app_id' and 'csp_app_secret' are"
+                                   " required.")
             elif csp_api_token:
                 token_type = CSP_API_TOKEN_SERVICE_TYPE
                 token_or_token_service = services.get(token_type, **config)

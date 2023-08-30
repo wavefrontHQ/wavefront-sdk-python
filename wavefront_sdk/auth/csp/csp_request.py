@@ -3,8 +3,8 @@
 @author Jerry Belmonte (bjerry@vmware.com)
 """
 
-from dataclasses import dataclass
 from base64 import b64encode
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

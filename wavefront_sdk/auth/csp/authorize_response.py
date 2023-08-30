@@ -24,10 +24,11 @@ class AuthorizeResponse:
     def get_time_offset(self):
         """Calculates the time offset.
 
-        Calculates the time offset for scheduling regular requests to CSP based on the expiration
-        time of the token. If the access token expiration time is less than 10 minutes, schedule
-        requests 30 seconds before it expires. If the access token expiration time is 10 minutes
-        or more, schedule requests 3 minutes before it expires.
+        Calculates the time offset for scheduling regular requests to CSP based
+        on the expiration time of the token. If the access token expiration
+        time is less than 10 minutes, schedule requests 30 seconds before it
+        expires. If the access token expiration time is 10 minutes or more,
+        schedule requests 3 minutes before it expires.
 
         @return: The expiration time offset of the CSP access token in seconds.
         """

@@ -4,7 +4,8 @@
 """
 
 from .csp_request import CSPAPIToken, CSPClientCredentials
-from .csp_token_service import CSPAccessTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from .csp_token_service import CSPAccessTokenService,\
+    CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
 DEFAULT_CSP_BASE_URL = 'https://console.cloud.vmware.com'
@@ -27,7 +28,7 @@ class TokenServiceFactory:
     def add_builder(self, service_id, builder):
         """Add a new builder type.
 
-        @param service_id: Value used to identify the token service builder type.
+        @param service_id: Value used to identify token service builder type.
         @param builder: The class name of the token service builder object.
         """
         self._builders[service_id] = builder
@@ -35,7 +36,7 @@ class TokenServiceFactory:
     def get_builder(self, service_id):
         """Get a new builder type.
 
-        @param service_id: Value used to identify the token service builder type.
+        @param service_id: Value used to identify token service builder type.
         @return: New instance of the builder.
         """
         token_service_builder = self._builders.get(service_id)
@@ -66,7 +67,8 @@ class CSPUserTokenServiceBuilder:
     def create_builder(self, base_url=DEFAULT_CSP_BASE_URL):
         """Create the token service builder.
 
-        @param base_url: The CSP base URL. Defaults to 'https://console.cloud.vmware.com'.
+        @param base_url: The CSP base URL.
+                         Defaults to 'https://console.cloud.vmware.com'.
         """
         self._current_service = {
             CSP_BASE_URL_KEY: base_url,
@@ -104,7 +106,8 @@ class CSPServerToServerTokenServiceBuilder:
     def create_builder(self, base_url=DEFAULT_CSP_BASE_URL):
         """Create the token service builder.
 
-        @param base_url: The CSP base URL. Defaults to 'https://console.cloud.vmware.com'.
+        @param base_url: The CSP base URL.
+                         Defaults to 'https://console.cloud.vmware.com'.
         """
         self._current_service = {
             CSP_BASE_URL_KEY: base_url,
@@ -133,7 +136,8 @@ class CSPServerToServerTokenServiceBuilder:
             base_url=self._current_service[CSP_BASE_URL_KEY],
             auth_path=self._current_service[CSP_AUTH_PATH_KEY]
         )
-        return CSPAccessTokenService(CSP_OAUTH_TOKEN_SERVICE_TYPE, csp_client_credentials)
+        return CSPAccessTokenService(CSP_OAUTH_TOKEN_SERVICE_TYPE,
+                                     csp_client_credentials)
 
 
 class TokenServiceProvider(TokenServiceFactory):
@@ -141,8 +145,10 @@ class TokenServiceProvider(TokenServiceFactory):
 
     def __init__(self):
         super().__init__()
-        self.add_builder(CSP_API_TOKEN_SERVICE_TYPE, CSPUserTokenServiceBuilder)
-        self.add_builder(CSP_OAUTH_TOKEN_SERVICE_TYPE, CSPServerToServerTokenServiceBuilder)
+        self.add_builder(CSP_API_TOKEN_SERVICE_TYPE,
+                         CSPUserTokenServiceBuilder)
+        self.add_builder(CSP_OAUTH_TOKEN_SERVICE_TYPE,
+                         CSPServerToServerTokenServiceBuilder)
 
     def get(self, service, **kwargs):
         """Get the token service.

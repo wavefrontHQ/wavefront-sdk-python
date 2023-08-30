@@ -5,9 +5,11 @@
 
 import logging
 from time import time
-from requests import post, HTTPError, Timeout
-from .token_service import TokenService
+
+from requests import HTTPError, Timeout, post
+
 from .authorize_response import AuthorizeResponse
+from .token_service import TokenService
 
 
 LOGGER = logging.getLogger('wavefront_sdk.auth.csp.CSPAccessTokenService')
@@ -46,14 +48,16 @@ class CSPAccessTokenService(TokenService):
                 self._csp_response = AuthorizeResponse()
                 self._csp_response.set_auth_response(response.json())
                 self._csp_access_token = self._csp_response.access_token
-                self._token_expiration_time = time() + self._csp_response.get_time_offset()
-                LOGGER.info("CSP auth token refresh succeeded, access token expires in %d seconds.",
+                self._token_expiration_time =\
+                    time() + self._csp_response.get_time_offset()
+                LOGGER.info("CSP auth token refresh succeeded, access token"
+                            " expires in %d seconds.",
                             self._csp_response.expires_in)
                 return self._csp_access_token
             elif not response.ok:
                 data = response.json()
-                LOGGER.error("CSP auth token refresh failed with status code: %d %s",
-                             code, data.get("message"))
+                LOGGER.error("CSP auth token refresh failed with status code:"
+                             " %d %s", code, data.get("message"))
                 response.raise_for_status()
 
         except HTTPError as error:

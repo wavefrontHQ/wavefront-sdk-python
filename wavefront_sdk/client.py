@@ -17,10 +17,10 @@ except ImportError:  # Python 2.x
     import Queue as queue  # noqa
 
 from . import entities
+from .auth.csp.csp_token_service import CSPAccessTokenService, \
+    CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
-from .auth.csp.csp_token_service import CSPAccessTokenService, CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
-
 
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClient')
 
@@ -80,7 +80,8 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         if isinstance(token, CSPAccessTokenService):
             self._token_service = token
             self._token = "UNSET"
-            LOGGER.debug("CSP Authentication enabled: %s", self._token_service.get_type())
+            LOGGER.debug("CSP Authentication enabled: %s",
+                         self._token_service.get_type())
 
         self._max_queue_size = max_queue_size
         self._batch_size = batch_size
@@ -105,13 +106,16 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         auth_type = WavefrontClient.AUTH_TYPE_PROXY
         if token:
             ingestion_type = 'direct'
-            if self._token_service and self._token_service.get_type() == CSP_API_TOKEN_SERVICE_TYPE:
+            if self._token_service and self._token_service.get_type() == \
+                    CSP_API_TOKEN_SERVICE_TYPE:
                 auth_type = WavefrontClient.AUTH_TYPE_CSP_API_TOKEN
-            elif self._token_service and self._token_service.get_type() == CSP_OAUTH_TOKEN_SERVICE_TYPE:
+            elif self._token_service and self._token_service.get_type() == \
+                    CSP_OAUTH_TOKEN_SERVICE_TYPE:
                 auth_type = WavefrontClient.AUTH_TYPE_CSP_OAUTH
             else:
                 auth_type = WavefrontClient.AUTH_TYPE_WF_API_TOKEN
-                self._session.headers.update({'Authorization': 'Bearer ' + token})
+                self._session.headers.update({'Authorization': 'Bearer '
+                                                               + token})
 
         if enable_internal_metrics:
             version = utils.get_version(constants.WAVEFRONT_SDK_PYTHON)
@@ -215,7 +219,8 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         try:
             if self._token_service:
                 self._token = self._token_service.get_csp_access_token()
-                self._session.headers.update({'Authorization': 'Bearer ' + self._token})
+                self._session.headers.update({'Authorization': 'Bearer ' +
+                                                               self._token})
 
             if data_format == self.WAVEFRONT_EVENT_FORMAT and self._token:
                 response = self._session.post(
