@@ -10,10 +10,10 @@ from requests.exceptions import HTTPError
 import requests
 
 from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
-from wavefront_sdk.auth.csp.token_service import CSPTokenService, CSPAPIToken, CSPClientCredentials
+from wavefront_sdk.auth.csp.token_service import CSPAccessTokenService
 
 
-class TestCspTokenService(unittest.TestCase):
+class TestCSPAccessTokenService(unittest.TestCase):
     """Tests for wavefront_sdk.csp_token_service."""
 
     def setUp(self):
@@ -32,7 +32,7 @@ class TestCspTokenService(unittest.TestCase):
             'base_url': 'https://cspbaseurl.vmware.com/'
         }
         token_service = self._services.get('TOKEN', **config)
-        self.assertTrue(isinstance(token_service, CSPTokenService))
+        self.assertTrue(isinstance(token_service, CSPAccessTokenService))
         self.assertEqual('TOKEN', token_service.get_type())
 
     def test_csp_api_successful_response(self):
@@ -91,7 +91,7 @@ class TestCspTokenService(unittest.TestCase):
             'base_url': 'https://cspbaseurl.vmware.com'
         }
         token_service = self._services.get('OAUTH', **config)
-        self.assertTrue(isinstance(token_service, CSPTokenService))
+        self.assertTrue(isinstance(token_service, CSPAccessTokenService))
         self.assertEqual('OAUTH', token_service.get_type())
 
     def test_oauth_app_successful_response(self):
