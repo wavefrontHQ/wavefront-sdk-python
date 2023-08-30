@@ -4,7 +4,7 @@
 """
 
 from .csp_request import CSPAPIToken, CSPClientCredentials
-from .csp_token_service import CSPAccessTokenService,\
+from .csp_token_service import CSPAccessTokenService, \
     CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
 
 
