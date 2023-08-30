@@ -14,7 +14,7 @@ class AuthorizeResponse:
     expires_in: int = 0
 
     def set_auth_response(self, response):
-        """Sets the CSP auth response.
+        """Set the CSP auth response.
 
         @param response: The json-encoded response.
         """
@@ -22,7 +22,7 @@ class AuthorizeResponse:
         self.expires_in = response.get("expires_in")
 
     def get_time_offset(self):
-        """Calculates the time offset.
+        """Calculate the time offset.
 
         Calculates the time offset for scheduling regular requests to CSP based
         on the expiration time of the token. If the access token expiration

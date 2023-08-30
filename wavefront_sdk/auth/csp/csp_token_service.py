@@ -34,9 +34,17 @@ class CSPAccessTokenService(TokenService):
         self._csp_response = None
 
     def get_type(self):
+        """Get the token service type.
+
+        @return: The service type.
+        """
         return self._csp_type
 
     def get_token(self):
+        """Get the token service access token.
+
+        @return: The access token.
+        """
         LOGGER.debug("Retrieving the CSP access token.")
         try:
             response = post(self._csp_service.get_server_url(),

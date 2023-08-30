@@ -15,7 +15,7 @@ class AuthServerURL:
     auth_path: str
 
     def get_server_url(self):
-        """Gets the full authentication server URL.
+        """Get the full authentication server URL.
 
         @return: The authentication server URL.
         """
@@ -64,7 +64,7 @@ class CSPClientCredentials(AuthServerURL):
         return data
 
     def encode_csp_credentials(self):
-        """Encodes the CSP client credentials.
+        """Encode the CSP client credentials.
 
         @return: Base64 encoded client credentials.
         """

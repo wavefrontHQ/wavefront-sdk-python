@@ -23,6 +23,7 @@ class TokenServiceFactory:
     """Token Service Factory."""
 
     def __init__(self):
+        """Construct the Token Service Factory."""
         self._builders = {}
 
     def add_builder(self, service_id, builder):
@@ -62,6 +63,7 @@ class CSPUserTokenServiceBuilder:
     """CSP User Token Service Builder."""
 
     def __init__(self):
+        """Construct the CSP User Token Service Builder."""
         self._current_service = None
 
     def create_builder(self, base_url=DEFAULT_CSP_BASE_URL):
@@ -101,6 +103,7 @@ class CSPServerToServerTokenServiceBuilder:
     """CSP Server to Server Token Service Builder."""
 
     def __init__(self):
+        """Construct the CSP Server to Server Token Service Builder."""
         self._current_service = None
 
     def create_builder(self, base_url=DEFAULT_CSP_BASE_URL):
@@ -144,6 +147,7 @@ class TokenServiceProvider(TokenServiceFactory):
     """Token Service Provider."""
 
     def __init__(self):
+        """Construct the Token Service Provider."""
         super().__init__()
         self.add_builder(CSP_API_TOKEN_SERVICE_TYPE,
                          CSPUserTokenServiceBuilder)
