@@ -22,6 +22,7 @@ from .auth.csp.csp_token_service import CSPAccessTokenService, \
 from .common import connection_handler, constants, utils
 from .common.metrics import registry
 
+
 LOGGER = logging.getLogger('wavefront_sdk.WavefrontClient')
 
 

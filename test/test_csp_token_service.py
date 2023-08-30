@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 import requests
 
 from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
-from wavefront_sdk.auth.csp.token_service import CSPAccessTokenService
+from wavefront_sdk.auth.csp.csp_token_service import CSPAccessTokenService
 
 
 class TestCSPAccessTokenService(unittest.TestCase):
@@ -50,10 +50,14 @@ class TestCSPAccessTokenService(unittest.TestCase):
                 'csp_api_token': 'fake-token'
         }
 
-        with patch.object(requests, 'post', return_value=self._response) as mock_post:
+        with patch.object(
+            requests, 'post', return_value=self._response
+        ) as mock_post:
             token_service = self._services.get('TOKEN', **config)
             actual_access_token = token_service.get_csp_access_token()
-            mock_post.assert_called_once_with(ANY, {"api_token": "fake-token"}, headers=ANY, timeout=ANY)
+            mock_post.assert_called_once_with(
+                ANY, {"api_token": "fake-token"}, headers=ANY, timeout=ANY
+            )
 
         self.assertIsNotNone(actual_access_token)
         self.assertEqual(actual_access_token, "abc123")
@@ -76,7 +80,9 @@ class TestCSPAccessTokenService(unittest.TestCase):
         with patch.object(requests, 'post', return_value=response) as mock:
             actual_access_token = token_service.get_csp_access_token()
 
-        mock.assert_called_once_with(ANY, {"api_token": "fake-token"}, headers=ANY, timeout=ANY)
+        mock.assert_called_once_with(
+            ANY, {"api_token": "fake-token"}, headers=ANY, timeout=ANY
+        )
         self.assertIsNone(actual_access_token)
         self.assertRaises(HTTPError)
 
@@ -115,7 +121,9 @@ class TestCSPAccessTokenService(unittest.TestCase):
         with patch.object(requests, 'post', return_value=response) as mock:
             actual_access_token = token_service.get_csp_access_token()
 
-        mock.assert_called_once_with(ANY, {"grant_type": "client_credentials"}, headers=ANY, timeout=ANY)
+        mock.assert_called_once_with(
+            ANY, {"grant_type": "client_credentials"}, headers=ANY, timeout=ANY
+        )
         self.assertIsNotNone(actual_access_token)
         self.assertEqual(actual_access_token, "abc123")
 
@@ -138,7 +146,9 @@ class TestCSPAccessTokenService(unittest.TestCase):
         with patch.object(requests, 'post', return_value=response) as mock:
             actual_access_token = token_service.get_csp_access_token()
 
-        mock.assert_called_once_with(ANY, {"grant_type": "client_credentials"}, headers=ANY, timeout=ANY)
+        mock.assert_called_once_with(
+            ANY, {"grant_type": "client_credentials"}, headers=ANY, timeout=ANY
+        )
         self.assertIsNone(actual_access_token)
         self.assertRaises(HTTPError)
 

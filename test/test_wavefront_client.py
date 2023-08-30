@@ -58,9 +58,11 @@ class WavefrontClient(unittest.TestCase):
                                    .WavefrontMultiClient))
 
     def test_get_csp_client(self):
-        """Test get_client of WavefrontClientFactory for client with CSP configuration"""
+        """Test get_client of WavefrontClientFactory
+        for client with CSP configuration
+        """
 
-        wavefront_cluster_base_url = "https://csp-enabled-wfcluster.wavefront.com"
+        wavefront_cluster_base_url = "https://csp-enabled.wavefront.com"
 
         # if there is only one client and using CSP OAuth App ID and App Secret
         fake_oauth_app_id = "fake-csp-app-id"
@@ -73,7 +75,9 @@ class WavefrontClient(unittest.TestCase):
         )
         self.assertTrue(isinstance(multi_client_factory.get_client(),
                                    wavefront_sdk.client.WavefrontClient))
-        self.assertTrue(multi_client_factory.existing_client(wavefront_cluster_base_url))
+        self.assertTrue(
+            multi_client_factory.existing_client(wavefront_cluster_base_url)
+        )
 
         # if there is only one client and using CSP Api Token
         fake_csp_api_token = "fake-csp-api-token"
@@ -84,7 +88,9 @@ class WavefrontClient(unittest.TestCase):
         )
         self.assertTrue(isinstance(multi_client_factory.get_client(),
                                    wavefront_sdk.client.WavefrontClient))
-        self.assertTrue(multi_client_factory.existing_client(wavefront_cluster_base_url))
+        self.assertTrue(
+            multi_client_factory.existing_client(wavefront_cluster_base_url)
+        )
 
     def test_existing_client(self):
         """Test existing_client of WavefrontClientFactory"""

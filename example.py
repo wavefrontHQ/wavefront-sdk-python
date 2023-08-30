@@ -82,7 +82,8 @@ def send_event(wavefront_client):
 def main():
     """Send sample metrics in a loop."""
     wavefront_proxy_url = sys.argv[1]
-    csp_base_url, csp_api_token, csp_app_id, csp_app_secret, csp_org_id = None, None, None, None, None
+    csp_base_url, csp_api_token = None, None
+    csp_app_id, csp_app_secret, csp_org_id = None, None, None
 
     if len(sys.argv) == 4:
         csp_base_url = sys.argv[2]
@@ -95,8 +96,12 @@ def main():
             csp_org_id = sys.argv[5]
 
     client_factory = WavefrontClientFactory()
-    client_factory.add_client(wavefront_proxy_url, csp_base_url=csp_base_url, csp_api_token=csp_api_token,
-                              csp_app_id=csp_app_id, csp_app_secret=csp_app_secret, csp_org_id=csp_org_id)
+    client_factory.add_client(wavefront_proxy_url,
+                              csp_base_url=csp_base_url,
+                              csp_api_token=csp_api_token,
+                              csp_app_id=csp_app_id,
+                              csp_app_secret=csp_app_secret,
+                              csp_org_id=csp_org_id)
     wfront_client = client_factory.get_client()
 
     try:
@@ -116,10 +121,16 @@ if __name__ == '__main__':
     # Either "proxy://our.proxy.lb.com:2878"
     #     Or "https://someToken@DOMAIN.wavefront.com"
     #     should be passed as an input in sys.argv[1]
-    # Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com" "CSP_API_TOKEN"
-    #     should be passed as an input in sys.argv[1], sys.argv[2], and sys.argv[3]
-    # Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com" "CSP_APP_ID" "CSP_APP_SECRET"
-    #     should be passed as an input in sys.argv[1], sys.argv[2], sys.argv[3], and sys.argv[4]
-    # Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com" "CSP_APP_ID" "CSP_APP_SECRET" "ORG_ID"
-    #     should be passed as an input in sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], and sys.argv[5]
+    # Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com"
+    # "CSP_API_TOKEN"
+    #     should be passed as an input in sys.argv[1], sys.argv[2],
+    # and sys.argv[3]
+    # Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com"
+    # "CSP_APP_ID" "CSP_APP_SECRET"
+    #     should be passed as an input in sys.argv[1], sys.argv[2],
+    # sys.argv[3], and sys.argv[4]
+    # Or "https://DOMAIN.wavefront.com" "https://CSP_ENDPOINT.cloud.vmware.com"
+    # "CSP_APP_ID" "CSP_APP_SECRET" "ORG_ID"
+    #     should be passed as an input in sys.argv[1], sys.argv[2],
+    # sys.argv[3], sys.argv[4], and sys.argv[5]
     main()
