@@ -3,11 +3,18 @@
 @author Yogesh Prasad Kurmi (ykurmi@vmware.com)
 """
 
+import logging
 import queue
 from urllib.parse import urlparse
 
+from wavefront_sdk.auth.csp.csp_token_service import \
+    CSP_API_TOKEN_SERVICE_TYPE, CSP_OAUTH_TOKEN_SERVICE_TYPE
+from wavefront_sdk.auth.csp.token_service_factory import TokenServiceProvider
 from wavefront_sdk.client import WavefrontClient
 from wavefront_sdk.multi_clients import WavefrontMultiClient
+
+
+LOGGER = logging.getLogger('wavefront_sdk.WavefrontClientFactory')
 
 
 class WavefrontClientFactory:
@@ -24,19 +31,47 @@ class WavefrontClientFactory:
         """Keep track of initialized clients on instance level."""
         self.clients = []
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-locals
     def add_client(self, url, max_queue_size=50000, batch_size=10000,
                    flush_interval_seconds=5, enable_internal_metrics=True,
-                   queue_impl=queue.Queue):
+                   queue_impl=queue.Queue,
+                   csp_base_url=None, csp_api_token=None,
+                   csp_app_id=None, csp_app_secret=None, csp_org_id=None):
         """Create a unique client."""
-        server, token = self.get_server_info_from_endpoint(url)
+        # In the CSP case, the user should only pass in the URL,
+        # not token@url, but for consistency
+        # I think we should preserve this function call.
+        server, token_or_service = self.get_server_info_from_endpoint(url)
+        if csp_app_id or csp_api_token:
+            config = {
+                'csp_app_id': csp_app_id,
+                'csp_app_secret': csp_app_secret,
+                'csp_org_id': csp_org_id,
+                'csp_api_token': csp_api_token,
+                'base_url': csp_base_url
+            }
+            services = TokenServiceProvider()
+            if csp_app_id and csp_app_secret:
+                token_type = CSP_OAUTH_TOKEN_SERVICE_TYPE
+                token_or_service = services.get(token_type, **config)
+                LOGGER.info("CSP OAuth server to server app credentials for "
+                            + "further authentication. For the server %s",
+                            csp_base_url)
+            elif csp_app_id and not csp_app_secret:
+                raise RuntimeError("Both 'csp_app_id' and 'csp_app_secret' "
+                                   + "are required.")
+            elif csp_api_token:
+                token_type = CSP_API_TOKEN_SERVICE_TYPE
+                token_or_service = services.get(token_type, **config)
+                LOGGER.info("CSP api token for further authentication."
+                            + " For the server %s", csp_base_url)
 
         if self.existing_client(server):
             raise RuntimeError("client with id " + url + " already exists.")
 
         client = WavefrontClient(
             server=server,
-            token=token,
+            token=token_or_service,
             max_queue_size=max_queue_size,
             batch_size=batch_size,
             flush_interval_seconds=flush_interval_seconds,
