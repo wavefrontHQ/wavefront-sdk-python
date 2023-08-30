@@ -29,7 +29,7 @@ jobs:
       matrix:
         # TODO: Enable Windows
         # https://jira.eng.vmware.com/browse/MONIT-30833
-        os: [macos-11, ubuntu-latest]  # , windows-latest]
+        os: [macos-13, ubuntu-latest]  # , windows-latest]
         python_version: ['3.8', '3.9', '3.10', '3.11']
     runs-on: ${{ matrix.os }}
     steps:
