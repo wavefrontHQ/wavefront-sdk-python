@@ -50,7 +50,9 @@ Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can s
 
 The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` instance, which can send data to multiple services.
 
-#### Prerequisites for Create a WavefrontClient
+#### Initialize the WavefrontClient (Wavefront Proxy/direct ingestion)
+
+##### Prerequisites (Wavefront Proxy/direct ingestion)
 
 * Sending data via Wavefront Proxy?
   Before your application can use a `WavefrontClient` you must [set up and start a Wavefront Proxy](https://docs.wavefront.com/proxies_installing.html).
@@ -59,9 +61,7 @@ The `WavefrontClientFactory` supports multiple client bindings. If more than one
   * The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`. You can also use HTTP client with Wavefront Proxy version 7.0 or newer. Example: `http://proxy.acme.corp:2878`.
   * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
-#### Initialize the WavefrontClient
-
-**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via Wavefront Proxy.
+**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via Wavefront Proxy/direct ingestion.
 
 ```python
 from wavefront_sdk.client_factory import WavefrontClientFactory
@@ -78,6 +78,80 @@ from wavefront_sdk.client_factory import WavefrontClientFactory
 client_factory = WavefrontClientFactory()
 client_factory.add_client(
     url="<URL for proxy or direct ingestions>",
+    max_queue_size=50000,
+    batch_size=10000,
+    flush_interval_seconds=5)
+wavefront_sender = client_factory.get_client()
+```
+
+#### Initialize the WavefrontClient (CSP Api Token)
+
+##### Prerequisites (CSP Api Token)
+
+* The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`.
+* The base HTTP URL of your CSP console. This is the URL you connect to when you log in to the CSP console, typically something like `http://console.cloud.vmware.com`.
+* Verify that you have access to the CSP console. For details, see [Operations for Applications Permissions](https://docs.wavefront.com/csp_permissions_overview.html#operations-for-applications-permissions).
+* [Generating an API token](https://developer.vmware.com/apis/csp/).
+
+**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via CSP Api Token.
+
+```python
+from wavefront_sdk.client_factory import WavefrontClientFactory
+
+# Create a sender with:
+   # Required Parameter
+   #   URL format to send data via direct ingestion: "https://<DOMAIN>.wavefront.com"
+   #   URL format to get tokens via csp authentication: "https://<CSP_ENDPOINT>.cloud.vmware.com"
+   #   CSP Api Token for csp authentication: "<CSP_API_TOKEN>"
+   # Optional Parameter
+   #   max queue size (in data points). Default: 50000
+   #   batch size (in data points). Default: 10000
+   #   flush interval (in seconds). Default: 1 second
+
+client_factory = WavefrontClientFactory()
+client_factory.add_client(
+    url="<URL for direct ingestions>",
+    csp_base_url='<URL for csp authentication>',
+    csp_api_token="<Token for csp api>",
+    max_queue_size=50000,
+    batch_size=10000,
+    flush_interval_seconds=5)
+wavefront_sender = client_factory.get_client()
+```
+
+#### Initialize the WavefrontClient (CSP OAuth App)
+
+##### Prerequisites (CSP OAuth App)
+
+* The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`.
+* The base HTTP URL of your CSP console. This is the URL you connect to when you log in to the CSP console, typically something like `http://console.cloud.vmware.com`.
+* Verify that you have the required permissions for adding and managing OAuth apps in this Organization. For details, see [Organization roles and permissions](https://docs.vmware.com/en/VMware-Cloud-services/services/Using-VMware-Cloud-Services/GUID-C11D3AAC-267C-4F16-A0E3-3EDF286EBE53.html#organization-roles-and-permissions-0).
+* [Create a server to server app](https://docs.vmware.com/en/VMware-Cloud-services/services/Using-VMware-Cloud-Services/GUID-327AE12A-85DB-474B-89B2-86651DF91C77.html).
+
+**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via CSP OAuth App.
+
+```python
+from wavefront_sdk.client_factory import WavefrontClientFactory
+
+# Create a sender with:
+   # Required Parameter
+   #   URL format to send data via direct ingestion: "https://<DOMAIN>.wavefront.com"
+   #   URL format to get tokens via csp authentication: "https://<CSP_ENDPOINT>.cloud.vmware.com"
+   #   CSP OAuth App ID for csp authentication: "<CSP_APP_ID>"
+   #   CSP OAuth App secret for csp authentication: "<CSP_APP_SECRET>"
+   # Optional Parameter
+   #   CSP Organization ID for csp authentication. Default: None
+   #   max queue size (in data points). Default: 50000
+   #   batch size (in data points). Default: 10000
+   #   flush interval (in seconds). Default: 1 second
+
+client_factory = WavefrontClientFactory()
+client_factory.add_client(
+    url="<URL for direct ingestions>",
+    csp_base_url='<URL for csp authentication>',
+    csp_app_id="<ID for csp oauth app>",
+    csp_app_secret="<Secret for csp oauth app>",
+    csp_org_id="<ID for csp organization>",
     max_queue_size=50000,
     batch_size=10000,
     flush_interval_seconds=5)
