@@ -15,7 +15,7 @@
 * [Get the Failure Count](#get-the-failure-count)
 * [Close the Connection](#close-the-connection)
 * [License](#License)
-* [How to Get Support and Contribute](#how-to-get-support-and-contribute)
+* [Contribute](#contribute)
 
 # VMware Aria Operations™ for Applications Python SDK
 
@@ -429,16 +429,8 @@ total_failures = wavefront_sender.get_failure_count()
 ## License
 [Apache 2.0 License](LICENSE).
 
-## How to Get Support and Contribute
+## Contribute
 
-* When submitting changes, be sure to increment the version number in setup.py.
-  The version number is documented as such in setup.py.
-  We follow semantic versioning. For bug fixes, increment the patch version
-  (last number). For backward compatible changes to the API, update the
-  minor version (second number), and zero out the patch version. For breaking
-  changes to the API, increment the major version (first number) and zero out
-  the minor and patch versions.
-* Reach out to us on our public [Slack channel](https://www.wavefront.com/join-public-slack).
-* If you run into any issues, let us know by creating a GitHub issue.
+To get support with our project and contribute, follow the instructions in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 To create a new release, follow the instructions in [RELEASING.md](RELEASING.md)
