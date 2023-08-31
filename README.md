@@ -6,15 +6,15 @@
 [![image](https://img.shields.io/pypi/pyversions/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/wavefront-sdk-python)
 
-
 ## Table of Content
-* [Prerequisites](#Prerequisites)
+
+* [Prerequisites](#prerequisites)
 * [Set Up a Sender](#set-up-a-sender)
 * [Send a Single Data Point](#send-a-single-data-point)
 * [Send Batch Data](#send-batch-data)
 * [Get the Failure Count](#get-the-failure-count)
 * [Close the Connection](#close-the-connection)
-* [License](#License)
+* [License](#license)
 * [Contribute](#contribute)
 
 # VMware Aria Operations™ for Applications Python SDK
@@ -28,8 +28,9 @@ Note: We're in the process of updating the product name to Operations for Applic
 ## Prerequisites
 
 * Python versions 3.8 - 3.11 are supported.
-* Install `wavefront-sdk-python`
-    ```
+* Install `wavefront-sdk-python`:
+
+    ```python
     pip install wavefront-sdk-python
     ```
 
@@ -41,20 +42,25 @@ You can send metrics, histograms, or trace data from your application to the ser
 * Use a [**Wavefront Proxy**](https://docs.wavefront.com/proxies.html), which then forwards the data to the service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 
 You instantiate an object that corresponds to your choice:
+
 * Option 1 **(Deprecated)**: [Create a `WavefrontDirectClient`](#option-1-create-a-wavefrontdirectclient) to send data directly to a Wavefront service.
 * Option 2 **(Deprecated)**: [Create a `WavefrontProxyClient`](#option-2-create-a-wavefrontproxyclient) to send data to a Wavefront Proxy.
 * Option 3: [Create a `WavefrontClient`](#option-3-create-a-wavefrontclient) to send data to the service directly or via proxy.
+
 > **Deprecated implementations**: *`WavefrontDirectClient` and `WavefrontProxyClient` are deprecated from proxy version 7.0 onwards. We recommend all new applications to use the `WavefrontClient`.*
 
 ### Option 1: Create a WavefrontDirectClient
+
 When sending data via direct ingestion, you need to create a `WavefrontDirectClient`, and build it with the cluster URL and API token to send data directly to the service.
 
->**Prerequisites**
-> * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
-> * The URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `https://<domain>.wavefront.com`.
-> * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
+### Prerequisites to Create a WavefrontDirectClient
+
+* Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
+* The URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `https://<domain>.wavefront.com`.
+* [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
 #### Initialize the WavefrontDirectClient
+
 You initialize a `WavefrontDirectClient` by providing the access information you obtained in the Prerequisites section..
 
 Optionally, you can specify parameters to tune the following ingestion properties:
@@ -63,8 +69,7 @@ Optionally, you can specify parameters to tune the following ingestion propertie
 * Flush interval - Interval for flushing data from the sender directly to the service.
 * Batch size - Amount of data to send to the service in each flush interval.
 
-Together, the batch size and flush interval control the maximum theoretical throughput of the sender. You should override the defaults _only_ to set higher values.
-
+Together, the batch size and flush interval control the maximum theoretical throughput of the sender. You should override the defaults *only* to set higher values.
 
 ```python
 from wavefront_sdk import WavefrontDirectClient
@@ -86,8 +91,8 @@ wavefront_sender = WavefrontDirectClient(
 
 ### Option 2: Create a WavefrontProxyClient
 
->**Prerequisite** <br/>
->Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
+> **Prerequisite**:
+> Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
 
 When sending data via the Wavefront Proxy, you need to create a `WavefrontProxyClient`. Include the following information.
 
@@ -124,18 +129,22 @@ wavefront_sender = WavefrontProxyClient(
 | `tracing_port` | `traceListenerPorts=` |
 
 ### Option 3: Create a WavefrontClient
+
 Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can send data directly to the service or send data using a Wavefront Proxy.
 
 The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` instance, which can send data to multiple services.
-### Prerequisites
+
+#### Prerequisites for Create a WavefrontClient
+
 * Sending data via Wavefront Proxy?
-  <br/>Before your application can use a `WavefrontClient` you must [set up and start a Wavefront Proxy](https://docs.wavefront.com/proxies_installing.html).
+  Before your application can use a `WavefrontClient` you must [set up and start a Wavefront Proxy](https://docs.wavefront.com/proxies_installing.html).
 * Sending data via direct ingestion?
   * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
-  * The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`.<br/> You can also use HTTP client with Wavefront Proxy version 7.0 or newer. Example: `http://proxy.acme.corp:2878`.
+  * The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`. You can also use HTTP client with Wavefront Proxy version 7.0 or newer. Example: `http://proxy.acme.corp:2878`.
   * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
 ### Initialize the WavefrontClient
+
 ```python
 from wavefront_sdk.client_factory import WavefrontClientFactory
 
@@ -146,7 +155,7 @@ from wavefront_sdk.client_factory import WavefrontClientFactory
    # Optional Parameter
    #   max queue size (in data points). Default: 50000
    #   batch size (in data points). Default: 10000
-   #   flush interval  (in seconds). Default: 1 second
+   #   flush interval (in seconds). Default: 1 second
 
 client_factory = WavefrontClientFactory()
 client_factory.add_client(
@@ -156,8 +165,10 @@ client_factory.add_client(
     flush_interval_seconds=5)
 wavefront_sender = client_factory.get_client()
 ```
-#### Add multiple clients to client factory to send data to multiple services.
-```
+
+#### Add multiple clients to client factory to send data to multiple services
+
+```python
 from wavefront_sdk.client_factory import WavefrontClientFactory
 
 client_factory = WavefrontClientFactory()
@@ -196,6 +207,7 @@ wavefront_sender.send_delta_counter(
     source="localhost",
     tags={"datacenter": "dc1"})
 ```
+
 ***Note***: If your metric name has a bad character, that character is replaced with a `-`.
 
 ### Single Histogram Distribution
@@ -295,6 +307,7 @@ batch_metric_data = [one_metric_data, one_metric_data]
 # Send list of data immediately
 wavefront_sender.send_metric_now(batch_metric_data)
 ```
+
 ***Note***: If your metric name has a bad character, that character is replaced with a `-`.
 
 ### Batch Histograms
@@ -327,6 +340,7 @@ batch_histogram_data = [one_histogram_data, one_histogram_data]
 # Send list of data immediately
 wavefront_sender.send_distribution_now(batch_histogram_data)
 ```
+
 ### Batch Trace Data
 
 If you are directly using the Sender SDK to send data to the service, you won’t see span-level RED metrics by default unless you use the Wavefront Proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
@@ -396,6 +410,7 @@ If the application failed to send metrics, histograms, or trace data via the `wa
 # Get the total failure count
 total_failures = wavefront_sender.get_failure_count()
 ```
+
 ## Close the Connection
 
 * If the sender is from a `WavefrontClientFactory`, close the connection before shutting down the application.
@@ -407,6 +422,7 @@ total_failures = wavefront_sender.get_failure_count()
     # Close the sender connection
     wavefront_sender.close()
     ```
+
 * If the sender is a `WavefrontDirectClient`, flush all buffers and then close the connection before shutting down the application.
 
     ```python
@@ -417,6 +433,7 @@ total_failures = wavefront_sender.get_failure_count()
     # Close the sender connection
     wavefront_sender.close()
     ```
+
 * If the sender is a `WavefrontProxyClient`, close the connection before shutting down the application.
 
     ```python
@@ -427,6 +444,7 @@ total_failures = wavefront_sender.get_failure_count()
     ```
 
 ## License
+
 [Apache 2.0 License](LICENSE).
 
 ## Contribute
