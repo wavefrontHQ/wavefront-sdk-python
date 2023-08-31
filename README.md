@@ -1,4 +1,4 @@
-# wavefront-sdk-python
+# VMware Aria Operations™ for Applications Python SDK
 
 [![Build Status](https://github.com/wavefrontHQ/wavefront-sdk-python/actions/workflows/main.yml/badge.svg)](https://github.com/wavefrontHQ/wavefront-sdk-python/actions)
 [![image](https://img.shields.io/pypi/v/wavefront-sdk-python.svg)](https://pypi.org/project/wavefront-sdk-python/)
@@ -8,6 +8,7 @@
 
 ## Table of Content
 
+* [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Set Up a Sender](#set-up-a-sender)
 * [Send a Single Data Point](#send-a-single-data-point)
@@ -17,7 +18,7 @@
 * [License](#license)
 * [Contribute](#contribute)
 
-# VMware Aria Operations™ for Applications Python SDK
+## Overview
 
 VMware Aria Operations for Applications (formerly known as Wavefront) Python SDK lets you send raw data from your Python application to Operations for Applications using a wavefront_sender interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python.
 
