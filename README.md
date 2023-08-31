@@ -11,8 +11,7 @@
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Set Up a Sender](#set-up-a-sender)
-* [Send a Single Data Point](#send-a-single-data-point)
-* [Send Batch Data](#send-batch-data)
+* [Send Data](#send-data)
 * [Close the Sender](#close-the-sender)
 * [License](#license)
 * [Contribute](#contribute)
@@ -87,6 +86,8 @@ wavefront_sender = client_factory.get_client()
 
 #### Add multiple clients to client factory to send data to multiple services
 
+**Example**: Creating a `WavefrontMultiClient` to send data to multiple Operations for Applications services.
+
 ```python
 from wavefront_sdk.client_factory import WavefrontClientFactory
 
@@ -100,11 +101,20 @@ client_factory.add_client("http://<proxy_hostname>:30000")
 wavefront_sender = client_factory.get_client()
 ```
 
-## Send a Single Data Point
+## Send Data
+
+Operations for Applications supports different metric types, such as gauges, counters, delta counters, histograms, traces, and spans. See [Metrics](https://docs.wavefront.com/metric_types.html) for details. To send data to Operations for Applications using the `wavefront_sender` you need to instantiate the following:
+
+* [Single Metric or Delta Counter](#single-metric-or-delta-counter)
+* [Single Histogram Distribution](#single-histogram-distribution)
+* [Single Span](#single-span)
+* [Single Event](#single-event)
+
+### Send a Single Data Point
 
 The following examples show how to send a single data point to the service. You use the Wavefront Sender you created above.
 
-### Single Metric or  Delta Counter
+#### Single Metric or Delta Counter
 
 ```python
 from uuid import UUID
@@ -129,7 +139,7 @@ wavefront_sender.send_delta_counter(
 
 ***Note***: If your metric name has a bad character, that character is replaced with a `-`.
 
-### Single Histogram Distribution
+#### Single Histogram Distribution
 
 ```python
 from uuid import UUID
@@ -152,7 +162,7 @@ wavefront_sender.send_distribution(
     tags={"region": "us-west"})
 ```
 
-### Single Span
+#### Single Span
 
 If you are directly using the Sender SDK to send data to the service, you won’t see span-level RED metrics by default unless you use the Wavefront Proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with the Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
@@ -182,7 +192,7 @@ wavefront_sender.send_span(
     span_logs=None)
 ```
 
-### Single Event
+#### Single Event
 
 ```python
 # Wavefront event format:
@@ -198,11 +208,11 @@ wavefront_sender.send_event('event name',
                              "details": "broker backup"})
 ```
 
-## Send Batch Data
+### Send Batch Data
 
 The following examples show how to generate data points manually and send them as a batch to Wavefront.
 
-### Batch Metrics
+#### Batch Metrics
 
 ```python
 from uuid import UUID
@@ -229,7 +239,7 @@ wavefront_sender.send_metric_now(batch_metric_data)
 
 ***Note***: If your metric name has a bad character, that character is replaced with a `-`.
 
-### Batch Histograms
+#### Batch Histograms
 
 ```python
 from uuid import UUID
@@ -260,7 +270,7 @@ batch_histogram_data = [one_histogram_data, one_histogram_data]
 wavefront_sender.send_distribution_now(batch_histogram_data)
 ```
 
-### Batch Trace Data
+#### Batch Trace Data
 
 If you are directly using the Sender SDK to send data to the service, you won’t see span-level RED metrics by default unless you use the Wavefront Proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
@@ -294,7 +304,7 @@ batch_span_data = [one_tracing_span_data, one_tracing_span_data]
 wavefront_sender.send_span_now(batch_span_data)
 ```
 
-### Batch Events
+#### Batch Events
 
 ```python
 from wavefront_sdk.common import event_to_line_data
