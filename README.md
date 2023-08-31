@@ -28,7 +28,7 @@ Note: We're in the process of updating the product name to Operations for Applic
 
 ## Prerequisites
 
-* Python versions 3.7 - 3.11 are supported.
+* Python versions 3.8 - 3.11 are supported.
 * Install `wavefront-sdk-python`
     ```
     pip install wavefront-sdk-python

@@ -10,3 +10,4 @@ env/
 venv/
 .idea/
 .vscode/
+.envrc
