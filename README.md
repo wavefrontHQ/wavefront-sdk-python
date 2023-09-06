@@ -137,10 +137,10 @@ from wavefront_sdk.client_factory import WavefrontClientFactory
    # Required Parameter
    #   URL format to send data via direct ingestion: "https://<DOMAIN>.wavefront.com"
    #   URL format to get tokens via csp authentication: "https://<CSP_ENDPOINT>.cloud.vmware.com"
-   #   CSP OAuth App ID for csp authentication: "<CSP_APP_ID>"
-   #   CSP OAuth App secret for csp authentication: "<CSP_APP_SECRET>"
+   #   VMware Cloud services OAuth App ID for csp authentication: "<CSP_APP_ID>"
+   #   VMware Cloud services OAuth App secret for csp authentication: "<CSP_APP_SECRET>"
    # Optional Parameter
-   #   CSP Organization ID for csp authentication. Default: None
+   #   VMware Cloud services Organization ID for csp authentication. Default: None
    #   max queue size (in data points). Default: 50000
    #   batch size (in data points). Default: 10000
    #   flush interval (in seconds). Default: 1 second
