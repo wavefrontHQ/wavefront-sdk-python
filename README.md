@@ -18,7 +18,7 @@
 
 ## Overview
 
-VMware Aria Operations for Applications (formerly known as Wavefront) Python SDK lets you send raw data from your Python application to Operations for Applications using a wavefront_sender interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python.
+VMware Aria Operations for Applications (formerly known as Tanzu Observability by Wavefront) Python SDK lets you send raw data from your Python application to Operations for Applications using a wavefront_sender interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Python.
 
 Although this library is mostly used by the other Operations for Applications Python SDKs to send data to Operations for Applications, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Operations for Applications.
 
@@ -37,31 +37,31 @@ Note: We're in the process of updating the product name to Operations for Applic
 
 You can send metrics, histograms, or trace data from your application to the service using a Wavefront Proxy or direct ingestions.
 
-* Use [**direct ingestion**](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the service. This is the simplest way to get up and running quickly.
-* Use a [**Wavefront Proxy**](https://docs.wavefront.com/proxies.html), which then forwards the data to the service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
+* Use [**direct ingestion**](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the service. This is the simplest way for POC environment to get it running quickly.
+* Use a [**Wavefront Proxy**](https://docs.wavefront.com/proxies.html), which forwards the data to the service. This is the recommended way for a production environment and large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 
-Let's [create a `WavefrontClient`](#create-a-wavefrontclient) to send data to Operations for Applications either via Wavefront Proxy or directly over HTTP.
+Let's [create a `WavefrontClient`](#create-a-wavefrontclient) to send data to Operations for Applications either through the Wavefront Proxy or directly over HTTP.
 
-> **Deprecated implementations**: *`WavefrontDirectClient` and `WavefrontProxyClient` are deprecated from proxy version 7.0 onwards. We recommend all new applications to use the `WavefrontClient`.*
+> **Deprecated implementations**: *`WavefrontDirectClient` and `WavefrontProxyClient` are deprecated starting with Wavefront proxy version 7.0. We recommend all new applications to use the `WavefrontClient`.*
 
 ### Create a WavefrontClient
 
-Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can send data directly to the service or send data using a Wavefront Proxy.
+Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can send data directly to the service or send data using a Wavefront proxy.
 
 The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` instance, which can send data to multiple services.
 
-#### Initialize the WavefrontClient (Wavefront Proxy/direct ingestion)
+#### Initialize the WavefrontClient (Wavefront Proxy/Direct Ingestion)
 
-##### Prerequisites (Wavefront Proxy/direct ingestion)
+##### Prerequisites (Wavefront Proxy/Direct Ingestion)
 
-* Sending data via Wavefront Proxy?
-  Before your application can use a `WavefrontClient` you must [set up and start a Wavefront Proxy](https://docs.wavefront.com/proxies_installing.html).
-* Sending data via direct ingestion?
-  * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
-  * The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`. You can also use HTTP client with Wavefront Proxy version 7.0 or newer. Example: `http://proxy.acme.corp:2878`.
-  * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
+* Sending data by using the Wavefront proxy?
+  Before your application can use a `WavefrontClient` you must [install a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
+* Sending data by using direct ingestion?
+  * Verify that you have the Direct Data Ingestion permission. For details, see [Operations for Applications Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
+  * The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`. You can also use HTTP client with Wavefront proxy version 7.0 or later. Example: `http://proxy.acme.corp:2878`.
+  * [Obtain the Operations for Applications API token](https://docs.wavefront.com/api_tokens.html#generate-and-manage-the-api-tokens-for-your-user-account).
 
-**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via Wavefront Proxy/direct ingestion.
+**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications through a Wavefront proxy or using direct ingestion.
 
 ```python
 from wavefront_sdk.client_factory import WavefrontClientFactory
@@ -84,16 +84,16 @@ client_factory.add_client(
 wavefront_sender = client_factory.get_client()
 ```
 
-#### Initialize the WavefrontClient (CSP Api Token)
+#### Initialize the WavefrontClient with a VMware Cloud Services API Token
 
-##### Prerequisites (CSP Api Token)
+##### Prerequisites (VMware Cloud Services API Token)
 
 * The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`.
-* The base HTTP URL of your CSP console. This is the URL you connect to when you log in to the CSP console, typically something like `http://console.cloud.vmware.com`.
-* Verify that you have access to the CSP console. For details, see [Operations for Applications Permissions](https://docs.wavefront.com/csp_permissions_overview.html#operations-for-applications-permissions).
+* The base HTTP URL of your VMware Cloud Services Console. This is the URL you connect to when you log in to the VMware Cloud Services Console, typically something like `http://console.cloud.vmware.com`.
+* Verify that you have access to the VMware Cloud Services Console. For details, see [Operations for Applications Permissions](https://docs.wavefront.com/csp_permissions_overview.html#operations-for-applications-permissions).
 * [Generating an API token](https://developer.vmware.com/apis/csp/).
 
-**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via CSP Api Token.
+**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via VMware Cloud Services API Token.
 
 ```python
 from wavefront_sdk.client_factory import WavefrontClientFactory
@@ -101,8 +101,8 @@ from wavefront_sdk.client_factory import WavefrontClientFactory
 # Create a sender with:
    # Required Parameter
    #   URL format to send data via direct ingestion: "https://<DOMAIN>.wavefront.com"
-   #   URL format to get tokens via csp authentication: "https://<CSP_ENDPOINT>.cloud.vmware.com"
-   #   CSP Api Token for csp authentication: "<CSP_API_TOKEN>"
+   #   URL format to get tokens via VMware Cloud Services authentication: "https://<CSP_ENDPOINT>.cloud.vmware.com"
+   #   VMware Cloud Services API Token for VMware Cloud Services authentication: "<CSP_API_TOKEN>"
    # Optional Parameter
    #   max queue size (in data points). Default: 50000
    #   batch size (in data points). Default: 10000
@@ -119,16 +119,16 @@ client_factory.add_client(
 wavefront_sender = client_factory.get_client()
 ```
 
-#### Initialize the WavefrontClient (CSP OAuth App)
+#### Initialize the WavefrontClient with a Server to Server OAuth App
 
-##### Prerequisites (CSP OAuth App)
+##### Prerequisites (Server to Server OAuth App)
 
 * The HTTP URL of your cluster. This is the URL you connect to when you log in to the service, typically something like `http://<domain>.wavefront.com`.
-* The base HTTP URL of your CSP console. This is the URL you connect to when you log in to the CSP console, typically something like `http://console.cloud.vmware.com`.
+* The base HTTP URL of your VMware Cloud Services Console. This is the URL you connect to when you log in to the VMware Cloud Services Console, typically something like `http://console.cloud.vmware.com`.
 * Verify that you have the required permissions for adding and managing OAuth apps in this Organization. For details, see [Organization roles and permissions](https://docs.vmware.com/en/VMware-Cloud-services/services/Using-VMware-Cloud-Services/GUID-C11D3AAC-267C-4F16-A0E3-3EDF286EBE53.html#organization-roles-and-permissions-0).
 * [Create a server to server app](https://docs.vmware.com/en/VMware-Cloud-services/services/Using-VMware-Cloud-Services/GUID-327AE12A-85DB-474B-89B2-86651DF91C77.html).
 
-**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications via CSP OAuth App.
+**Example**: Use a factory class to create a WavefrontClient and send data to Operations for Applications by using the server to server OAuth app.
 
 ```python
 from wavefront_sdk.client_factory import WavefrontClientFactory
@@ -238,7 +238,7 @@ wavefront_sender.send_distribution(
 
 #### Single Span
 
-If you are directly using the Sender SDK to send data to the service, you won’t see span-level RED metrics by default unless you use the Wavefront Proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with the Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
+If you are directly using the Sender SDK to send data to the service, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with the Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
 ```python
 from uuid import UUID
@@ -284,7 +284,7 @@ wavefront_sender.send_event('event name',
 
 ### Send Batch Data
 
-The following examples show how to generate data points manually and send them as a batch to Wavefront.
+The following examples show how to generate data points manually and send them as a batch to Operations for Applications.
 
 #### Batch Metrics
 
@@ -346,7 +346,7 @@ wavefront_sender.send_distribution_now(batch_histogram_data)
 
 #### Batch Trace Data
 
-If you are directly using the Sender SDK to send data to the service, you won’t see span-level RED metrics by default unless you use the Wavefront Proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
+If you are directly using the Sender SDK to send data to the service, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracing_port`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
 ```python
 from uuid import UUID
