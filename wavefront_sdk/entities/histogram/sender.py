@@ -8,7 +8,7 @@
 class WavefrontHistogramSender(object):
     """Interface of Histogram Sender for both clients."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=R0913,R0917
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
         """Send Distribution Data.

@@ -191,7 +191,7 @@ def validate_annotations(annotations):
                              + key)
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=R0913,R0917
 
 def metric_to_line_data(name, value, timestamp, source, tags, default_source):
     """Metric Data to String.

@@ -56,7 +56,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
     def __init__(self, server, token, max_queue_size=50000, batch_size=10000,
                  flush_interval_seconds=5, enable_internal_metrics=True,
                  queue_impl=queue.Queue):
-        # pylint: disable=too-many-arguments,too-many-statements
+        # pylint: disable=R0913,R0917,too-many-statements
         """Construct Direct Client.
 
         @param server: Server address,
@@ -335,7 +335,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
         self._sdk_metrics_registry.close(timeout_secs=1)
 
     def send_metric(self, name, value, timestamp, source, tags):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=R0913,R0917
         """Send Metric Data via proxy/direct ingestion client.
 
         Wavefront Metrics Data format
@@ -382,7 +382,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
 
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=R0913,R0917
         """Send Distribution Data via proxy/direct ingestion client.
 
         Wavefront Histogram Data format
@@ -433,7 +433,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
 
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=R0913,R0917
         """Send span data via proxy/direct ingestion client.
 
         Wavefront Tracing Span Data format
@@ -521,7 +521,7 @@ class WavefrontClient(connection_handler.ConnectionHandler,
 
     def send_event(self, name, start_time, end_time, source, tags,
                    annotations):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=R0913,R0917
         """Send Event Data via proxy/direct ingestion client.
 
         Wavefront Event Data format
