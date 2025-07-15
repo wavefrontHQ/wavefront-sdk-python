@@ -14,7 +14,7 @@ runs:
   using: composite
   steps:
     - name: Set up Python ${{ inputs.python_version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python_version }}
         check-latest: true
@@ -40,7 +40,7 @@ runs:
       run: python -m pydocstyle
       shell: bash
     - name: Execute Unit Tests 
-      run: python -m unittest discover
+      run: python -m unittest discover -s ./test*
       shell: bash
     - name: Check Version Updated in setup.py Before Merging
       if: ${{ github.event_name == 'pull_request' }}
