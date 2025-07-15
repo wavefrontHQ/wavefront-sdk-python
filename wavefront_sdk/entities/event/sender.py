@@ -8,7 +8,7 @@
 class WavefrontEventSender(object):
     """Interface of Event Sender for both clients."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def send_event(self, name, start_time, end_time, source,
                    tags, annotations):
         """Send Event Data.
