@@ -15,7 +15,7 @@ LOGGER = logging.getLogger('wavefront_sdk.WavefrontSdkMetricsRegistry')
 class WavefrontSdkMetricsRegistry(object):
     """Wavefront SDK Metrics Registry."""
 
-    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, wf_metric_sender, source=None, tags=None, prefix=None,
                  reporting_interval_secs=60):
         """Construct Wavefront SDK Metrics Registry."""

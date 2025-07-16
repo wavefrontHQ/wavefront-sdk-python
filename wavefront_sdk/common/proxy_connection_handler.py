@@ -17,7 +17,7 @@ class ProxyConnectionHandler(connection_handler.ConnectionHandler):
     For sending data to a Wavefront proxy listening on a given port.
     """
 
-    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, address, port, wavefront_sdk_metrics_registry,
                  entity_prefix=None, timeout=None):
         """Construct ProxyConnectionHandler.
