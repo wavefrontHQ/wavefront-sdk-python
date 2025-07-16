@@ -4,7 +4,6 @@
 """
 from __future__ import unicode_literals
 
-
 # pylint: disable=E0012,R0205
 class WavefrontMetricSender(object):
     """Interface of Metric Sender for both clients."""
@@ -15,7 +14,7 @@ class WavefrontMetricSender(object):
     # Δ: GREEK CAPITAL LETTER DELTA
     DELTA_PREFIX_2 = 'Δ'  # '\u0394'
 
-    # pylint: disable=R0913,R0917
+    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
     def send_metric(self, name, value, timestamp, source, tags):
         """Send Metric Data.
 

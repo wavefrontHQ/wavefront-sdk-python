@@ -8,7 +8,7 @@
 class WavefrontTracingSpanSender(object):
     """Tracing Span Sender Interface for both Clients."""
 
-    # pylint: disable=R0913,R0917
+    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
         """Send span data via proxy.

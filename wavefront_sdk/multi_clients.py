@@ -25,7 +25,7 @@ class WavefrontMultiClient(entities.WavefrontMetricSender,
         """
         self.senders[client.server] = client
 
-    # pylint: disable=R0913,R0917
+    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
     def send_metric(self, name, value, timestamp, source, tags):
         """Send Metric Data via direct ingestion client.
 
@@ -60,7 +60,7 @@ class WavefrontMultiClient(entities.WavefrontMetricSender,
         for client in self.senders.values():
             client.send_metric_now(metrics)
 
-    # pylint: disable=R0913,R0917
+    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
     def send_distribution(self, name, centroids, histogram_granularities,
                           timestamp, source, tags):
         """Send Distribution Data via direct ingestion client.
@@ -100,7 +100,7 @@ class WavefrontMultiClient(entities.WavefrontMetricSender,
         for client in self.senders.values():
             client.send_distribution_now(distributions)
 
-    # pylint: disable=R0913,R0917
+    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
         """Send span data via direct ingestion client.

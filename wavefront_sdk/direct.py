@@ -46,7 +46,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
     EVENT_END_POINT = '/api/v2/event'
     HTTP_TIMEOUT = 60.0
 
-    # pylint: disable=R0913,R0917
+    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
     # pylint: disable=too-many-statements
 
     def __init__(self,
@@ -465,7 +465,7 @@ class WavefrontDirectClient(connection_handler.ConnectionHandler,
                            'histograms', self._histograms_report_errors,
                            self._histograms_buffer, self._histograms_dropped)
 
-    # pylint: disable=R0913,R0917
+    # pylint: disable=R0913,R0917  # too-many-arguments, too-many-positional-arguments
 
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
