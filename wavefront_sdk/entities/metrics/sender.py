@@ -4,6 +4,7 @@
 """
 from __future__ import unicode_literals
 
+
 # pylint: disable=E0012,R0205
 class WavefrontMetricSender(object):
     """Interface of Metric Sender for both clients."""
