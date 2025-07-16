@@ -11,7 +11,7 @@ with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 setuptools.setup(
     name='wavefront-sdk-python',
-    version='2.1.3',  # Please update with each pull request.
+    version='2.1.4',  # Please update with each pull request.
     author='VMware Aria Operations for Applications Team',
     url='https://github.com/wavefrontHQ/wavefront-sdk-python',
     license='Apache-2.0',
@@ -42,10 +42,12 @@ setuptools.setup(
         'Intended Audience :: Information Technology',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
+        # Please make sure versions here match the workflow matrix
+        # in .github/workflows/main.yml#L33
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Monitoring',
         'Topic :: System :: Networking :: Monitoring'
