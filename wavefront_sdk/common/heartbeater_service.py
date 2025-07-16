@@ -24,7 +24,7 @@ from .constants import SHARD_TAG_KEY
 class HeartbeaterService(object):
     """Service that periodically reports component heartbeats to Wavefront."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, wavefront_client, application_tags, components, source):
         """Construct HeartbeaterService.
 

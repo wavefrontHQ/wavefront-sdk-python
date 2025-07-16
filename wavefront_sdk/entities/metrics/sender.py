@@ -15,7 +15,7 @@ class WavefrontMetricSender(object):
     # Δ: GREEK CAPITAL LETTER DELTA
     DELTA_PREFIX_2 = 'Δ'  # '\u0394'
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def send_metric(self, name, value, timestamp, source, tags):
         """Send Metric Data.
 

@@ -16,7 +16,7 @@ from .constants import SHARD_TAG_KEY
 class ApplicationTags(object):
     """Metadata about your application represented as tags in Wavefront."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, application, service, cluster=None, shard=None,
                  custom_tags=None):
         """Construct ApplicationTags.

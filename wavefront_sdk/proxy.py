@@ -30,7 +30,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
     when exceptions are thrown from any methods.
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, host, metrics_port, distribution_port, tracing_port,
                  event_port=None, timeout=None, enable_internal_metrics=True):
         """Construct Proxy Client.
@@ -292,7 +292,7 @@ class WavefrontProxyClient(entities.WavefrontMetricSender,
                  .increment_failure_count())
                 raise error
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def send_span(self, name, start_millis, duration_millis, source, trace_id,
                   span_id, parents, follows_from, tags, span_logs):
         """Send span data via proxy.
