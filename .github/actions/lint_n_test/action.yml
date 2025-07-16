@@ -39,7 +39,7 @@ runs:
     - name: PyDocStyle
       run: python -m pydocstyle
       shell: bash
-    - name: Install local ${{ inputs.input_pkg_name }} pkg in editable mode
+    - name: Install pkg in editable mode
       run: python -m pip install -e ./
       shell: bash
     - name: Execute Unit Tests 
