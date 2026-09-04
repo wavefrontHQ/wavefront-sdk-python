@@ -521,21 +521,22 @@ def event_to_line_data(name, start_time, end_time, source, tags,
     else:
         str_builder.append(str(start_time + 1))
 
-    str_builder.append('"' + name + '"')
+    str_builder.append(sanitize_value(name))
 
     if annotations:
         validate_annotations(annotations)
         for key, value in annotations.items():
-            str_builder.append(key + '="' + value + '"')
+            str_builder.append(sanitize_without_quotes(key)
+                               + '=' + sanitize_value(value))
 
     if not source:
         source = default_source
 
-    str_builder.append('host="' + source + '"')
+    str_builder.append('host=' + sanitize_value(source) + '')
 
     if tags:
         validate_tags(tags)
         for tag in tags:
-            str_builder.append('tag="' + tag + '"')
+            str_builder.append('tag="' + sanitize_without_quotes(tag) + '"')
 
     return ' '.join(str_builder) + '\n'
